@@ -383,28 +383,29 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
      <label class="upload-lbl">&#128194; Upload Hubs CSV<input type="file" accept=".csv" onchange="importHubsCSV(event)" style="display:none"></label>
     </div>
     <div class="deploy-card">
-     <form id="deployment-form" onsubmit="submitDeploymentData(event)">
-      <div class="form-grid">
-       <div class="f-group"><label class="f-label">Vendor Name</label><select id="deploy-vendor-id" class="f-sel-form" required><option value="">&#8212; Select Vendor &#8212;</option></select></div>
-       <div class="f-group"><label class="f-label">Assign to Hub</label><select id="deploy-hub-name" class="dynamic-hub-list f-sel-form" required><option value="">&#8212; Select Hub &#8212;</option></select></div>
+     <form id="deploy-form" onsubmit="addDeployment(event)">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:20px;margin-bottom:20px;background:white;padding:24px;border-radius:12px;box-shadow:0 2px 4px rgba(0,0,0,0.04)">
+       
+       <div class="f-group"><label class="f-label">VENDOR NAME (Select or Type)</label><input type="text" id="deploy-vendor-id" class="f-in" list="vendor-datalist" placeholder="Select or type new vendor" required><datalist id="vendor-datalist"></datalist></div>
+       <div class="f-group"><label class="f-label">ASSIGN TO HUB (Select or Type)</label><input type="text" id="deploy-hub" class="f-in" list="hub-datalist" placeholder="Select or type new hub" required><datalist id="hub-datalist"></datalist></div>
+       
+       <div class="f-group"><label class="f-label">VENDOR LOGIN EMAIL</label><input type="email" id="deploy-email" class="f-in" placeholder="vendor@3eco.in"></div>
+       <div class="f-group"><label class="f-label">HUB HI LOGIN EMAIL</label><input type="email" id="deploy-hub-email" class="f-in" placeholder="hub_manager@shadowfax.in"></div>
+       
+       <div class="f-group"><label class="f-label">VENDOR PASSWORD</label><input type="text" id="deploy-vendor-pass" class="f-in" placeholder="Set password (default: 123)"></div>
+       <div class="f-group"><label class="f-label">HUB HI PASSWORD</label><input type="text" id="deploy-hub-pass" class="f-in" placeholder="Set password (default: 123)"></div>
+       
+       <div class="f-group"><label class="f-label">MODEL</label><select id="deploy-model" class="f-sel"><option value="">-- Select Model --</option><option>DCD</option><option>Cargo</option></select></div>
+       <div class="f-group"><label class="f-label">VEHICLE TYPE</label><select id="deploy-type" class="f-sel"><option value="">-- Select Type --</option><option>3 Wheeler</option><option>4 Wheeler</option><option>EV</option></select></div>
+       
+       <div class="f-group"><label class="f-label">VEHICLE PER DAY RATE (₹)</label><input type="number" id="deploy-day-rate" class="f-in" placeholder="e.g. 1500" required></div>
+       <div class="f-group"><label class="f-label">MONTH RATE (₹)</label><input type="number" id="deploy-month-rate" class="f-in" placeholder="Auto-calculated" readonly></div>
+       
+       <div class="f-group"><label class="f-label">WORKING PLAN</label><select id="deploy-plan" class="f-sel"><option value="3000KM . 12 Hrs . 31 Days">3000KM . 12 Hrs . 31 Days</option><option value="2500KM . 10 Hrs . 26 Days">2500KM . 10 Hrs . 26 Days</option></select></div>
+       <div class="f-group"><label class="f-label">DEPLOYMENT DATE</label><input type="date" id="deploy-date" class="f-in" required></div>
+       
       </div>
-      <div class="form-grid">
-       <div class="f-group"><label class="f-label">Vendor Login Email</label><input type="email" id="deploy-email" class="f-in" placeholder="Auto-fills from vendor list..." required></div>
-       <div class="f-group"><label class="f-label">Vehicle Type</label><select id="deploy-vehicle-type" class="f-sel-form" required><option value="">&#8212; Select Type &#8212;</option><option>Tata Ace</option><option>EV L5</option><option>3 Wheeler</option><option>2 Wheeler</option><option>Pickup Truck</option><option>Other</option></select></div>
-      </div>
-      <div class="form-grid">
-       <div class="f-group"><label class="f-label">Model</label><select id="deploy-model" class="f-sel-form" required><option value="">&#8212; Select Model &#8212;</option><option>Non-DCD</option><option>DCD</option></select></div>
-       <div class="f-group"><label class="f-label">Working Plan</label><select id="deploy-working" class="f-sel-form" required><option value="">&#8212; Select Plan &#8212;</option><option>2000KM . 12 Hrs . 30 Days</option><option>2000KM . 12 Hrs . 31 Days</option><option>3000KM . 12 Hrs . 30 Days</option><option>3000KM . 12 Hrs . 31 Days</option></select></div>
-      </div>
-      <div class="form-grid">
-       <div class="f-group"><label class="f-label">Vehicle Per Day Rate (&#8377;)</label><input type="number" id="deploy-day-rate" class="f-in" placeholder="e.g. 1500" min="0" required></div>
-       <div class="f-group"><label class="f-label">Month Rate (&#8377;)</label><input type="number" id="deploy-month-rate" class="f-in" placeholder="Auto-calculated or enter manually" min="0"></div>
-      </div>
-      <div class="form-grid">
-       <div class="f-group"><label class="f-label">Deployment Date</label><input type="date" id="deploy-date" class="f-in" required></div>
-       <div class="f-group"><label class="f-label">Allowed Action</label><input type="text" class="f-in" value="Fill Attendance (Present / Absent)" disabled></div>
-      </div>
-      <button type="submit" class="btn btn-primary">+ Add Deployment Rule</button>
+      <button type="submit" class="btn btn-p" style="margin-bottom:20px">+ Add Deployment Rule</button>
      </form>
     </div>
     <div class="tbl-wrap">
@@ -559,7 +560,12 @@ function toast(msg,type="ok"){const t=document.getElementById("toast");t.textCon
 const today=()=>new Date().toISOString().split("T")[0];
 function nextDay(s){if(!s)return"";const d=new Date(s);d.setDate(d.getDate()+1);const n=d.toISOString().split("T")[0];return n>today()?today():n;}
 function limitDates(r){r.querySelectorAll("input[type=date]").forEach(d=>d.max=today());}
-function populateLists(){
+function populateLists()
+const vl = document.getElementById("vendor-datalist");
+    if(vl) { vl.innerHTML = ""; predefinedVendors.forEach(v => vl.appendChild(new Option(v, v))); }
+    const hl = document.getElementById("hub-datalist");
+    if(hl) { hl.innerHTML = ""; predefinedHubs.forEach(h => hl.appendChild(new Option(h, h))); }
+{
  document.querySelectorAll(".dynamic-hub-list").forEach(sel=>{sel.innerHTML="<option value=''>— Select —</option>";predefinedHubs.forEach(h=>sel.appendChild(new Option(h,h)));});
  const vs=document.getElementById("deploy-vendor-id");
  if(vs){vs.innerHTML="<option value=''>— Select Vendor —</option>";predefinedVendors.forEach(v=>{const o=new Option(v.name,v.name.toUpperCase());o.dataset.email=v.email;vs.appendChild(o);});vs.addEventListener("change",function(){document.getElementById("deploy-email").value=this.options[this.selectedIndex]?.dataset?.email||"";});
@@ -683,10 +689,71 @@ function entryMatchesFilters(entry,f){if(f.m&&entry.month!==f.m)return false;if(
 function recomputeStats(f){const filtered=globalDatabase.filter(e=>entryMatchesFilters(e,f));const txt=f.s.trim();let hTotal=0,vTotal=0,pending=0,payout=0;const uniqHubs=new Set();const dhAgg={};filtered.forEach(e=>{if(txt&&!(e.driverNumber||"").toUpperCase().includes(txt)&&!(e.driverName||"").toUpperCase().includes(txt)&&!(e.hubName||"").toUpperCase().includes(txt)&&!(e.notes||"").toUpperCase().includes(txt)&&!(e.date||"").includes(txt))return;uniqHubs.add(e.hubName);const key=e.hubName+"__"+e.date;if(!dhAgg[key])dhAgg[key]={hasHub:false,hasVendor:false};if(e.source==="Hub"){dhAgg[key].hasHub=true;if(e.attendance==="Present")hTotal++;}else{dhAgg[key].hasVendor=true;if(e.attendance==="Present")vTotal++;}});Object.values(dhAgg).forEach(g=>{if(!g.hasHub||!g.hasVendor)pending++;});uniqHubs.forEach(hub=>{const saved=finalAttDb[hub]||{};const fa=saved.finalAtt;if(fa!==undefined&&fa!==""){const dep=deploymentDatabase.find(r=>r.hubName===hub)||{};if(dep.dayRate)payout+=(parseFloat(fa)||0)*dep.dayRate;}});document.getElementById("stat-total-hubs").textContent=uniqHubs.size;document.getElementById("stat-hub-present").textContent=hTotal;document.getElementById("stat-ven-present").textContent=vTotal;document.getElementById("stat-pending").textContent=pending;document.getElementById("stat-payout").textContent="₹"+payout.toLocaleString("en-IN");}
 function filterAdmin(){updateLockBtn();const f=getActiveFilters();const ah=f.v?deploymentDatabase.filter(r=>r.vendorId===f.v).map(r=>r.hubName):null;const hubsOnDate=f.d?new Set(globalDatabase.filter(e=>e.date===f.d).map(e=>e.hubName)):null;document.querySelectorAll("#admin-table-body .data-row").forEach(row=>{const hub=row.dataset.hub||"",vendors=row.dataset.vendors||"",month=row.dataset.month||"",txt=(row.textContent||"").toUpperCase();const ok=(!f.m||month===f.m)&&(!f.h||hub===f.h)&&(!f.v||vendors.includes(f.v)||(ah&&ah.includes(hub)))&&(!f.s||txt.includes(f.s))&&(!f.d||(hubsOnDate&&hubsOnDate.has(hub)));row.style.display=ok?"":"none";const btn=row.querySelector(".btn-expand");if(btn){const did=btn.getAttribute("onclick").match(/"(detail-\d+)"/);if(did){const dr=document.getElementById(did[1]);if(dr&&!ok)dr.classList.remove("open");}}});recomputeStats(f);}
 function clearAdminFilters(){["admin-search","admin-hub-filter","admin-vendor-filter","admin-month-filter","admin-date-filter"].forEach(id=>document.getElementById(id).value="");filterAdmin();}
-function submitDeploymentData(e){e.preventDefault();const vid=document.getElementById("deploy-vendor-id").value.trim().toUpperCase();const hub=document.getElementById("deploy-hub-name").value;const email=document.getElementById("deploy-email").value.trim();const vehicleType=document.getElementById("deploy-vehicle-type").value;const model=document.getElementById("deploy-model").value;const working=document.getElementById("deploy-working").value;const dayRate=parseFloat(document.getElementById("deploy-day-rate").value)||0;const monthRate=parseFloat(document.getElementById("deploy-month-rate").value)||0;const deployDate=document.getElementById("deploy-date").value;if(deploymentDatabase.find(r=>r.vendorId===vid&&r.hubName===hub)){toast("This deployment rule already exists.","err");return;}deploymentDatabase.push({vendorId:vid,hubName:hub,email,vehicleType,model,working,dayRate,monthRate,deployDate});save();renderDeployTable();toast("Mapped "+vid+" to "+hub);document.getElementById("deployment-form").reset();}
-function renderDeployTable(){const tbody=document.getElementById("deployment-table-body");tbody.innerHTML="";if(!deploymentDatabase.length){tbody.innerHTML="<tr><td colspan=10 class=empty-c>No deployment rules yet.</td></tr>";return;}deploymentDatabase.forEach((rule,i)=>{const row=document.createElement("tr");row.innerHTML="<td><strong>"+rule.vendorId+"</strong></td><td>"+rule.hubName+"</td><td><span class=vtag>"+(rule.vehicleType||"—")+"</span></td><td><span class='vtag "+(rule.model==="DCD"?"vtag-blue":"")+"'>"+(rule.model||"—")+"</span></td><td style='font-size:12px;color:var(--sf-gray-500)'>"+(rule.working||"—")+"</td><td style='text-align:right;font-weight:600'>₹"+(rule.dayRate?rule.dayRate.toLocaleString("en-IN"):"—")+"</td><td style='text-align:right;font-weight:600'>₹"+(rule.monthRate?rule.monthRate.toLocaleString("en-IN"):"—")+"</td><td style='font-size:12px'>"+(rule.deployDate||"—")+"</td><td style='color:var(--sf-gray-500)'>"+(rule.email||"—")+"</td><td style='text-align:center'><button type=button class='btn btn-danger-ghost btn-sm' onclick='delDeploy("+i+")' title=Remove>&#10005;</button></td>";tbody.appendChild(row);});}
-function delDeploy(i){if(confirm("Delete this vendor mapping?")){deploymentDatabase.splice(i,1);save();renderDeployTable();toast("Deployment rule removed.");}}
-function importHubsCSV(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{const hubs=ev.target.result.split("\n").map(h=>h.trim().replace(/,/g,"")).filter(h=>h);if(!hubs.length){toast("No valid hubs found.","err");return;}document.querySelectorAll(".dynamic-hub-list").forEach(sel=>{sel.innerHTML="<option value=''>— Select —</option>";hubs.forEach(h=>sel.appendChild(new Option(h,h)));});const tpl=window._hubTpl.querySelector(".dynamic-hub-list");if(tpl){tpl.innerHTML="<option value=''>— Select —</option>";hubs.forEach(h=>tpl.appendChild(new Option(h,h)));}const ahs=document.getElementById("admin-hub-filter");if(ahs){ahs.innerHTML="<option value=''>All Hubs</option>";hubs.forEach(h=>ahs.appendChild(new Option(h,h)));}toast("Loaded "+hubs.length+" hubs from CSV.");e.target.value="";};reader.readAsText(file);}
+function addDeployment(e) {
+    e.preventDefault();
+    const vendorId = document.getElementById("deploy-vendor-id").value.trim().toUpperCase();
+    const hubName = document.getElementById("deploy-hub").value.trim();
+    const email = document.getElementById("deploy-email").value.trim();
+    const vendorPass = document.getElementById("deploy-vendor-pass").value.trim() || "123";
+    const hubEmail = document.getElementById("deploy-hub-email").value.trim();
+    const hubPass = document.getElementById("deploy-hub-pass").value.trim() || "123";
+    const model = document.getElementById("deploy-model").value;
+    const type = document.getElementById("deploy-type").value;
+    const dayRate = parseFloat(document.getElementById("deploy-day-rate").value) || 0;
+    const monthRate = parseFloat(document.getElementById("deploy-month-rate").value) || 0;
+    const plan = document.getElementById("deploy-plan").value;
+    const deployDate = document.getElementById("deploy-date").value;
+    
+    // Prevent duplicates
+    if(deploymentDatabase.find(r => r.vendorId === vendorId && r.hubName === hubName)){
+        toast("This deployment rule already exists.", "err");
+        return;
+    }
+
+    deploymentDatabase.push({
+        id: Date.now(), vendorId, hubName, email, vendorPass, hubEmail, hubPass, model, vehicleType: type, dayRate, monthRate, working: plan, deployDate
+    });
+    
+    save();
+    renderDeployTable();
+    populateLists();
+    document.getElementById("deploy-form").reset();
+    document.getElementById("deploy-date").value = today();
+    toast("Deployment Setup Saved!");
+}
+
+function renderDeployTable() {
+    const tbody = document.getElementById("deployment-table-body");
+    if (!tbody) return;
+    if (!deploymentDatabase.length) { tbody.innerHTML = "<tr><td colspan=10 class=empty-c>No deployments found.</td></tr>"; return; }
+    
+    // Updated Headers to show Logins
+    tbody.previousElementSibling.innerHTML = "<tr><th>VENDOR</th><th>HUB</th><th>VEHICLE</th><th>PLAN</th><th>DAY RATE</th><th>MONTH RATE</th><th>DATE</th><th>VENDOR LOGIN</th><th>HUB LOGIN</th><th>REMOVE</th></tr>";
+    
+    tbody.innerHTML = "";
+    deploymentDatabase.forEach(r => {
+        // Format Logins nicely
+        const vLog = r.email ? `<strong>${r.email}</strong><br><span style="color:var(--sf-gray-500);font-size:11px">Pass: ${r.vendorPass}</span>` : '—';
+        const hLog = r.hubEmail ? `<strong>${r.hubEmail}</strong><br><span style="color:var(--sf-gray-500);font-size:11px">Pass: ${r.hubPass}</span>` : '—';
+        
+        const row = document.createElement("tr");
+        row.innerHTML = `<td><strong>${r.vendorId}</strong></td><td>${r.hubName}</td><td><span class='vtag'>${r.vehicleType||r.type||"—"}</span></td><td style='font-size:12px;color:var(--sf-gray-500)'>${r.working||r.plan||"—"}</td><td><strong>₹${(r.dayRate||0).toLocaleString('en-IN')}</strong></td><td>₹${(r.monthRate||0).toLocaleString('en-IN')}</td><td>${r.deployDate||r.date||"—"}</td><td>${vLog}</td><td>${hLog}</td><td style='text-align:center'><button class='btn btn-sm' style='background:#fef2f2;color:#ef4444;border:1px solid #fca5a5;padding:4px 10px' onclick='removeDeployment(${r.id || '"'+r.vendorId+'__'+r.hubName+'"'})'>✕</button></td>`;
+        tbody.appendChild(row);
+    });
+}
+
+function removeDeployment(id) {
+    if(confirm("Delete this deployment mapping?")) {
+        const idx = typeof id === 'string' ? deploymentDatabase.findIndex(r => r.vendorId+'__'+r.hubName === id) : deploymentDatabase.findIndex(r => r.id === id);
+        if(idx > -1) {
+            deploymentDatabase.splice(idx, 1);
+            save();
+            renderDeployTable();
+            toast("Deployment rule removed.");
+        }
+    }
+}
+ function importHubsCSV(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{const hubs=ev.target.result.split("\n").map(h=>h.trim().replace(/,/g,"")).filter(h=>h);if(!hubs.length){toast("No valid hubs found.","err");return;}document.querySelectorAll(".dynamic-hub-list").forEach(sel=>{sel.innerHTML="<option value=''>— Select —</option>";hubs.forEach(h=>sel.appendChild(new Option(h,h)));});const tpl=window._hubTpl.querySelector(".dynamic-hub-list");if(tpl){tpl.innerHTML="<option value=''>— Select —</option>";hubs.forEach(h=>tpl.appendChild(new Option(h,h)));}const ahs=document.getElementById("admin-hub-filter");if(ahs){ahs.innerHTML="<option value=''>All Hubs</option>";hubs.forEach(h=>ahs.appendChild(new Option(h,h)));}toast("Loaded "+hubs.length+" hubs from CSV.");e.target.value="";};reader.readAsText(file);}
 function downloadCSV(tblId,fname){
   var rows=document.querySelectorAll("#"+tblId+" tr"),csv=[];
   rows.forEach(function(row){
@@ -705,58 +772,71 @@ async function handleLogin(e) {
     const user = document.getElementById("username").value.trim().toLowerCase();
     const pass = document.getElementById("password").value;
     const err = document.getElementById("login-error");
-    
-    if (pass !== "123") {
-        err.style.display = "block";
-        return;
-    }
     err.style.display = "none";
 
-    // Show a loading state while fetching cloud data
-    const loginBtn = document.querySelector(".l-btn");
-    const originalText = loginBtn.innerHTML;
-    loginBtn.innerHTML = "⏳ Syncing Cloud...";
-    loginBtn.disabled = true;
-    
-    // Wait for Supabase data to download BEFORE opening the dashboard
-    await load(); 
-    
-    loginBtn.innerHTML = originalText;
-    loginBtn.disabled = false;
-
-    // Open the correct portal
-    if (user === "admin@shadowfax.in" || user === "sajsen") {
+    // 1. Check Hardcoded Admin First
+    if ((user === "admin@shadowfax.in" || user === "sajsen") && pass === "123") {
+        const loginBtn = document.querySelector(".l-btn");
+        const originalText = loginBtn.innerHTML;
+        loginBtn.innerHTML = "⏳ Syncing Cloud...";
+        loginBtn.disabled = true;
+        await load();
+        loginBtn.innerHTML = originalText;
+        loginBtn.disabled = false;
+        
         showPortal("admin-portal", "Admin Control Center", "Administrator");
         updateAdminDashboard();
         recomputeStats(getActiveFilters());
         renderAdminRequests();
         switchGenericTab("admin-recon-view", document.querySelector(".admin-tab"), "admin-view", "admin-tab");
-    } else if (user === "hub@shadowfax.in") {
-        currentHubName = "Hub Manager";
-        showPortal("hub-portal", "Hub Operations", "Hub Manager");
+        return;
+    }
+
+    // 2. Fetch latest database BEFORE checking custom passwords
+    const loginBtn = document.querySelector(".l-btn");
+    const originalText = loginBtn.innerHTML;
+    loginBtn.innerHTML = "⏳ Authenticating...";
+    loginBtn.disabled = true;
+    await load();
+    loginBtn.innerHTML = originalText;
+    loginBtn.disabled = false;
+
+    // 3. Check Hub Login (Custom or Default)
+    const hubMatch = deploymentDatabase.find(r => r.hubEmail && r.hubEmail.toLowerCase() === user && r.hubPass === pass);
+    if (hubMatch || (user === "hub@shadowfax.in" && pass === "123")) {
+        currentHubName = hubMatch ? hubMatch.hubName : "Hub Manager";
+        showPortal("hub-portal", "Hub Operations", currentHubName);
         renderHubGrid();
         renderHubRequests();
         switchGenericTab("hub-att-view", document.querySelector(".hub-tab"), "hub-view", "hub-tab");
-    } else {
-        const match = deploymentDatabase.find(r => r.vendorId.toLowerCase() === user || (r.email && r.email.toLowerCase() === user));
-        currentVendor = match ? match.vendorId : user.toUpperCase();
+        return;
+    }
+
+    // 4. Check Vendor Login (Custom or Default)
+    const vendorMatch = deploymentDatabase.find(r => 
+        (r.email && r.email.toLowerCase() === user && r.vendorPass === pass) || 
+        (r.vendorId.toLowerCase() === user && (r.vendorPass === pass || (!r.vendorPass && pass === "123")))
+    );
+
+    if (vendorMatch) {
+        currentVendor = vendorMatch.vendorId;
         const hubs = deploymentDatabase.filter(r => r.vendorId === currentVendor).map(r => r.hubName);
-        
         document.querySelectorAll(".vendor-dynamic-hub-list").forEach(sel => {
             sel.innerHTML = "";
             hubs.forEach(h => sel.appendChild(new Option(h, h)));
         });
-        
         const wb = document.getElementById("vendor-warning"), sb = document.getElementById("vendor-submit-btn");
-        if (!hubs.length) { 
-            wb.classList.add("show"); sb.disabled = true; sb.style.opacity = "0.5"; 
-        } else { 
-            wb.classList.remove("show"); sb.disabled = false; sb.style.opacity = ""; 
-        }
+        if (!hubs.length) { wb.classList.add("show"); sb.disabled = true; sb.style.opacity = "0.5"; } 
+        else { wb.classList.remove("show"); sb.disabled = false; sb.style.opacity = ""; }
         
         showPortal("vendor-portal", "Fleet Operational Log", currentVendor);
         renderVendorGrid();
+        return;
     }
+
+    // 5. If no match is found, show error
+    err.style.display = "block";
+}
 } 
 function showPortal(id,title,user){document.getElementById("login-container").style.display="none";document.getElementById("app-container").classList.add("show");document.getElementById("tb-title").textContent=title;document.getElementById("tb-user").textContent=user;document.querySelectorAll(".portal").forEach(p=>p.classList.remove("show"));document.getElementById(id).classList.add("show");}
 function logout(){document.getElementById("app-container").classList.remove("show");document.getElementById("login-container").style.display="flex";document.getElementById("username").value="";document.getElementById("password").value="";document.getElementById("login-error").style.display="none";currentVendor=null;currentHubName="Hub Manager";}
