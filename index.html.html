@@ -417,6 +417,33 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
    <div id="admin-req-view" class="admin-view">
     <div class="ph">
  <div><h2>Adhoc LCV Happay Requests</h2><p>Manage and approve LCV requests submitted by Hub Managers</p></div>
+     <div class="dash-grid" style="margin-top: 15px; margin-bottom: 20px;">
+    <div class="stat-card" style="border-top: 4px solid var(--sf-gray-500)">
+        <div class="stat-title">TOTAL HUBS</div>
+        <div class="stat-val" id="req-stat-hubs">0</div>
+        <div class="stat-sub">unique hubs active</div>
+    </div>
+    <div class="stat-card" style="border-top: 4px solid var(--sf-blue)">
+        <div class="stat-title">TOTAL REQUESTS</div>
+        <div class="stat-val" id="req-stat-total">0</div>
+        <div class="stat-sub">submitted requests</div>
+    </div>
+    <div class="stat-card" style="border-top: 4px solid var(--sf-green)">
+        <div class="stat-title">APPROVED COST</div>
+        <div class="stat-val" id="req-stat-app-cost" style="color:var(--sf-green)">₹0</div>
+        <div class="stat-sub">total approved</div>
+    </div>
+    <div class="stat-card" style="border-top: 4px solid var(--sf-red)">
+        <div class="stat-title">REJECTED COST</div>
+        <div class="stat-val" id="req-stat-rej-cost" style="color:var(--sf-red)">₹0</div>
+        <div class="stat-sub">total rejected</div>
+    </div>
+    <div class="stat-card" style="border-top: 4px solid var(--sf-orange)">
+        <div class="stat-title">PENDING REQUESTS</div>
+        <div class="stat-val" id="req-stat-pending" style="color:var(--sf-orange)">0</div>
+        <div class="stat-sub">awaiting action</div>
+    </div>
+ </div>
      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <select id="req-month-filter" class="f-sel" onchange="renderAdminRequests()"><option value="">All Months</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
       <select id="req-hub-filter" class="f-sel" onchange="renderAdminRequests()"><option value="">All Hubs</option></select>
@@ -577,9 +604,28 @@ function renderAdminRequests(){
     if(statusF) reqs = reqs.filter(r => r.status === statusF);
     if(typeF) reqs = reqs.filter(r => r.type === typeF);
     
-    const pending=requestsDatabase.filter(r=>r.status==="Pending").length;
-    const badge=document.getElementById("req-badge");
-    if(badge){badge.textContent=pending;badge.style.display=pending>0?"inline":"none";}
+    // 🧮 NEW: CALCULATE SUMMARY METRICS BASED ON FILTERS 🧮
+    const uniqueHubs = new Set(reqs.map(r => r.hubName)).size;
+    const totalReqs = reqs.length;
+    const approvedCost = reqs.filter(r => r.status === 'Approved').reduce((sum, r) => sum + (Number(r.cost) || 0), 0);
+    const rejectedCost = reqs.filter(r => r.status === 'Rejected').reduce((sum, r) => sum + (Number(r.cost) || 0), 0);
+    const pendingReqs = reqs.filter(r => r.status === 'Pending').length;
+
+    // Inject the math into the new HTML cards
+    const hubEl = document.getElementById("req-stat-hubs");
+    if(hubEl) {
+        hubEl.innerText = uniqueHubs;
+        document.getElementById("req-stat-total").innerText = totalReqs;
+        document.getElementById("req-stat-app-cost").innerText = "₹" + approvedCost.toLocaleString("en-IN");
+        document.getElementById("req-stat-rej-cost").innerText = "₹" + rejectedCost.toLocaleString("en-IN");
+        document.getElementById("req-stat-pending").innerText = pendingReqs;
+    }
+
+    // Keep the red notification badge updated
+    const globalPending = requestsDatabase.filter(r=>r.status==="Pending").length;
+    const badge = document.getElementById("req-badge");
+    if(badge){badge.textContent=globalPending; badge.style.display=globalPending>0?"inline":"none";}
+    
     if(!reqs.length){tbody.innerHTML="<tr><td colspan=10 class=empty-c>No LCV requests found for these filters.</td></tr>";return;}
     
     tbody.previousElementSibling.innerHTML = "<tr><th>Date</th><th>Hub Name</th><th>Rider ID</th><th>Runsheet ID</th><th>Type</th><th>Notes</th><th style='text-align:center'>Image</th><th style='text-align:right'>Cost (₹)</th><th style='text-align:center'>Status</th><th style='text-align:center;min-width:130px'>Action</th></tr>";
@@ -592,7 +638,6 @@ function renderAdminRequests(){
         const imgLink=r.imageUrl?`<a href="${r.imageUrl}" target="_blank" style="color:var(--sf-green);font-weight:700;text-decoration:none;">🖼️ View</a>`:"—";
         const row=document.createElement("tr");
         
-        // NEW: Editable Dropdown that automatically saves when changed!
         const actionDropdown = `<select class="f-sel" style="padding:4px 8px; font-size:12px; font-weight:600; background:white; cursor:pointer;" onchange="updateReqStatus(${rid}, this.value)">
             <option value="Pending" ${r.status==='Pending'?'selected':''}>⏳ Pending</option>
             <option value="Approved" ${r.status==='Approved'?'selected':''}>✅ Approved</option>
