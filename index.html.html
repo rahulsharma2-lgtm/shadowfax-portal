@@ -468,31 +468,24 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
  </div>
 </div>
 <div id="toast"></div>
-
 <script>
- // Download LCV Requests to Excel/CSV
+// Download LCV Requests to Excel/CSV
 function exportReqCSV() {
     if (!requestsDatabase || requestsDatabase.length === 0) {
         return toast("No requests to export", "err");
     }
-    
-    // Create the headers
     let csv = "Date,Hub Name,Rider ID,Runsheet ID,Type,Notes,Cost,Status\n";
-    
-    // Add the data
     requestsDatabase.forEach(r => {
-        // Clean up notes to prevent commas from breaking the CSV
         let cleanNotes = (r.reason || "").replace(/,/g, " ");
         csv += `${r.date},${r.hubName},${r.riderId},${r.runsheet},${r.type},${cleanNotes},${r.cost},${r.status}\n`;
     });
-    
-    // Download the file
     const blob = new Blob([csv], {type: "text/csv"});
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "LCV_Requests_Export_" + new Date().toISOString().split('T')[0] + ".csv";
     link.click();
 }
+
 const predefinedHubs=["BLR_Kamakya","BLR_Uttarahalli","BLR_Whitefield","BLR_Kadugodi","JAI_VaishaliNagar","CHN_Guindy","CHN_Nanganallur","CHN_PallikaranaiRD","MAS_Bethelnagar","AAM_Valanchery","AMD_Navrangpura","AMD_Chandkheda","AMD_CTM","AMD_Vasna","AMD_Makarba","AMD_Sindhubhavan","AMD_Chandlodia","AMD_Memco","AMD_Narol_TH"];
 const predefinedVendors=[{name:"3Eco Systems",email:"suman.g@3eco.in"},{name:"BABA MOHANRAM ENTERPRISES",email:"pooransharma8@gmail.com"},{name:"Digi Transport",email:"accounts@dtlog.in"},{name:"Hani Transport",email:"hanitransport007@gmail.com"},{name:"Nileema",email:"nilimaa.enterprises@gmail.com"},{name:"KDM Enterprises",email:"kdmenterprises2204@gmail.com"},{name:"Kiran Enterprises",email:"kiranenterprises800@gmail.com"},{name:"Krushiv enterprises",email:"krushiventerprise88@gmail.com"},{name:"Let's Transport",email:"thimmaiah.v@letstransport.team"},{name:"Magenta Mobility",email:"rakesh.singh@magentamobility.com"},{name:"Sai Transport",email:"saitransport275@gmail.com"},{name:"Sharif Transport",email:"sharifshaha2015@gmail.com"},{name:"Sri Lakshmi Enterprises",email:"srilakshmi.enterprises127@gmail.com"},{name:"Sakir Abdul",email:""},{name:"MANNA DAS",email:""},{name:"Yogasai",email:""},{name:"Gaibudin shaikh",email:""},{name:"Vaishnavi Transport",email:""},{name:"Santkrupa Transport",email:""}];
 let globalDatabase=[],deploymentDatabase=[{vendorId:"3ECO SYSTEMS",hubName:"CHN_Egmore",email:"suman.g@3eco.in"}],lockedMonths=[],finalAttDb={},requestsDatabase=[],currentVendor=null,currentHubName="Hub Manager",hubRC=1,venRC=1;
@@ -500,11 +493,8 @@ let globalDatabase=[],deploymentDatabase=[{vendorId:"3ECO SYSTEMS",hubName:"CHN_
 /* ══════════════════════════
    CLOUD DATABASE (SUPABASE)
 ══════════════════════════ */
-// ⚠️ KEEP YOUR ACTUAL SUPABASE URL AND ANON KEY HERE!
 const supabaseUrl = 'https://ayrzdqglxviopsckxisy.supabase.co';
 const supabaseKey = 'sb_publishable_ChFrylE-nUb4MqNDArbu9A_ug5J3Ohl';
-
-// FIXED: Changed variable name to supabaseClient to prevent crashing
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 async function save(){
@@ -516,15 +506,11 @@ async function save(){
             { id: 'finalAtt', data: finalAttDb },
             { id: 'requests', data: requestsDatabase }
         ]);
-        
-        // 🚨 NEW: If Supabase blocks the save, show a RED error!
         if (error) {
             console.error("Supabase Save Error:", error);
             toast("Database Error: " + error.message, "err");
             return;
         }
-        
-        console.log("Cloud sync successful");
     } catch (error) {
         console.error("Network Error:", error);
         toast("Network error. Data not saved.", "err");
@@ -534,14 +520,11 @@ async function save(){
 async function load(){
     try {
         const { data, error } = await supabaseClient.from('sf_data').select('*');
-        
-        // 🚨 NEW: If Supabase blocks the load, show a RED error!
         if (error) {
             console.error("Supabase Load Error:", error);
             toast("Failed to load data: " + error.message, "err");
             return;
         }
-        
         if (data) {
             data.forEach(row => {
                 if (row.id === 'global') globalDatabase = row.data || [];
@@ -560,56 +543,38 @@ function toast(msg,type="ok"){const t=document.getElementById("toast");t.textCon
 const today=()=>new Date().toISOString().split("T")[0];
 function nextDay(s){if(!s)return"";const d=new Date(s);d.setDate(d.getDate()+1);const n=d.toISOString().split("T")[0];return n>today()?today():n;}
 function limitDates(r){r.querySelectorAll("input[type=date]").forEach(d=>d.max=today());}
+
 function populateLists() {
     const vl = document.getElementById("vendor-datalist");
     if(vl) { vl.innerHTML = ""; predefinedVendors.forEach(v => vl.appendChild(new Option(v.name, v.name.toUpperCase()))); }
-    
     const hl = document.getElementById("hub-datalist");
     if(hl) { hl.innerHTML = ""; predefinedHubs.forEach(h => hl.appendChild(new Option(h, h))); }
 
-    document.querySelectorAll(".dynamic-hub-list").forEach(sel=>{
-        sel.innerHTML="<option value=''>— Select —</option>";
-        predefinedHubs.forEach(h=>sel.appendChild(new Option(h,h)));
-    });
-
-    const vs = document.getElementById("deploy-vendor-id");
+    document.querySelectorAll(".dynamic-hub-list").forEach(sel=>{sel.innerHTML="<option value=''>— Select —</option>";predefinedHubs.forEach(h=>sel.appendChild(new Option(h,h)));});
+    
+    const vs=document.getElementById("deploy-vendor-id");
     if(vs){
         vs.innerHTML="<option value=''>— Select Vendor —</option>";
         predefinedVendors.forEach(v=>{
-            const o = new Option(v.name, v.name.toUpperCase());
-            o.dataset.email = v.email;
+            const o=new Option(v.name,v.name.toUpperCase());
+            o.dataset.email=v.email;
             vs.appendChild(o);
         });
-        vs.addEventListener("change",function(){
-            const emailInput = document.getElementById("deploy-email");
-            if(emailInput) emailInput.value = this.options[this.selectedIndex]?.dataset?.email || "";
-        });
+        vs.addEventListener("change",function(){document.getElementById("deploy-email").value=this.options[this.selectedIndex]?.dataset?.email||"";});
         
-        // Auto-calculate Month Rate based on Day Rate and Plan
-        const dri = document.getElementById("deploy-day-rate"), mri = document.getElementById("deploy-month-rate"), ws = document.getElementById("deploy-plan");
-        function calcRate(){
-            const dr = parseFloat(dri.value) || 0;
-            const w = ws ? ws.value : "";
-            const days = w.includes("31") ? 31 : w.includes("26") ? 26 : 0;
-            if(dr > 0 && days > 0 && mri) mri.value = dr * days;
-        }
-        if(dri) dri.addEventListener("input", calcRate);
-        if(ws) ws.addEventListener("change", calcRate);
-        
-        const dd = document.getElementById("deploy-date");
-        if(dd && !dd.value) dd.value = today();
+        const dri=document.getElementById("deploy-day-rate"),mri=document.getElementById("deploy-month-rate"),ws=document.getElementById("deploy-plan");
+        function calcRate(){const dr=parseFloat(dri.value)||0,w=ws?ws.value:"",days=w.includes("31")?31:w.includes("26")?26:0;if(dr>0&&days>0&&mri)mri.value=dr*days;}
+        if(dri) dri.addEventListener("input",calcRate);
+        if(ws) ws.addEventListener("change",calcRate);
+        const dd=document.getElementById("deploy-date");if(dd&&!dd.value)dd.value=today();
     }
-
-    const ahs = document.getElementById("admin-hub-filter");
-    if(ahs){ahs.innerHTML="<option value=''>All Hubs</option>";predefinedHubs.forEach(h=>ahs.appendChild(new Option(h,h)));}
-    
-    const rhs = document.getElementById("req-hub-filter");
-    if(rhs){rhs.innerHTML="<option value=''>All Hubs</option>";predefinedHubs.forEach(h=>rhs.appendChild(new Option(h,h)));}
-    
-    const avs = document.getElementById("admin-vendor-filter");
-    if(avs){avs.innerHTML="<option value=''>All Vendors</option>";predefinedVendors.forEach(v=>avs.appendChild(new Option(v.name,v.name.toUpperCase())));}
+    const ahs=document.getElementById("admin-hub-filter");if(ahs){ahs.innerHTML="<option value=''>All Hubs</option>";predefinedHubs.forEach(h=>ahs.appendChild(new Option(h,h)));}
+    const rhs=document.getElementById("req-hub-filter");if(rhs){rhs.innerHTML="<option value=''>All Hubs</option>";predefinedHubs.forEach(h=>rhs.appendChild(new Option(h,h)));}
+    const avs=document.getElementById("admin-vendor-filter");if(avs){avs.innerHTML="<option value=''>All Vendors</option>";predefinedVendors.forEach(v=>avs.appendChild(new Option(v.name,v.name.toUpperCase())));}
 }
+
 function setMonth(){const m=new Date().toLocaleString("default",{month:"long"});["hub-month-filter","vendor-month-filter","admin-month-filter"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=m;});}
+
 window.onload=async()=>{
     populateLists();
     await load();
@@ -619,6 +584,7 @@ window.onload=async()=>{
     setMonth();
     document.getElementById("req-date").value=today();
 };
+
 function switchGenericTab(id,btn,vc,tc){document.querySelectorAll("."+vc).forEach(v=>v.classList.remove("active"));document.querySelectorAll("."+tc).forEach(b=>b.classList.remove("active"));document.getElementById(id).classList.add("active");btn.classList.add("active");}
 function autoFill(el,src){const no=el.value.trim();if(!no)return;const row=el.closest("tr");const past=[...globalDatabase].filter(e=>e.driverNumber===no).sort((a,b)=>new Date(b.date)-new Date(a.date));if(!past.length)return;const lat=past[0];if(src==="Hub"){const n=row.querySelector(".hub-driver-name-input"),r=row.querySelector(".hub-rider-input"),rs=row.querySelector(".hub-runsheet-input");if(!n.value)n.value=lat.driverName||"";if(!r.value)r.value=lat.riderId||"";if(!rs.value)rs.value=lat.rawRunsheet||"";if(lat.driverName)toast("Auto-filled: "+lat.driverName);}else{const n=row.querySelector(".ven-driver-name-input");if(!n.value)n.value=lat.driverName||"";if(lat.driverName)toast("Auto-filled: "+lat.driverName);}}
 function toggleMonthLock(){const m=document.getElementById("admin-month-filter").value;if(!m){toast("Select a month to lock/unlock.","err");return;}if(lockedMonths.includes(m)){lockedMonths=lockedMonths.filter(x=>x!==m);toast(m+" unlocked.");}else{lockedMonths.push(m);toast(m+" locked — partners cannot edit.");}save();updateLockBtn();}
@@ -637,7 +603,7 @@ function submitBulkHubData(e){e.preventDefault();const month=document.getElement
 function submitBulkVendorData(e){e.preventDefault();const month=document.getElementById("vendor-month-filter").value;if(lockedMonths.includes(month)){toast("This month is locked.","err");return;}globalDatabase=globalDatabase.filter(e=>!(e.submittedBy===currentVendor&&e.month===month));let count=0;document.querySelectorAll("#vendor-grid-body tr").forEach(row=>{const date=row.querySelector(".ven-date-input").value,hub=row.querySelector(".ven-hub-input").value,dno=row.querySelector(".ven-driver-no-input").value;const radio=row.querySelector("input[type=radio]:checked");let att=radio?radio.value:"";if(!att){const b=row.querySelector(".locked-att");const t=b?b.textContent:"";att=t.includes("Present")?"Present":(t.includes("Absent")?"Absent":"");}if(date&&hub&&att&&dno){const mn=new Date(date).toLocaleString("default",{month:"long"});const sk=row.querySelector(".ven-start-km").value,ek=row.querySelector(".ven-end-km").value,rca=row.querySelector(".ven-rca").value;globalDatabase.push({submittedBy:currentVendor,source:"Vendor",date,month:mn,hubName:hub,driverNumber:dno,driverName:row.querySelector(".ven-driver-name-input").value,attendance:att,notes:att==="Absent"?"RCA: "+rca:"KM: "+sk+" to "+ek});count++;}});if(count>0){save();toast(count+" Vendor log(s) saved.");renderVendorGrid();}else toast("Fill required fields: Date, Status, Driver No.","err");}
 function submitVehicleRequest(e){e.preventDefault();const req={id:Date.now(),date:document.getElementById("req-date").value,hubName:document.getElementById("req-hub").value,riderId:document.getElementById("req-rider").value.trim(),runsheet:document.getElementById("req-runsheet").value.trim(),type:document.getElementById("req-type").value,reason:document.getElementById("req-reason").value.trim(),cost:parseFloat(document.getElementById("req-cost").value)||0,status:"Pending",submittedBy:currentHubName,createdAt:new Date().toISOString()};requestsDatabase.push(req);save();toast("Vehicle request submitted!");document.getElementById("hub-req-form").reset();document.getElementById("req-date").value=today();renderHubRequests();}
 function renderHubRequests(){const tbody=document.getElementById("hub-req-body");if(!tbody)return;const reqs=[...requestsDatabase].filter(r=>r.submittedBy===currentHubName).sort((a,b)=>new Date(b.date)-new Date(a.date));if(!reqs.length){tbody.innerHTML="<tr><td colspan=8 class=empty-c>No requests submitted yet.</td></tr>";return;}tbody.innerHTML="";reqs.forEach(r=>{const sc=r.status==="Approved"?"badge-p":r.status==="Rejected"?"badge-a":"badge-pen";const costFmt=r.cost?"₹"+Number(r.cost).toLocaleString("en-IN"):"—";const row=document.createElement("tr");row.innerHTML="<td>"+r.date+"</td><td><strong>"+r.hubName+"</strong></td><td>"+r.riderId+"</td><td>"+r.runsheet+"</td>"+"<td><span class='vtag'>"+r.type+"</span></td>"+"<td style='font-size:12px;color:var(--sf-gray-500)'>"+(r.reason||"—")+"</td>"+"<td style='text-align:right;font-family:DM Mono,monospace;font-weight:600;color:var(--sf-black)'>"+costFmt+"</td>"+"<td style='text-align:center'><span class='badge "+sc+"'>"+r.status+"</span></td>";tbody.appendChild(row);});}
-// New function to quickly clear all filters
+
 function clearReqFilters() {
     document.getElementById("req-month-filter").value = "";
     document.getElementById("req-hub-filter").value = "";
@@ -650,31 +616,24 @@ function clearReqFilters() {
 function renderAdminRequests(){
     const tbody=document.getElementById("admin-req-body");
     if(!tbody)return;
-    
-    // Grab all filter values
     const monthF = document.getElementById("req-month-filter").value;
     const hubF = document.getElementById("req-hub-filter").value;
     const dateF = document.getElementById("req-date-filter").value;
     const statusF = document.getElementById("req-status-filter").value;
     const typeF = document.getElementById("req-type-filter").value;
-    
     let reqs=[...requestsDatabase].sort((a,b)=>new Date(b.date)-new Date(a.date));
-    
-    // Apply Filters
     if(monthF) reqs = reqs.filter(r => new Date(r.date).toLocaleString('default', { month: 'long' }) === monthF);
     if(hubF) reqs = reqs.filter(r => r.hubName === hubF);
     if(dateF) reqs = reqs.filter(r => r.date === dateF);
     if(statusF) reqs = reqs.filter(r => r.status === statusF);
     if(typeF) reqs = reqs.filter(r => r.type === typeF);
     
-    // 🧮 NEW: CALCULATE SUMMARY METRICS BASED ON FILTERS 🧮
     const uniqueHubs = new Set(reqs.map(r => r.hubName)).size;
     const totalReqs = reqs.length;
     const approvedCost = reqs.filter(r => r.status === 'Approved').reduce((sum, r) => sum + (Number(r.cost) || 0), 0);
     const rejectedCost = reqs.filter(r => r.status === 'Rejected').reduce((sum, r) => sum + (Number(r.cost) || 0), 0);
     const pendingReqs = reqs.filter(r => r.status === 'Pending').length;
 
-    // Inject the math into the new HTML cards
     const hubEl = document.getElementById("req-stat-hubs");
     if(hubEl) {
         hubEl.innerText = uniqueHubs;
@@ -683,14 +642,10 @@ function renderAdminRequests(){
         document.getElementById("req-stat-rej-cost").innerText = "₹" + rejectedCost.toLocaleString("en-IN");
         document.getElementById("req-stat-pending").innerText = pendingReqs;
     }
-
-    // Keep the red notification badge updated
     const globalPending = requestsDatabase.filter(r=>r.status==="Pending").length;
     const badge = document.getElementById("req-badge");
     if(badge){badge.textContent=globalPending; badge.style.display=globalPending>0?"inline":"none";}
-    
     if(!reqs.length){tbody.innerHTML="<tr><td colspan=10 class=empty-c>No LCV requests found for these filters.</td></tr>";return;}
-    
     tbody.previousElementSibling.innerHTML = "<tr><th>Date</th><th>Hub Name</th><th>Rider ID</th><th>Runsheet ID</th><th>Type</th><th>Notes</th><th style='text-align:center'>Image</th><th style='text-align:right'>Cost (₹)</th><th style='text-align:center'>Status</th><th style='text-align:center;min-width:130px'>Action</th></tr>";
 
     tbody.innerHTML="";
@@ -700,17 +655,16 @@ function renderAdminRequests(){
         const costFmt=r.cost?"₹"+Number(r.cost).toLocaleString("en-IN"):"—";
         const imgLink=r.imageUrl?`<a href="${r.imageUrl}" target="_blank" style="color:var(--sf-green);font-weight:700;text-decoration:none;">🖼️ View</a>`:"—";
         const row=document.createElement("tr");
-        
         const actionDropdown = `<select class="f-sel" style="padding:4px 8px; font-size:12px; font-weight:600; background:white; cursor:pointer;" onchange="updateReqStatus(${rid}, this.value)">
             <option value="Pending" ${r.status==='Pending'?'selected':''}>⏳ Pending</option>
             <option value="Approved" ${r.status==='Approved'?'selected':''}>✅ Approved</option>
             <option value="Rejected" ${r.status==='Rejected'?'selected':''}>❌ Rejected</option>
         </select>`;
-
         row.innerHTML="<td>"+r.date+"</td><td><strong>"+r.hubName+"</strong></td><td>"+r.riderId+"</td><td>"+r.runsheet+"</td>"+"<td><span class='vtag'>"+r.type+"</span></td>"+"<td style='font-size:12px;color:var(--sf-gray-500);max-width:160px'>"+(r.reason||"—")+"</td>"+"<td style='text-align:center'>"+imgLink+"</td>"+"<td style='text-align:right;font-family:DM Mono,monospace;font-weight:600;color:var(--sf-black)'>"+costFmt+"</td>"+"<td style='text-align:center'><span class='badge "+sc+"'>"+r.status+"</span></td>"+"<td style='text-align:center'>"+actionDropdown+"</td>";
         tbody.appendChild(row);
     });
 }
+
 function updateReqStatus(id,status){const req=requestsDatabase.find(r=>r.id===id);if(!req)return;req.status=status;save();renderAdminRequests();toast("Request "+status.toLowerCase()+".",status==="Approved"?"ok":"err");}
 function updateAdminDashboard(){updateLockBtn();const tbody=document.getElementById("admin-table-body");tbody.innerHTML="";if(!globalDatabase.length){tbody.innerHTML="<tr><td colspan=14 class=empty-c>No data submitted yet.</td></tr>";["stat-total-hubs","stat-hub-present","stat-ven-present","stat-pending"].forEach(id=>document.getElementById(id).textContent="0");document.getElementById("stat-payout").textContent="₹0";return;}const hubGroups={},dateGroups={};let hTotal=0,vTotal=0,pending=0;const uniqHubs=new Set();globalDatabase.forEach(entry=>{const hKey=entry.hubName,dKey=entry.hubName+"__"+entry.date;if(!hubGroups[hKey])hubGroups[hKey]={hubName:entry.hubName,month:entry.month,hubPresent:0,vendorPresent:0,hubStatus:"Pending",vendorStatus:"Pending",vendors:new Set(),totalDriverDays:0};if(!dateGroups[dKey])dateGroups[dKey]={date:entry.date,hubName:entry.hubName,month:entry.month,hubPresent:0,vendorPresent:0,vendors:new Set(),drivers:[]};uniqHubs.add(entry.hubName);let dSlot=dateGroups[dKey].drivers.find(d=>d.driverNumber===entry.driverNumber);if(!dSlot){dSlot={driverNumber:entry.driverNumber,driverName:entry.driverName||"",hubAtt:"",hubNotes:"",venAtt:"",venNotes:"",vendor:""};dateGroups[dKey].drivers.push(dSlot);hubGroups[hKey].totalDriverDays++;}if(entry.source==="Hub"){hubGroups[hKey].hubStatus=entry.attendance;dateGroups[dKey].hubPresent+=(entry.attendance==="Present"?1:0);if(entry.attendance==="Present"){hubGroups[hKey].hubPresent++;hTotal++;}dSlot.hubAtt=entry.attendance;dSlot.hubNotes=entry.notes||"";}else{hubGroups[hKey].vendors.add(entry.submittedBy.toUpperCase());dateGroups[dKey].vendors.add(entry.submittedBy.toUpperCase());hubGroups[hKey].vendorStatus=entry.attendance;dateGroups[dKey].vendorPresent+=(entry.attendance==="Present"?1:0);if(entry.attendance==="Present"){hubGroups[hKey].vendorPresent++;vTotal++;}dSlot.venAtt=entry.attendance;dSlot.venNotes=entry.notes||"";dSlot.vendor=entry.submittedBy||"";}});Object.values(hubGroups).forEach(g=>{if(g.hubStatus==="Pending"||g.vendorStatus==="Pending")pending++;});let totalPayout=0,detailIdCounter=0;Object.values(hubGroups).sort((a,b)=>a.hubName.localeCompare(b.hubName)).forEach(grp=>{const depRule=deploymentDatabase.find(r=>r.hubName===grp.hubName)||{};const rowKey=grp.hubName;const saved=finalAttDb[rowKey]||{};const faVal=saved.finalAtt!==undefined?saved.finalAtt:"";const finalAttVal=(faVal!=="")?parseFloat(faVal)||0:"";if(finalAttVal!==""&&depRule.dayRate)totalPayout+=finalAttVal*(depRule.dayRate||0);const fhVal=saved.finalHI!==undefined?saved.finalHI:"";const fvVal=saved.finalVendor!==undefined?saved.finalVendor:"";const drFmt=depRule.dayRate?"₹"+Number(depRule.dayRate).toLocaleString("en-IN"):"—";const mrFmt=depRule.monthRate?"₹"+Number(depRule.monthRate).toLocaleString("en-IN"):"—";const detailId="detail-"+detailIdCounter++;const hubDateEntries=Object.values(dateGroups).filter(d=>d.hubName===grp.hubName).sort((a,b)=>new Date(b.date)-new Date(a.date));let detailHtml="";hubDateEntries.forEach(dg=>{const totalD=dg.drivers.length;detailHtml+="<div class=detail-date-block><div class=detail-date-header><span class=detail-date-pill>"+dg.date+"</span><span style='font-size:12px;color:var(--sf-gray-500);margin-left:10px'><strong style='color:var(--sf-green)'>Hub: "+dg.hubPresent+"</strong> &nbsp;|&nbsp; <strong style='color:var(--sf-green)'>Vendor: "+dg.vendorPresent+"</strong> &nbsp;|&nbsp; "+totalD+" driver"+(totalD!==1?"s":"")+"</span></div><div class=detail-grid>";dg.drivers.forEach(d=>{const hCls=d.hubAtt==="Present"?"detail-att-present":(d.hubAtt==="Absent"?"detail-att-absent":"");const vCls=d.venAtt==="Present"?"detail-att-present":(d.venAtt==="Absent"?"detail-att-absent":"");const rsM=d.hubNotes.match(/Runsheet:([^|]*)/),riM=d.hubNotes.match(/RiderID:([^|]*)/),rkM=d.hubNotes.match(/Remark:([^|]*)/);const rs=(rsM?rsM[1].trim():"")||"—",ri=(riM?riM[1].trim():"")||"—",rk=(rkM?rkM[1].trim():"")||"—";const kmM=d.venNotes.match(/KM:\s*(.+)/),rcaM=d.venNotes.match(/RCA:\s*(.+)/);const km=kmM?kmM[1].trim():"",rca=rcaM?rcaM[1].trim():"";detailHtml+="<div class=detail-driver-card><div class=detail-driver-header><div><div class=detail-driver-id>👤 "+d.driverNumber+"</div>"+(d.driverName?"<div class=detail-driver-name>"+d.driverName+"</div>":"")+"</div><span style='font-size:11px;color:var(--sf-gray-400)'>"+(d.vendor||"")+"</span></div><div class=detail-section-label>Hub Record</div><div class=detail-row-item><span class=detail-row-label>Status</span><span class='detail-row-val "+hCls+"'>"+(d.hubAtt||"—")+"</span></div><div class=detail-row-item><span class=detail-row-label>Runsheet</span><span class=detail-row-val>"+rs+"</span></div><div class=detail-row-item><span class=detail-row-label>Rider ID</span><span class=detail-row-val>"+ri+"</span></div><div class=detail-row-item><span class=detail-row-label>Remark</span><span class=detail-row-val>"+rk+"</span></div><div class=detail-section-label>Vendor Record</div><div class=detail-row-item><span class=detail-row-label>Status</span><span class='detail-row-val "+vCls+"'>"+(d.venAtt||"—")+"</span></div>"+(km?"<div class=detail-row-item><span class=detail-row-label>KM</span><span class=detail-row-val>"+km+"</span></div>":"")+(rca?"<div class=detail-row-item><span class=detail-row-label>RCA</span><span class='detail-row-val' style='color:var(--sf-red)'>"+rca+"</span></div>":"")+"</div>";});detailHtml+="</div></div>";});const row=document.createElement("tr");row.className="data-row";row.dataset.month=grp.month;row.dataset.hub=grp.hubName;row.dataset.vendors=[...grp.vendors].join(",");const inS="width:68px;text-align:center;border-radius:5px;padding:5px 4px;font-family:DM Mono,monospace;outline:none;";row.innerHTML="<td><strong>"+grp.hubName+"</strong></td>"+"<td style='font-size:12px;color:var(--sf-gray-500)'>"+(([...grp.vendors].join(", "))||"—")+"</td>"+"<td><span class=vtag>"+(depRule.vehicleType||"—")+"</span></td>"+"<td><span class='vtag "+(depRule.model==="DCD"?"vtag-blue":"")+"'>"+(depRule.model||"—")+"</span></td>"+"<td style='font-size:12px;color:var(--sf-gray-500)'>"+(depRule.working||"—")+"</td>"+"<td style='text-align:right;font-family:DM Mono,monospace;font-size:13px'>"+drFmt+"</td>"+"<td style='text-align:right;font-family:DM Mono,monospace;font-size:13px'>"+mrFmt+"</td>"+"<td style='font-size:12px'>"+(depRule.deployDate||"—")+"</td>"+"<td style='text-align:center'><strong style='font-family:DM Mono,monospace;color:var(--sf-green);font-size:16px'>"+grp.hubPresent+"</strong></td>"+"<td style='text-align:center'><strong style='font-family:DM Mono,monospace;color:var(--sf-green);font-size:16px'>"+grp.vendorPresent+"</strong></td>"+"<td style='text-align:center;background:#f0fdf4;padding:4px 6px'><input type=number min=0 value='"+fhVal+"' placeholder='—' data-key='"+rowKey+"' data-field=finalHI onchange='saveFinalAtt(this)' style='"+inS+"border:1.5px solid #86efac;font-size:13px;font-weight:600;color:#166534;background:#f0fdf4;'></td>"+"<td style='text-align:center;background:#f0fdf4;padding:4px 6px'><input type=number min=0 value='"+fvVal+"' placeholder='—' data-key='"+rowKey+"' data-field=finalVendor onchange='saveFinalAtt(this)' style='"+inS+"border:1.5px solid #86efac;font-size:13px;font-weight:600;color:#166534;background:#f0fdf4;'></td>"+"<td style='text-align:center;background:#eff6ff;padding:4px 6px'><input type=number min=0 value='"+faVal+"' placeholder='—' data-key='"+rowKey+"' data-field=finalAtt onchange='saveFinalAtt(this)' style='"+inS+"border:1.5px solid #93c5fd;font-size:14px;font-weight:700;color:#1e40af;background:#eff6ff;'></td>"+"<td style='text-align:center'><button class=btn-expand data-detail-id='"+detailId+"' onclick='toggleDetail(this,\""+detailId+"\")'>Show <span style='background:var(--sf-green);color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:3px'>"+hubDateEntries.length+"d / "+grp.totalDriverDays+"dr</span> <span class=arrow>▼</span></button></td>";tbody.appendChild(row);const detailRow=document.createElement("tr");detailRow.className="detail-row";detailRow.id=detailId;const dtd=document.createElement("td");dtd.colSpan=14;dtd.className="detail-panel";dtd.innerHTML="<div class=detail-inner><div class=detail-title>"+grp.hubName+" — All Dates</div>"+detailHtml+"</div>";detailRow.appendChild(dtd);tbody.appendChild(detailRow);});document.getElementById("stat-total-hubs").textContent=uniqHubs.size;document.getElementById("stat-hub-present").textContent=hTotal;document.getElementById("stat-ven-present").textContent=vTotal;document.getElementById("stat-pending").textContent=pending;document.getElementById("stat-payout").textContent="₹"+totalPayout.toLocaleString("en-IN");}
 function toggleDetail(btn,detailId){const dr=document.getElementById(detailId);if(!dr)return;const open=dr.classList.contains("open");dr.classList.toggle("open",!open);btn.classList.toggle("open",!open);btn.querySelector("span:first-of-type").textContent=open?"Show":"Hide";}
@@ -721,6 +675,7 @@ function entryMatchesFilters(entry,f){if(f.m&&entry.month!==f.m)return false;if(
 function recomputeStats(f){const filtered=globalDatabase.filter(e=>entryMatchesFilters(e,f));const txt=f.s.trim();let hTotal=0,vTotal=0,pending=0,payout=0;const uniqHubs=new Set();const dhAgg={};filtered.forEach(e=>{if(txt&&!(e.driverNumber||"").toUpperCase().includes(txt)&&!(e.driverName||"").toUpperCase().includes(txt)&&!(e.hubName||"").toUpperCase().includes(txt)&&!(e.notes||"").toUpperCase().includes(txt)&&!(e.date||"").includes(txt))return;uniqHubs.add(e.hubName);const key=e.hubName+"__"+e.date;if(!dhAgg[key])dhAgg[key]={hasHub:false,hasVendor:false};if(e.source==="Hub"){dhAgg[key].hasHub=true;if(e.attendance==="Present")hTotal++;}else{dhAgg[key].hasVendor=true;if(e.attendance==="Present")vTotal++;}});Object.values(dhAgg).forEach(g=>{if(!g.hasHub||!g.hasVendor)pending++;});uniqHubs.forEach(hub=>{const saved=finalAttDb[hub]||{};const fa=saved.finalAtt;if(fa!==undefined&&fa!==""){const dep=deploymentDatabase.find(r=>r.hubName===hub)||{};if(dep.dayRate)payout+=(parseFloat(fa)||0)*dep.dayRate;}});document.getElementById("stat-total-hubs").textContent=uniqHubs.size;document.getElementById("stat-hub-present").textContent=hTotal;document.getElementById("stat-ven-present").textContent=vTotal;document.getElementById("stat-pending").textContent=pending;document.getElementById("stat-payout").textContent="₹"+payout.toLocaleString("en-IN");}
 function filterAdmin(){updateLockBtn();const f=getActiveFilters();const ah=f.v?deploymentDatabase.filter(r=>r.vendorId===f.v).map(r=>r.hubName):null;const hubsOnDate=f.d?new Set(globalDatabase.filter(e=>e.date===f.d).map(e=>e.hubName)):null;document.querySelectorAll("#admin-table-body .data-row").forEach(row=>{const hub=row.dataset.hub||"",vendors=row.dataset.vendors||"",month=row.dataset.month||"",txt=(row.textContent||"").toUpperCase();const ok=(!f.m||month===f.m)&&(!f.h||hub===f.h)&&(!f.v||vendors.includes(f.v)||(ah&&ah.includes(hub)))&&(!f.s||txt.includes(f.s))&&(!f.d||(hubsOnDate&&hubsOnDate.has(hub)));row.style.display=ok?"":"none";const btn=row.querySelector(".btn-expand");if(btn){const did=btn.getAttribute("onclick").match(/"(detail-\d+)"/);if(did){const dr=document.getElementById(did[1]);if(dr&&!ok)dr.classList.remove("open");}}});recomputeStats(f);}
 function clearAdminFilters(){["admin-search","admin-hub-filter","admin-vendor-filter","admin-month-filter","admin-date-filter"].forEach(id=>document.getElementById(id).value="");filterAdmin();}
+
 function addDeployment(e) {
     e.preventDefault();
     const vendorId = document.getElementById("deploy-vendor-id").value.trim().toUpperCase();
@@ -736,16 +691,13 @@ function addDeployment(e) {
     const plan = document.getElementById("deploy-plan").value;
     const deployDate = document.getElementById("deploy-date").value;
     
-    // Prevent duplicates
     if(deploymentDatabase.find(r => r.vendorId === vendorId && r.hubName === hubName)){
         toast("This deployment rule already exists.", "err");
         return;
     }
-
     deploymentDatabase.push({
         id: Date.now(), vendorId, hubName, email, vendorPass, hubEmail, hubPass, model, vehicleType: type, dayRate, monthRate, working: plan, deployDate
     });
-    
     save();
     renderDeployTable();
     populateLists();
@@ -759,15 +711,12 @@ function renderDeployTable() {
     if (!tbody) return;
     if (!deploymentDatabase.length) { tbody.innerHTML = "<tr><td colspan=10 class=empty-c>No deployments found.</td></tr>"; return; }
     
-    // Updated Headers to show Logins
     tbody.previousElementSibling.innerHTML = "<tr><th>VENDOR</th><th>HUB</th><th>VEHICLE</th><th>PLAN</th><th>DAY RATE</th><th>MONTH RATE</th><th>DATE</th><th>VENDOR LOGIN</th><th>HUB LOGIN</th><th>REMOVE</th></tr>";
     
     tbody.innerHTML = "";
     deploymentDatabase.forEach(r => {
-        // Format Logins nicely
         const vLog = r.email ? `<strong>${r.email}</strong><br><span style="color:var(--sf-gray-500);font-size:11px">Pass: ${r.vendorPass}</span>` : '—';
         const hLog = r.hubEmail ? `<strong>${r.hubEmail}</strong><br><span style="color:var(--sf-gray-500);font-size:11px">Pass: ${r.hubPass}</span>` : '—';
-        
         const row = document.createElement("tr");
         row.innerHTML = `<td><strong>${r.vendorId}</strong></td><td>${r.hubName}</td><td><span class='vtag'>${r.vehicleType||r.type||"—"}</span></td><td style='font-size:12px;color:var(--sf-gray-500)'>${r.working||r.plan||"—"}</td><td><strong>₹${(r.dayRate||0).toLocaleString('en-IN')}</strong></td><td>₹${(r.monthRate||0).toLocaleString('en-IN')}</td><td>${r.deployDate||r.date||"—"}</td><td>${vLog}</td><td>${hLog}</td><td style='text-align:center'><button class='btn btn-sm' style='background:#fef2f2;color:#ef4444;border:1px solid #fca5a5;padding:4px 10px' onclick='removeDeployment(${r.id || '"'+r.vendorId+'__'+r.hubName+'"'})'>✕</button></td>`;
         tbody.appendChild(row);
@@ -785,7 +734,9 @@ function removeDeployment(id) {
         }
     }
 }
- function importHubsCSV(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{const hubs=ev.target.result.split("\n").map(h=>h.trim().replace(/,/g,"")).filter(h=>h);if(!hubs.length){toast("No valid hubs found.","err");return;}document.querySelectorAll(".dynamic-hub-list").forEach(sel=>{sel.innerHTML="<option value=''>— Select —</option>";hubs.forEach(h=>sel.appendChild(new Option(h,h)));});const tpl=window._hubTpl.querySelector(".dynamic-hub-list");if(tpl){tpl.innerHTML="<option value=''>— Select —</option>";hubs.forEach(h=>tpl.appendChild(new Option(h,h)));}const ahs=document.getElementById("admin-hub-filter");if(ahs){ahs.innerHTML="<option value=''>All Hubs</option>";hubs.forEach(h=>ahs.appendChild(new Option(h,h)));}toast("Loaded "+hubs.length+" hubs from CSV.");e.target.value="";};reader.readAsText(file);}
+
+function importHubsCSV(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{const hubs=ev.target.result.split("\n").map(h=>h.trim().replace(/,/g,"")).filter(h=>h);if(!hubs.length){toast("No valid hubs found.","err");return;}document.querySelectorAll(".dynamic-hub-list").forEach(sel=>{sel.innerHTML="<option value=''>— Select —</option>";hubs.forEach(h=>sel.appendChild(new Option(h,h)));});const tpl=window._hubTpl.querySelector(".dynamic-hub-list");if(tpl){tpl.innerHTML="<option value=''>— Select —</option>";hubs.forEach(h=>tpl.appendChild(new Option(h,h)));}const ahs=document.getElementById("admin-hub-filter");if(ahs){ahs.innerHTML="<option value=''>All Hubs</option>";hubs.forEach(h=>ahs.appendChild(new Option(h,h)));}toast("Loaded "+hubs.length+" hubs from CSV.");e.target.value="";};reader.readAsText(file);}
+
 function downloadCSV(tblId,fname){
   var rows=document.querySelectorAll("#"+tblId+" tr"),csv=[];
   rows.forEach(function(row){
@@ -799,6 +750,7 @@ function downloadCSV(tblId,fname){
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   toast("CSV exported successfully.");
 }
+
 async function handleLogin(e) {
     e.preventDefault();
     const user = document.getElementById("username").value.trim().toLowerCase();
@@ -833,7 +785,7 @@ async function handleLogin(e) {
     loginBtn.innerHTML = originalText;
     loginBtn.disabled = false;
 
-    // 3. Check Hub Login (Custom or Default)
+    // 3. Check Hub Login
     const hubMatch = deploymentDatabase.find(r => r.hubEmail && r.hubEmail.toLowerCase() === user && r.hubPass === pass);
     if (hubMatch || (user === "hub@shadowfax.in" && pass === "123")) {
         currentHubName = hubMatch ? hubMatch.hubName : "Hub Manager";
@@ -844,7 +796,7 @@ async function handleLogin(e) {
         return;
     }
 
-    // 4. Check Vendor Login (Custom or Default)
+    // 4. Check Vendor Login
     const vendorMatch = deploymentDatabase.find(r => 
         (r.email && r.email.toLowerCase() === user && r.vendorPass === pass) || 
         (r.vendorId.toLowerCase() === user && (r.vendorPass === pass || (!r.vendorPass && pass === "123")))
@@ -869,7 +821,7 @@ async function handleLogin(e) {
     // 5. If no match is found, show error
     err.style.display = "block";
 }
-} 
+
 function showPortal(id,title,user){document.getElementById("login-container").style.display="none";document.getElementById("app-container").classList.add("show");document.getElementById("tb-title").textContent=title;document.getElementById("tb-user").textContent=user;document.querySelectorAll(".portal").forEach(p=>p.classList.remove("show"));document.getElementById(id).classList.add("show");}
 function logout(){document.getElementById("app-container").classList.remove("show");document.getElementById("login-container").style.display="flex";document.getElementById("username").value="";document.getElementById("password").value="";document.getElementById("login-error").style.display="none";currentVendor=null;currentHubName="Hub Manager";}
 </script>
