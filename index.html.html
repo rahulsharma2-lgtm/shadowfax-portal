@@ -488,7 +488,8 @@ function exportReqCSV() {
 
 const predefinedHubs=["BLR_Kamakya","BLR_Uttarahalli","BLR_Whitefield","BLR_Kadugodi","JAI_VaishaliNagar","CHN_Guindy","CHN_Nanganallur","CHN_PallikaranaiRD","MAS_Bethelnagar","AAM_Valanchery","AMD_Navrangpura","AMD_Chandkheda","AMD_CTM","AMD_Vasna","AMD_Makarba","AMD_Sindhubhavan","AMD_Chandlodia","AMD_Memco","AMD_Narol_TH"];
 const predefinedVendors=[{name:"3Eco Systems",email:"suman.g@3eco.in"},{name:"BABA MOHANRAM ENTERPRISES",email:"pooransharma8@gmail.com"},{name:"Digi Transport",email:"accounts@dtlog.in"},{name:"Hani Transport",email:"hanitransport007@gmail.com"},{name:"Nileema",email:"nilimaa.enterprises@gmail.com"},{name:"KDM Enterprises",email:"kdmenterprises2204@gmail.com"},{name:"Kiran Enterprises",email:"kiranenterprises800@gmail.com"},{name:"Krushiv enterprises",email:"krushiventerprise88@gmail.com"},{name:"Let's Transport",email:"thimmaiah.v@letstransport.team"},{name:"Magenta Mobility",email:"rakesh.singh@magentamobility.com"},{name:"Sai Transport",email:"saitransport275@gmail.com"},{name:"Sharif Transport",email:"sharifshaha2015@gmail.com"},{name:"Sri Lakshmi Enterprises",email:"srilakshmi.enterprises127@gmail.com"},{name:"Sakir Abdul",email:""},{name:"MANNA DAS",email:""},{name:"Yogasai",email:""},{name:"Gaibudin shaikh",email:""},{name:"Vaishnavi Transport",email:""},{name:"Santkrupa Transport",email:""}];
-let globalDatabase=[],deploymentDatabase=[{vendorId:"3ECO SYSTEMS",hubName:"CHN_Egmore",email:"suman.g@3eco.in"}],lockedMonths=[],finalAttDb={},requestsDatabase=[],currentVendor=null,currentHubName="Hub Manager",hubRC=1,venRC=1;
+let globalDatabase=[],deploymentDatabase=[{vendorId:"3ECO SYSTEMS",hubName:"CHN_Egmore",email:"suman.g@3eco.in"}],lockedMonths=[],finalAttDb=[],requestsDatabase=[],currentVendor=null,currentHubName="Hub Manager",hubRC=1,venRC=1;
+window.currentAllowedHubs = [...predefinedHubs];
 
 /* ══════════════════════════
    CLOUD DATABASE (SUPABASE)
@@ -590,7 +591,17 @@ function autoFill(el,src){const no=el.value.trim();if(!no)return;const row=el.cl
 function toggleMonthLock(){const m=document.getElementById("admin-month-filter").value;if(!m){toast("Select a month to lock/unlock.","err");return;}if(lockedMonths.includes(m)){lockedMonths=lockedMonths.filter(x=>x!==m);toast(m+" unlocked.");}else{lockedMonths.push(m);toast(m+" locked — partners cannot edit.");}save();updateLockBtn();}
 function updateLockBtn(){const m=document.getElementById("admin-month-filter").value;const btn=document.getElementById("admin-lock-btn");if(!m){btn.style.display="none";return;}btn.style.display="inline-flex";if(lockedMonths.includes(m)){btn.textContent="🔓 Unlock "+m;btn.style.background="#0891b2";}else{btn.textContent="🔒 Lock "+m;btn.style.background="#ef4444";}}
 function checkLock(type,month){const locked=lockedMonths.includes(month);if(type==="Hub"){document.getElementById("hub-lock-banner").classList.toggle("show",locked);document.getElementById("hub-action-bar").style.display=locked?"none":"flex";}else{document.getElementById("vendor-lock-banner").classList.toggle("show",locked);document.getElementById("vendor-action-bar").style.display=locked?"none":"flex";}return locked;}
-function renderHubGrid(){const tbody=document.getElementById("hub-grid-body"),month=document.getElementById("hub-month-filter").value,locked=checkLock("Hub",month);const recs=globalDatabase.filter(e=>e.submittedBy==="HUB"&&e.month===month).sort((a,b)=>new Date(a.date)-new Date(b.date));tbody.innerHTML="";if(!recs.length){if(!locked)addHubRow();else tbody.innerHTML="<tr><td colspan=9 class=empty-c>No records for this locked month.</td></tr>";return;}recs.forEach((rec,i)=>{const row=window._hubTpl.cloneNode(true);limitDates(row);row.querySelector(".hub-date-input").value=rec.date;row.querySelector(".hub-name-input").value=rec.hubName;row.querySelector(".hub-driver-no-input").value=rec.driverNumber;row.querySelector(".hub-driver-name-input").value=rec.driverName||"";row.querySelector(".hub-rider-input").value=rec.riderId||"";row.querySelector(".hub-runsheet-input").value=rec.runsheet||"";row.querySelector(".hub-remark-input").value=rec.rawRemark||"";const rn="hub-att-l"+i;row.querySelectorAll("input[type=radio]").forEach(r=>r.name=rn);if(rec.attendance==="Present")row.querySelector("input[value=Present]").checked=true;if(rec.attendance==="Absent")row.querySelector("input[value=Absent]").checked=true;tbody.appendChild(row);toggleHubFields(row.querySelector("input[type=radio]:checked"));lockRow(row);if(locked)row.querySelector(".act-cell").innerHTML="<span style='color:#9ca3af;font-size:11px;font-weight:600;padding:0 8px'>Locked</span>";});if(!locked)addHubRow();}
+
+function renderHubGrid(){
+    const tbody=document.getElementById("hub-grid-body"),month=document.getElementById("hub-month-filter").value,locked=checkLock("Hub",month);
+    const allowed = window.currentAllowedHubs || predefinedHubs;
+    const recs=globalDatabase.filter(e=>e.submittedBy==="HUB"&&e.month===month&&allowed.includes(e.hubName)).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    tbody.innerHTML="";
+    if(!recs.length){if(!locked)addHubRow();else tbody.innerHTML="<tr><td colspan=9 class=empty-c>No records for this locked month.</td></tr>";return;}
+    recs.forEach((rec,i)=>{const row=window._hubTpl.cloneNode(true);limitDates(row);row.querySelector(".hub-date-input").value=rec.date;row.querySelector(".hub-name-input").value=rec.hubName;row.querySelector(".hub-driver-no-input").value=rec.driverNumber;row.querySelector(".hub-driver-name-input").value=rec.driverName||"";row.querySelector(".hub-rider-input").value=rec.riderId||"";row.querySelector(".hub-runsheet-input").value=rec.runsheet||"";row.querySelector(".hub-remark-input").value=rec.rawRemark||"";const rn="hub-att-l"+i;row.querySelectorAll("input[type=radio]").forEach(r=>r.name=rn);if(rec.attendance==="Present")row.querySelector("input[value=Present]").checked=true;if(rec.attendance==="Absent")row.querySelector("input[value=Absent]").checked=true;tbody.appendChild(row);toggleHubFields(row.querySelector("input[type=radio]:checked"));lockRow(row);if(locked)row.querySelector(".act-cell").innerHTML="<span style='color:#9ca3af;font-size:11px;font-weight:600;padding:0 8px'>Locked</span>";});
+    if(!locked)addHubRow();
+}
+
 function renderVendorGrid(){const tbody=document.getElementById("vendor-grid-body"),month=document.getElementById("vendor-month-filter").value,locked=checkLock("Vendor",month);const recs=globalDatabase.filter(e=>e.submittedBy===currentVendor&&e.month===month).sort((a,b)=>new Date(a.date)-new Date(b.date));tbody.innerHTML="";if(!recs.length){if(!locked)addVendorRow();else tbody.innerHTML="<tr><td colspan=9 class=empty-c>No records for this locked month.</td></tr>";return;}recs.forEach((rec,i)=>{const row=window._venTpl.cloneNode(true);limitDates(row);const hs=row.querySelector(".vendor-dynamic-hub-list");hs.innerHTML="";deploymentDatabase.filter(r=>r.vendorId===currentVendor).forEach(r=>hs.appendChild(new Option(r.hubName,r.hubName)));row.querySelector(".ven-date-input").value=rec.date;row.querySelector(".ven-hub-input").value=rec.hubName;row.querySelector(".ven-driver-no-input").value=rec.driverNumber;row.querySelector(".ven-driver-name-input").value=rec.driverName||"";if(rec.attendance==="Absent")row.querySelector(".ven-rca").value=rec.notes.replace("RCA: ","");else{const k=rec.notes.replace("KM: ","").split(" to ");row.querySelector(".ven-start-km").value=k[0]||"";row.querySelector(".ven-end-km").value=k[1]||"";}const rn="ven-att-l"+i;row.querySelectorAll("input[type=radio]").forEach(r=>r.name=rn);if(rec.attendance==="Present")row.querySelector("input[value=Present]").checked=true;if(rec.attendance==="Absent")row.querySelector("input[value=Absent]").checked=true;tbody.appendChild(row);toggleVenFields(row.querySelector("input[type=radio]:checked"));lockRow(row);if(locked)row.querySelector(".act-cell").innerHTML="<span style='color:#9ca3af;font-size:11px;font-weight:600;padding:0 8px'>Locked</span>";});if(!locked)addVendorRow();}
 function toggleHubFields(radio){if(!radio)return;const row=radio.closest("tr"),absent=radio.value==="Absent";["hub-rider-input","hub-runsheet-input"].forEach(c=>{const el=row.querySelector("."+c);el.disabled=absent;el.style.opacity=absent?"0.4":"1";if(absent)el.value="";});}
 function toggleVenFields(radio){if(!radio)return;const row=radio.closest("tr"),absent=radio.value==="Absent";["ven-start-km","ven-end-km"].forEach(c=>{const el=row.querySelector("."+c);el.disabled=absent;el.style.opacity=absent?"0.4":"1";if(absent)el.value="";});const rca=row.querySelector(".ven-rca");rca.disabled=!absent;rca.style.opacity=!absent?"0.4":"1";if(!absent)rca.value="";}
@@ -599,10 +610,42 @@ function toggleEditRow(btn){const row=btn.closest("tr");if(btn.textContent.trim(
 function deleteRow(btn){const row=btn.closest("tr"),tbody=row.parentElement;if(tbody.querySelectorAll("tr").length>1)row.remove();else toast("At least one row must remain.","err");}
 function addHubRow(){hubRC++;const tbody=document.getElementById("hub-grid-body"),last=tbody.querySelector("tr:last-child");const row=window._hubTpl.cloneNode(true);limitDates(row);let d=today();if(last){const ld=last.querySelector(".hub-date-input").value;if(ld)d=nextDay(ld);}row.querySelector(".hub-date-input").value=d;row.querySelectorAll("input[type=radio]").forEach(r=>r.name="hub-att-"+hubRC);tbody.appendChild(row);row.querySelector(".hub-driver-no-input").focus();}
 function addVendorRow(){venRC++;const tbody=document.getElementById("vendor-grid-body"),last=tbody.querySelector("tr:last-child");const row=window._venTpl.cloneNode(true);limitDates(row);const hs=row.querySelector(".vendor-dynamic-hub-list");hs.innerHTML="";deploymentDatabase.filter(r=>r.vendorId===currentVendor).forEach(r=>hs.appendChild(new Option(r.hubName,r.hubName)));let d=today();if(last){const ld=last.querySelector(".ven-date-input").value;if(ld)d=nextDay(ld);}row.querySelector(".ven-date-input").value=d;row.querySelectorAll("input[type=radio]").forEach(r=>r.name="ven-att-"+venRC);tbody.appendChild(row);row.querySelector(".ven-driver-no-input").focus();}
-function submitBulkHubData(e){e.preventDefault();const month=document.getElementById("hub-month-filter").value;if(lockedMonths.includes(month)){toast("This month is locked.","err");return;}globalDatabase=globalDatabase.filter(e=>!(e.submittedBy==="HUB"&&e.month===month));let count=0;document.querySelectorAll("#hub-grid-body tr").forEach(row=>{const date=row.querySelector(".hub-date-input").value,hub=row.querySelector(".hub-name-input").value,dno=row.querySelector(".hub-driver-no-input").value;const radio=row.querySelector("input[type=radio]:checked");let att=radio?radio.value:"";if(!att){const b=row.querySelector(".locked-att");const t=b?b.textContent:"";att=t.includes("Present")?"Present":(t.includes("Absent")?"Absent":"");}if(date&&hub&&att&&dno){const mn=new Date(date).toLocaleString("default",{month:"long"});globalDatabase.push({submittedBy:"HUB",source:"Hub",date,month:mn,hubName:hub,driverNumber:dno,driverName:row.querySelector(".hub-driver-name-input").value,attendance:att,notes:"[Hub] Runsheet:"+row.querySelector(".hub-runsheet-input").value+"|RiderID:"+row.querySelector(".hub-rider-input").value+"|Remark:"+row.querySelector(".hub-remark-input").value,rawRemark:row.querySelector(".hub-remark-input").value,rawRunsheet:row.querySelector(".hub-runsheet-input").value,riderId:row.querySelector(".hub-rider-input").value});count++;}});if(count>0){save();toast(count+" Hub log(s) saved.");renderHubGrid();}else toast("Fill required fields: Date, Status, Driver No.","err");}
+
+function submitBulkHubData(e){
+    e.preventDefault();
+    const month=document.getElementById("hub-month-filter").value;
+    if(lockedMonths.includes(month)){toast("This month is locked.","err");return;}
+    
+    // SAFE DELETE: Only wipe data for the specific hubs this person has access to!
+    const allowed = window.currentAllowedHubs || predefinedHubs;
+    globalDatabase=globalDatabase.filter(e=>!(e.submittedBy==="HUB"&&e.month===month&&allowed.includes(e.hubName)));
+    
+    let count=0;
+    document.querySelectorAll("#hub-grid-body tr").forEach(row=>{
+        const date=row.querySelector(".hub-date-input").value,hub=row.querySelector(".hub-name-input").value,dno=row.querySelector(".hub-driver-no-input").value;
+        const radio=row.querySelector("input[type=radio]:checked");
+        let att=radio?radio.value:"";
+        if(!att){const b=row.querySelector(".locked-att");const t=b?b.textContent:"";att=t.includes("Present")?"Present":(t.includes("Absent")?"Absent":"");}
+        if(date&&hub&&att&&dno){
+            const mn=new Date(date).toLocaleString("default",{month:"long"});
+            globalDatabase.push({submittedBy:"HUB",source:"Hub",date,month:mn,hubName:hub,driverNumber:dno,driverName:row.querySelector(".hub-driver-name-input").value,attendance:att,notes:"[Hub] Runsheet:"+row.querySelector(".hub-runsheet-input").value+"|RiderID:"+row.querySelector(".hub-rider-input").value+"|Remark:"+row.querySelector(".hub-remark-input").value,rawRemark:row.querySelector(".hub-remark-input").value,rawRunsheet:row.querySelector(".hub-runsheet-input").value,riderId:row.querySelector(".hub-rider-input").value});
+            count++;
+        }
+    });
+    if(count>0){save();toast(count+" Hub log(s) saved.");renderHubGrid();}else toast("Fill required fields: Date, Status, Driver No.","err");
+}
+
 function submitBulkVendorData(e){e.preventDefault();const month=document.getElementById("vendor-month-filter").value;if(lockedMonths.includes(month)){toast("This month is locked.","err");return;}globalDatabase=globalDatabase.filter(e=>!(e.submittedBy===currentVendor&&e.month===month));let count=0;document.querySelectorAll("#vendor-grid-body tr").forEach(row=>{const date=row.querySelector(".ven-date-input").value,hub=row.querySelector(".ven-hub-input").value,dno=row.querySelector(".ven-driver-no-input").value;const radio=row.querySelector("input[type=radio]:checked");let att=radio?radio.value:"";if(!att){const b=row.querySelector(".locked-att");const t=b?b.textContent:"";att=t.includes("Present")?"Present":(t.includes("Absent")?"Absent":"");}if(date&&hub&&att&&dno){const mn=new Date(date).toLocaleString("default",{month:"long"});const sk=row.querySelector(".ven-start-km").value,ek=row.querySelector(".ven-end-km").value,rca=row.querySelector(".ven-rca").value;globalDatabase.push({submittedBy:currentVendor,source:"Vendor",date,month:mn,hubName:hub,driverNumber:dno,driverName:row.querySelector(".ven-driver-name-input").value,attendance:att,notes:att==="Absent"?"RCA: "+rca:"KM: "+sk+" to "+ek});count++;}});if(count>0){save();toast(count+" Vendor log(s) saved.");renderVendorGrid();}else toast("Fill required fields: Date, Status, Driver No.","err");}
 function submitVehicleRequest(e){e.preventDefault();const req={id:Date.now(),date:document.getElementById("req-date").value,hubName:document.getElementById("req-hub").value,riderId:document.getElementById("req-rider").value.trim(),runsheet:document.getElementById("req-runsheet").value.trim(),type:document.getElementById("req-type").value,reason:document.getElementById("req-reason").value.trim(),cost:parseFloat(document.getElementById("req-cost").value)||0,status:"Pending",submittedBy:currentHubName,createdAt:new Date().toISOString()};requestsDatabase.push(req);save();toast("Vehicle request submitted!");document.getElementById("hub-req-form").reset();document.getElementById("req-date").value=today();renderHubRequests();}
-function renderHubRequests(){const tbody=document.getElementById("hub-req-body");if(!tbody)return;const reqs=[...requestsDatabase].filter(r=>r.submittedBy===currentHubName).sort((a,b)=>new Date(b.date)-new Date(a.date));if(!reqs.length){tbody.innerHTML="<tr><td colspan=8 class=empty-c>No requests submitted yet.</td></tr>";return;}tbody.innerHTML="";reqs.forEach(r=>{const sc=r.status==="Approved"?"badge-p":r.status==="Rejected"?"badge-a":"badge-pen";const costFmt=r.cost?"₹"+Number(r.cost).toLocaleString("en-IN"):"—";const row=document.createElement("tr");row.innerHTML="<td>"+r.date+"</td><td><strong>"+r.hubName+"</strong></td><td>"+r.riderId+"</td><td>"+r.runsheet+"</td>"+"<td><span class='vtag'>"+r.type+"</span></td>"+"<td style='font-size:12px;color:var(--sf-gray-500)'>"+(r.reason||"—")+"</td>"+"<td style='text-align:right;font-family:DM Mono,monospace;font-weight:600;color:var(--sf-black)'>"+costFmt+"</td>"+"<td style='text-align:center'><span class='badge "+sc+"'>"+r.status+"</span></td>";tbody.appendChild(row);});}
+
+function renderHubRequests(){
+    const tbody=document.getElementById("hub-req-body");if(!tbody)return;
+    const allowed = window.currentAllowedHubs || predefinedHubs;
+    const reqs=[...requestsDatabase].filter(r=>allowed.includes(r.hubName)).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    if(!reqs.length){tbody.innerHTML="<tr><td colspan=8 class=empty-c>No requests submitted yet.</td></tr>";return;}
+    tbody.innerHTML="";
+    reqs.forEach(r=>{const sc=r.status==="Approved"?"badge-p":r.status==="Rejected"?"badge-a":"badge-pen";const costFmt=r.cost?"₹"+Number(r.cost).toLocaleString("en-IN"):"—";const row=document.createElement("tr");row.innerHTML="<td>"+r.date+"</td><td><strong>"+r.hubName+"</strong></td><td>"+r.riderId+"</td><td>"+r.runsheet+"</td>"+"<td><span class='vtag'>"+r.type+"</span></td>"+"<td style='font-size:12px;color:var(--sf-gray-500)'>"+(r.reason||"—")+"</td>"+"<td style='text-align:right;font-family:DM Mono,monospace;font-weight:600;color:var(--sf-black)'>"+costFmt+"</td>"+"<td style='text-align:center'><span class='badge "+sc+"'>"+r.status+"</span></td>";tbody.appendChild(row);});
+}
 
 function clearReqFilters() {
     document.getElementById("req-month-filter").value = "";
@@ -788,7 +831,30 @@ async function handleLogin(e) {
     // 3. Check Hub Login
     const hubMatch = deploymentDatabase.find(r => r.hubEmail && r.hubEmail.toLowerCase() === user && r.hubPass === pass);
     if (hubMatch || (user === "hub@shadowfax.in" && pass === "123")) {
-        currentHubName = hubMatch ? hubMatch.hubName : "Hub Manager";
+        
+        // SECURE: Restrict access to only their specific hub
+        if (hubMatch && user !== "hub@shadowfax.in") {
+            window.currentAllowedHubs = [...new Set(deploymentDatabase.filter(r => r.hubEmail && r.hubEmail.toLowerCase() === user).map(r => r.hubName))];
+            currentHubName = window.currentAllowedHubs.length === 1 ? window.currentAllowedHubs[0] : "Hub Manager";
+        } else {
+            window.currentAllowedHubs = [...predefinedHubs];
+            currentHubName = "Hub Manager";
+        }
+
+        // Lock the Dropdowns so they can't change it
+        const hubOptions = window.currentAllowedHubs.length !== 1 ? "<option value=''>— Select —</option>" : "";
+        document.querySelectorAll(".dynamic-hub-list, #req-hub").forEach(sel => {
+            sel.innerHTML = hubOptions;
+            window.currentAllowedHubs.forEach(h => sel.appendChild(new Option(h, h)));
+        });
+        
+        // Lock the hidden row template too
+        const tplSel = window._hubTpl.querySelector(".dynamic-hub-list");
+        if (tplSel) {
+            tplSel.innerHTML = hubOptions;
+            window.currentAllowedHubs.forEach(h => tplSel.appendChild(new Option(h, h)));
+        }
+
         showPortal("hub-portal", "Hub Operations", currentHubName);
         renderHubGrid();
         renderHubRequests();
@@ -823,7 +889,7 @@ async function handleLogin(e) {
 }
 
 function showPortal(id,title,user){document.getElementById("login-container").style.display="none";document.getElementById("app-container").classList.add("show");document.getElementById("tb-title").textContent=title;document.getElementById("tb-user").textContent=user;document.querySelectorAll(".portal").forEach(p=>p.classList.remove("show"));document.getElementById(id).classList.add("show");}
-function logout(){document.getElementById("app-container").classList.remove("show");document.getElementById("login-container").style.display="flex";document.getElementById("username").value="";document.getElementById("password").value="";document.getElementById("login-error").style.display="none";currentVendor=null;currentHubName="Hub Manager";}
+function logout(){document.getElementById("app-container").classList.remove("show");document.getElementById("login-container").style.display="flex";document.getElementById("username").value="";document.getElementById("password").value="";document.getElementById("login-error").style.display="none";currentVendor=null;currentHubName="Hub Manager";window.currentAllowedHubs=[...predefinedHubs];}
 </script>
 </body>
 </html>
