@@ -452,25 +452,39 @@ const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 async function save(){
     try {
-        // FIXED: Using supabaseClient
-        await supabaseClient.from('sf_data').upsert([
+        const { data, error } = await supabaseClient.from('sf_data').upsert([
             { id: 'global', data: globalDatabase },
             { id: 'deploy', data: deploymentDatabase },
             { id: 'locked', data: lockedMonths },
             { id: 'finalAtt', data: finalAttDb },
             { id: 'requests', data: requestsDatabase }
         ]);
+        
+        // 🚨 NEW: If Supabase blocks the save, show a RED error!
+        if (error) {
+            console.error("Supabase Save Error:", error);
+            toast("Database Error: " + error.message, "err");
+            return;
+        }
+        
         console.log("Cloud sync successful");
     } catch (error) {
-        console.error("Error saving to cloud:", error);
-        toast("Network error. Data not saved to cloud.", "err");
+        console.error("Network Error:", error);
+        toast("Network error. Data not saved.", "err");
     }
 }
 
 async function load(){
     try {
-        // FIXED: Using supabaseClient
         const { data, error } = await supabaseClient.from('sf_data').select('*');
+        
+        // 🚨 NEW: If Supabase blocks the load, show a RED error!
+        if (error) {
+            console.error("Supabase Load Error:", error);
+            toast("Failed to load data: " + error.message, "err");
+            return;
+        }
+        
         if (data) {
             data.forEach(row => {
                 if (row.id === 'global') globalDatabase = row.data || [];
