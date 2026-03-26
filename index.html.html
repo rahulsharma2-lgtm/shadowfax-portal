@@ -238,7 +238,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
   <div id="hub-portal" class="portal">
    <div class="tabs">
     <button class="tab hub-tab active" onclick="switchGenericTab('hub-att-view',this,'hub-view','hub-tab')">&#128221; Attendance</button>
-    <button class="tab hub-tab" onclick="switchGenericTab('hub-req-view',this,'hub-view','hub-tab')">&#128666; Vehicle Request</button>
+    <button class="tab hub-tab" onclick="switchGenericTab('hub-req-view',this,'hub-view','hub-tab')">&#128666; Adhoc LCV Happay Request</button>
    </div>
    <div id="hub-att-view" class="hub-view active">
     <div class="ph">
@@ -272,7 +272,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </form>
    </div>
    <div id="hub-req-view" class="hub-view">
-    <div class="ph"><div><h2>Vehicle Request</h2><p>Submit adhoc or fixed vehicle requests for your hub</p></div></div>
+    <div class="ph"><div><h2>Adhoc LCV Happay Request</h2><p>Submit adhoc or fixed vehicle requests for your hub</p></div></div>
     <div class="deploy-card">
      <form id="hub-req-form" onsubmit="submitVehicleRequest(event)">
       <div class="form-grid">
@@ -347,7 +347,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
    <div class="tabs" id="admin-tabs">
     <button class="tab admin-tab active" onclick="switchGenericTab('admin-recon-view',this,'admin-view','admin-tab')">&#128202; Reconciliation</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-deploy-view',this,'admin-view','admin-tab')">&#128506; Deployment Map</button>
-    <button class="tab admin-tab" onclick="switchGenericTab('admin-req-view',this,'admin-view','admin-tab')">&#128666; Vehicle Requests <span id="req-badge" style="display:none;background:#ef4444;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
+    <button class="tab admin-tab" onclick="switchGenericTab('admin-req-view',this,'admin-view','admin-tab')">&#128666; Adhoc LCV Happay Requests <span id="req-badge" style="display:none;background:#ef4444;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
    </div>
    <div id="admin-recon-view" class="admin-view active">
     <div class="ph">
@@ -416,7 +416,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
    </div>
    <div id="admin-req-view" class="admin-view">
     <div class="ph">
-     <div><h2>Vehicle Requests</h2><p>Manage and approve vehicle requests submitted by Hub Managers</p></div>
+ <div><h2>Adhoc LCV Happay Requests</h2><p>Manage and approve LCV requests submitted by Hub Managers</p></div>
      <div style="display:flex;gap:10px;align-items:center">
       <select id="req-status-filter" class="f-sel" onchange="renderAdminRequests()" style="min-width:140px"><option value="">All Statuses</option><option value="Pending">Pending</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option></select>
       <select id="req-type-filter" class="f-sel" onchange="renderAdminRequests()"><option value="">All Types</option><option value="Adhoc">Adhoc</option><option value="Fixed">Fixed</option></select>
