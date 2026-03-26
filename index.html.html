@@ -444,13 +444,14 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
         <div class="stat-sub">awaiting action</div>
     </div>
  </div>
-     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+     <div class="ctrl-bar" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding: 12px 16px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
       <select id="req-month-filter" class="f-sel" onchange="renderAdminRequests()"><option value="">All Months</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
       <select id="req-hub-filter" class="f-sel" onchange="renderAdminRequests()"><option value="">All Hubs</option></select>
       <input type="date" id="req-date-filter" class="f-sel" onchange="renderAdminRequests()">
       <select id="req-status-filter" class="f-sel" onchange="renderAdminRequests()"><option value="">All Statuses</option><option value="Pending">Pending</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option></select>
       <select id="req-type-filter" class="f-sel" onchange="renderAdminRequests()"><option value="">All Types</option><option value="Adhoc">Adhoc</option><option value="Fixed">Fixed</option></select>
       <button type="button" class="btn btn-ghost btn-sm" onclick="clearReqFilters()">&#10005; Clear</button>
+      <button type="button" class="btn" style="background:#1e293b; color:white; margin-left:auto; border-radius: 6px; padding: 6px 14px;" onclick="exportReqCSV()">📥 Export CSV</button>
      </div>
     </div>
     <div class="tbl-wrap">
@@ -467,6 +468,29 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
 <div id="toast"></div>
 
 <script>
+ // Download LCV Requests to Excel/CSV
+function exportReqCSV() {
+    if (!requestsDatabase || requestsDatabase.length === 0) {
+        return toast("No requests to export", "err");
+    }
+    
+    // Create the headers
+    let csv = "Date,Hub Name,Rider ID,Runsheet ID,Type,Notes,Cost,Status\n";
+    
+    // Add the data
+    requestsDatabase.forEach(r => {
+        // Clean up notes to prevent commas from breaking the CSV
+        let cleanNotes = (r.reason || "").replace(/,/g, " ");
+        csv += `${r.date},${r.hubName},${r.riderId},${r.runsheet},${r.type},${cleanNotes},${r.cost},${r.status}\n`;
+    });
+    
+    // Download the file
+    const blob = new Blob([csv], {type: "text/csv"});
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "LCV_Requests_Export_" + new Date().toISOString().split('T')[0] + ".csv";
+    link.click();
+}
 const predefinedHubs=["BLR_Kamakya","BLR_Uttarahalli","BLR_Whitefield","BLR_Kadugodi","JAI_VaishaliNagar","CHN_Guindy","CHN_Nanganallur","CHN_PallikaranaiRD","MAS_Bethelnagar","AAM_Valanchery","AMD_Navrangpura","AMD_Chandkheda","AMD_CTM","AMD_Vasna","AMD_Makarba","AMD_Sindhubhavan","AMD_Chandlodia","AMD_Memco","AMD_Narol_TH"];
 const predefinedVendors=[{name:"3Eco Systems",email:"suman.g@3eco.in"},{name:"BABA MOHANRAM ENTERPRISES",email:"pooransharma8@gmail.com"},{name:"Digi Transport",email:"accounts@dtlog.in"},{name:"Hani Transport",email:"hanitransport007@gmail.com"},{name:"Nileema",email:"nilimaa.enterprises@gmail.com"},{name:"KDM Enterprises",email:"kdmenterprises2204@gmail.com"},{name:"Kiran Enterprises",email:"kiranenterprises800@gmail.com"},{name:"Krushiv enterprises",email:"krushiventerprise88@gmail.com"},{name:"Let's Transport",email:"thimmaiah.v@letstransport.team"},{name:"Magenta Mobility",email:"rakesh.singh@magentamobility.com"},{name:"Sai Transport",email:"saitransport275@gmail.com"},{name:"Sharif Transport",email:"sharifshaha2015@gmail.com"},{name:"Sri Lakshmi Enterprises",email:"srilakshmi.enterprises127@gmail.com"},{name:"Sakir Abdul",email:""},{name:"MANNA DAS",email:""},{name:"Yogasai",email:""},{name:"Gaibudin shaikh",email:""},{name:"Vaishnavi Transport",email:""},{name:"Santkrupa Transport",email:""}];
 let globalDatabase=[],deploymentDatabase=[{vendorId:"3ECO SYSTEMS",hubName:"CHN_Egmore",email:"suman.g@3eco.in"}],lockedMonths=[],finalAttDb={},requestsDatabase=[],currentVendor=null,currentHubName="Hub Manager",hubRC=1,venRC=1;
