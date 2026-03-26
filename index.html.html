@@ -556,7 +556,64 @@ function downloadCSV(tblId,fname){
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   toast("CSV exported successfully.");
 }
-function handleLogin(e){e.preventDefault();const user=document.getElementById("username").value.trim().toLowerCase();const pass=document.getElementById("password").value;const err=document.getElementById("login-error");if(pass!=="123"){err.style.display="block";return;}err.style.display="none";if(user==="admin@shadowfax.in"||user==="sajsen"){showPortal("admin-portal","Admin Control Center","Administrator");updateAdminDashboard();recomputeStats(getActiveFilters());renderAdminRequests();switchGenericTab("admin-recon-view",document.querySelector(".admin-tab"),"admin-view","admin-tab");}else if(user==="hub@shadowfax.in"){currentHubName="Hub Manager";showPortal("hub-portal","Hub Operations","Hub Manager");renderHubGrid();renderHubRequests();switchGenericTab("hub-att-view",document.querySelector(".hub-tab"),"hub-view","hub-tab");}else{const match=deploymentDatabase.find(r=>r.vendorId.toLowerCase()===user||(r.email&&r.email.toLowerCase()===user));currentVendor=match?match.vendorId:user.toUpperCase();const hubs=deploymentDatabase.filter(r=>r.vendorId===currentVendor).map(r=>r.hubName);document.querySelectorAll(".vendor-dynamic-hub-list").forEach(sel=>{sel.innerHTML="";hubs.forEach(h=>sel.appendChild(new Option(h,h)));});const wb=document.getElementById("vendor-warning"),sb=document.getElementById("vendor-submit-btn");if(!hubs.length){wb.classList.add("show");sb.disabled=true;sb.style.opacity="0.5";}else{wb.classList.remove("show");sb.disabled=false;sb.style.opacity="";}showPortal("vendor-portal","Fleet Operational Log",currentVendor);renderVendorGrid();}}
+async function handleLogin(e) {
+    e.preventDefault();
+    const user = document.getElementById("username").value.trim().toLowerCase();
+    const pass = document.getElementById("password").value;
+    const err = document.getElementById("login-error");
+    
+    if (pass !== "123") {
+        err.style.display = "block";
+        return;
+    }
+    err.style.display = "none";
+
+    // Show a loading state while fetching cloud data
+    const loginBtn = document.querySelector(".l-btn");
+    const originalText = loginBtn.innerHTML;
+    loginBtn.innerHTML = "⏳ Syncing Cloud...";
+    loginBtn.disabled = true;
+    
+    // Wait for Supabase data to download BEFORE opening the dashboard
+    await load(); 
+    
+    loginBtn.innerHTML = originalText;
+    loginBtn.disabled = false;
+
+    // Open the correct portal
+    if (user === "admin@shadowfax.in" || user === "sajsen") {
+        showPortal("admin-portal", "Admin Control Center", "Administrator");
+        updateAdminDashboard();
+        recomputeStats(getActiveFilters());
+        renderAdminRequests();
+        switchGenericTab("admin-recon-view", document.querySelector(".admin-tab"), "admin-view", "admin-tab");
+    } else if (user === "hub@shadowfax.in") {
+        currentHubName = "Hub Manager";
+        showPortal("hub-portal", "Hub Operations", "Hub Manager");
+        renderHubGrid();
+        renderHubRequests();
+        switchGenericTab("hub-att-view", document.querySelector(".hub-tab"), "hub-view", "hub-tab");
+    } else {
+        const match = deploymentDatabase.find(r => r.vendorId.toLowerCase() === user || (r.email && r.email.toLowerCase() === user));
+        currentVendor = match ? match.vendorId : user.toUpperCase();
+        const hubs = deploymentDatabase.filter(r => r.vendorId === currentVendor).map(r => r.hubName);
+        
+        document.querySelectorAll(".vendor-dynamic-hub-list").forEach(sel => {
+            sel.innerHTML = "";
+            hubs.forEach(h => sel.appendChild(new Option(h, h)));
+        });
+        
+        const wb = document.getElementById("vendor-warning"), sb = document.getElementById("vendor-submit-btn");
+        if (!hubs.length) { 
+            wb.classList.add("show"); sb.disabled = true; sb.style.opacity = "0.5"; 
+        } else { 
+            wb.classList.remove("show"); sb.disabled = false; sb.style.opacity = ""; 
+        }
+        
+        showPortal("vendor-portal", "Fleet Operational Log", currentVendor);
+        renderVendorGrid();
+    }
+} 
 function showPortal(id,title,user){document.getElementById("login-container").style.display="none";document.getElementById("app-container").classList.add("show");document.getElementById("tb-title").textContent=title;document.getElementById("tb-user").textContent=user;document.querySelectorAll(".portal").forEach(p=>p.classList.remove("show"));document.getElementById(id).classList.add("show");}
 function logout(){document.getElementById("app-container").classList.remove("show");document.getElementById("login-container").style.display="flex";document.getElementById("username").value="";document.getElementById("password").value="";document.getElementById("login-error").style.display="none";currentVendor=null;currentHubName="Hub Manager";}
 </script>
