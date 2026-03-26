@@ -237,12 +237,13 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
 
   <div id="hub-portal" class="portal">
    <div class="tabs">
-    <button class="tab hub-tab active" onclick="switchGenericTab('hub-att-view',this,'hub-view','hub-tab')">&#128221; Attendance</button>
-    <button class="tab hub-tab" onclick="switchGenericTab('hub-req-view',this,'hub-view','hub-tab')">&#128666; Adhoc LCV Happay Request</button>
+    <button class="tab hub-tab active" onclick="switchGenericTab('hub-req-view',this,'hub-view','hub-tab')">&#128666; Adhoc LCV Happay Request</button>
+    <button class="tab hub-tab" onclick="switchGenericTab('hub-att-view',this,'hub-view','hub-tab')">&#128221; Fixed LCV MIS</button>
    </div>
-   <div id="hub-att-view" class="hub-view active">
+   
+   <div id="hub-att-view" class="hub-view">
     <div class="ph">
-     <div><h2>Hub Attendance Entry</h2><p>Log daily driver attendance for your hub</p></div>
+     <div><h2>Fixed LCV MIS</h2><p>Log daily fixed LCV attendance for your hub</p></div>
      <select id="hub-month-filter" class="f-sel" onchange="renderHubGrid()"><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
     </div>
     <div id="hub-lock-banner" class="lock-banner">&#128274; <strong>Locked by Admin.</strong> This month cannot be edited.</div>
@@ -271,7 +272,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
      </div>
     </form>
    </div>
-   <div id="hub-req-view" class="hub-view">
+   <div id="hub-req-view" class="hub-view active">
     <div class="ph"><div><h2>Adhoc LCV Happay Request</h2><p>Submit adhoc or fixed vehicle requests for your hub</p></div></div>
     <div class="deploy-card">
      <form id="hub-req-form" onsubmit="submitVehicleRequest(event)">
@@ -858,7 +859,7 @@ async function handleLogin(e) {
         showPortal("hub-portal", "Hub Operations", currentHubName);
         renderHubGrid();
         renderHubRequests();
-        switchGenericTab("hub-att-view", document.querySelector(".hub-tab"), "hub-view", "hub-tab");
+        switchGenericTab("hub-req-view", document.querySelector(".hub-tab"), "hub-view", "hub-tab");
         return;
     }
 
