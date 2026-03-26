@@ -560,12 +560,12 @@ function toast(msg,type="ok"){const t=document.getElementById("toast");t.textCon
 const today=()=>new Date().toISOString().split("T")[0];
 function nextDay(s){if(!s)return"";const d=new Date(s);d.setDate(d.getDate()+1);const n=d.toISOString().split("T")[0];return n>today()?today():n;}
 function limitDates(r){r.querySelectorAll("input[type=date]").forEach(d=>d.max=today());}
-function populateLists()
+function populateLists() {
 const vl = document.getElementById("vendor-datalist");
     if(vl) { vl.innerHTML = ""; predefinedVendors.forEach(v => vl.appendChild(new Option(v, v))); }
     const hl = document.getElementById("hub-datalist");
     if(hl) { hl.innerHTML = ""; predefinedHubs.forEach(h => hl.appendChild(new Option(h, h))); }
-{
+
  document.querySelectorAll(".dynamic-hub-list").forEach(sel=>{sel.innerHTML="<option value=''>— Select —</option>";predefinedHubs.forEach(h=>sel.appendChild(new Option(h,h)));});
  const vs=document.getElementById("deploy-vendor-id");
  if(vs){vs.innerHTML="<option value=''>— Select Vendor —</option>";predefinedVendors.forEach(v=>{const o=new Option(v.name,v.name.toUpperCase());o.dataset.email=v.email;vs.appendChild(o);});vs.addEventListener("change",function(){document.getElementById("deploy-email").value=this.options[this.selectedIndex]?.dataset?.email||"";});
