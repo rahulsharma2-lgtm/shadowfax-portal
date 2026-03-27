@@ -575,8 +575,8 @@ function populateLists() {
 function setMonth(){const m=new Date().toLocaleString("default",{month:"long"});["hub-month-filter","vendor-month-filter","admin-month-filter"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=m;});}
 
 window.onload=async()=>{
-    populateLists();
-    await load();
+    await load(); // ⏳ WAIT for the cloud data first!
+    populateLists(); // 🏗️ THEN build the dropdown menus!
     window._hubTpl=document.querySelector("#hub-grid-body tr").cloneNode(true);
     window._venTpl=document.querySelector("#vendor-grid-body tr").cloneNode(true);
     renderDeployTable();
