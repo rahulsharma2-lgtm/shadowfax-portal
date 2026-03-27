@@ -473,8 +473,7 @@ function exportReqCSV() {
 
 const predefinedHubs=["BLR_Kamakya","BLR_Uttarahalli","BLR_Whitefield","BLR_Kadugodi","JAI_VaishaliNagar","CHN_Guindy","CHN_Nanganallur","CHN_PallikaranaiRD","MAS_Bethelnagar","AAM_Valanchery","AMD_Navrangpura","AMD_Chandkheda","AMD_CTM","AMD_Vasna","AMD_Makarba","AMD_Sindhubhavan","AMD_Chandlodia","AMD_Memco","AMD_Narol_TH"];
 const predefinedVendors=[{name:"3Eco Systems",email:"suman.g@3eco.in"},{name:"BABA MOHANRAM ENTERPRISES",email:"pooransharma8@gmail.com"},{name:"Digi Transport",email:"accounts@dtlog.in"},{name:"Hani Transport",email:"hanitransport007@gmail.com"},{name:"Nileema",email:"nilimaa.enterprises@gmail.com"},{name:"KDM Enterprises",email:"kdmenterprises2204@gmail.com"},{name:"Kiran Enterprises",email:"kiranenterprises800@gmail.com"},{name:"Krushiv enterprises",email:"krushiventerprise88@gmail.com"},{name:"Let's Transport",email:"thimmaiah.v@letstransport.team"},{name:"Magenta Mobility",email:"rakesh.singh@magentamobility.com"},{name:"Sai Transport",email:"saitransport275@gmail.com"},{name:"Sharif Transport",email:"sharifshaha2015@gmail.com"},{name:"Sri Lakshmi Enterprises",email:"srilakshmi.enterprises127@gmail.com"},{name:"Sakir Abdul",email:""},{name:"MANNA DAS",email:""},{name:"Yogasai",email:""},{name:"Gaibudin shaikh",email:""},{name:"Vaishnavi Transport",email:""},{name:"Santkrupa Transport",email:""}];
-let globalDatabase=[],deploymentDatabase=[{vendorId:"3ECO SYSTEMS",hubName:"CHN_Egmore",email:"suman.g@3eco.in"}],lockedMonths=[],finalAttDb=[],requestsDatabase=[],currentVendor=null,currentHubName="Hub Manager",hubRC=1,venRC=1;
-window.currentAllowedHubs = [...predefinedHubs];
+let globalDatabase=[],deploymentDatabase=[{vendorId:"3ECO SYSTEMS",hubName:"CHN_Egmore",email:"suman.g@3eco.in"}],lockedMonths=[],finalAttDb=[],requestsDatabase=[],hubsDatabase=[],currentVendor=null,currentHubName="Hub Manager",hubRC=1,venRC=1;
 
 /* ══════════════════════════
    CLOUD DATABASE (SUPABASE)
@@ -490,27 +489,17 @@ async function save(){
             { id: 'deploy', data: deploymentDatabase },
             { id: 'locked', data: lockedMonths },
             { id: 'finalAtt', data: finalAttDb },
-            { id: 'requests', data: requestsDatabase }
+            { id: 'requests', data: requestsDatabase },
+            { id: 'hubs', data: hubsDatabase } // 👈 NEW: Saves Hubs to Cloud
         ]);
-        if (error) {
-            console.error("Supabase Save Error:", error);
-            toast("Database Error: " + error.message, "err");
-            return;
-        }
-    } catch (error) {
-        console.error("Network Error:", error);
-        toast("Network error. Data not saved.", "err");
-    }
+        if (error) { toast("Database Error: " + error.message, "err"); return; }
+    } catch (error) { toast("Network error. Data not saved.", "err"); }
 }
 
 async function load(){
     try {
         const { data, error } = await supabaseClient.from('sf_data').select('*');
-        if (error) {
-            console.error("Supabase Load Error:", error);
-            toast("Failed to load data: " + error.message, "err");
-            return;
-        }
+        if (error) { toast("Failed to load data: " + error.message, "err"); return; }
         if (data) {
             data.forEach(row => {
                 if (row.id === 'global') globalDatabase = row.data || [];
@@ -518,28 +507,39 @@ async function load(){
                 if (row.id === 'locked') lockedMonths = row.data || [];
                 if (row.id === 'finalAtt') finalAttDb = row.data || {};
                 if (row.id === 'requests') requestsDatabase = row.data || [];
+                if (row.id === 'hubs') hubsDatabase = row.data || []; // 👈 NEW: Loads Hubs from Cloud
             });
         }
-    } catch (error) {
-        console.error("Error loading from cloud:", error);
-    }
+    } catch (error) {}
 }
-
 function toast(msg,type="ok"){const t=document.getElementById("toast");t.textContent=(type==="ok"?"✓ ":"⚠ ")+msg;t.className=type==="err"?"err":"";t.style.display="flex";clearTimeout(t._t);t._t=setTimeout(()=>t.style.display="none",3500);}
 const today=()=>new Date().toISOString().split("T")[0];
 function nextDay(s){if(!s)return"";const d=new Date(s);d.setDate(d.getDate()+1);const n=d.toISOString().split("T")[0];return n>today()?today():n;}
 function limitDates(r){r.querySelectorAll("input[type=date]").forEach(d=>d.max=today());}
 
 function populateLists() {
+    // Determine which list to use (Cloud database, or fallback to predefined)
+    const activeHubs = hubsDatabase.length > 0 ? hubsDatabase.map(h => h.name) : predefinedHubs;
+    
+    // 1. Populate Vendor Datalist
     const vl = document.getElementById("vendor-datalist");
     if(vl) { vl.innerHTML = ""; predefinedVendors.forEach(v => vl.appendChild(new Option(v.name, v.name.toUpperCase()))); }
-    const hl = document.getElementById("hub-datalist");
-    if(hl) { hl.innerHTML = ""; predefinedHubs.forEach(h => hl.appendChild(new Option(h, h))); }
-
-    document.querySelectorAll(".dynamic-hub-list").forEach(sel=>{sel.innerHTML="<option value=''>— Select —</option>";predefinedHubs.forEach(h=>sel.appendChild(new Option(h,h)));});
     
+    // 2. Populate standard Hub lists
+    const hl = document.getElementById("hub-datalist");
+    if(hl) { hl.innerHTML = ""; activeHubs.forEach(h => hl.appendChild(new Option(h, h))); }
+
+    document.querySelectorAll(".dynamic-hub-list").forEach(sel=>{
+        sel.innerHTML="<option value=''>— Select —</option>";
+        activeHubs.forEach(h=>sel.appendChild(new Option(h,h)));
+    });
+    
+    // 3. Setup Deployment Page Auto-Fills
     const vs=document.getElementById("deploy-vendor-id");
+    const hs=document.getElementById("deploy-hub");
+    
     if(vs){
+        // Vendor Auto-fill
         vs.innerHTML="<option value=''>— Select Vendor —</option>";
         predefinedVendors.forEach(v=>{
             const o=new Option(v.name,v.name.toUpperCase());
@@ -548,14 +548,27 @@ function populateLists() {
         });
         vs.addEventListener("change",function(){document.getElementById("deploy-email").value=this.options[this.selectedIndex]?.dataset?.email||"";});
         
+        // 🚨 NEW: Hub Email Auto-fill
+        hs.addEventListener("change", function(){
+            const hubMatch = hubsDatabase.find(h => h.name === this.value);
+            if(hubMatch && hubMatch.email) {
+                document.getElementById("deploy-hub-email").value = hubMatch.email;
+            } else {
+                document.getElementById("deploy-hub-email").value = "";
+            }
+        });
+        
+        // Rate Calculator
         const dri=document.getElementById("deploy-day-rate"),mri=document.getElementById("deploy-month-rate"),ws=document.getElementById("deploy-plan");
         function calcRate(){const dr=parseFloat(dri.value)||0,w=ws?ws.value:"",days=w.includes("31")?31:w.includes("26")?26:0;if(dr>0&&days>0&&mri)mri.value=dr*days;}
         if(dri) dri.addEventListener("input",calcRate);
         if(ws) ws.addEventListener("change",calcRate);
         const dd=document.getElementById("deploy-date");if(dd&&!dd.value)dd.value=today();
     }
-    const ahs=document.getElementById("admin-hub-filter");if(ahs){ahs.innerHTML="<option value=''>All Hubs</option>";predefinedHubs.forEach(h=>ahs.appendChild(new Option(h,h)));}
-    const rhs=document.getElementById("req-hub-filter");if(rhs){rhs.innerHTML="<option value=''>All Hubs</option>";predefinedHubs.forEach(h=>rhs.appendChild(new Option(h,h)));}
+    
+    // 4. Update Filter Dropdowns
+    const ahs=document.getElementById("admin-hub-filter");if(ahs){ahs.innerHTML="<option value=''>All Hubs</option>";activeHubs.forEach(h=>ahs.appendChild(new Option(h,h)));}
+    const rhs=document.getElementById("req-hub-filter");if(rhs){rhs.innerHTML="<option value=''>All Hubs</option>";activeHubs.forEach(h=>rhs.appendChild(new Option(h,h)));}
     const avs=document.getElementById("admin-vendor-filter");if(avs){avs.innerHTML="<option value=''>All Vendors</option>";predefinedVendors.forEach(v=>avs.appendChild(new Option(v.name,v.name.toUpperCase())));}
 }
 
@@ -763,7 +776,38 @@ function removeDeployment(id) {
     }
 }
 
-function importHubsCSV(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{const hubs=ev.target.result.split("\n").map(h=>h.trim().replace(/,/g,"")).filter(h=>h);if(!hubs.length){toast("No valid hubs found.","err");return;}document.querySelectorAll(".dynamic-hub-list").forEach(sel=>{sel.innerHTML="<option value=''>— Select —</option>";hubs.forEach(h=>sel.appendChild(new Option(h,h)));});const tpl=window._hubTpl.querySelector(".dynamic-hub-list");if(tpl){tpl.innerHTML="<option value=''>— Select —</option>";hubs.forEach(h=>tpl.appendChild(new Option(h,h)));}const ahs=document.getElementById("admin-hub-filter");if(ahs){ahs.innerHTML="<option value=''>All Hubs</option>";hubs.forEach(h=>ahs.appendChild(new Option(h,h)));}toast("Loaded "+hubs.length+" hubs from CSV.");e.target.value="";};reader.readAsText(file);}
+// Upgrade: Read CSV with Name & Email, save to Cloud, and update UI
+function importHubsCSV(e){
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+        const lines = ev.target.result.split("\n").filter(l=>l.trim());
+        let newHubs = [];
+        
+        lines.forEach((line, index) => {
+            // Skip the first row if it says "Hub Name" (header row)
+            if(index === 0 && line.toLowerCase().includes("name")) return; 
+            
+            const parts = line.split(",");
+            if(parts.length > 0 && parts[0].trim()) {
+                newHubs.push({
+                    name: parts[0].trim().replace(/"/g, ""), // Column A
+                    email: parts[1] ? parts[1].trim().replace(/"/g, "") : "" // Column B
+                });
+            }
+        });
+
+        if(!newHubs.length){toast("No valid hubs found in CSV.","err");return;}
+        
+        hubsDatabase = newHubs; // Update active database
+        save(); // Save permanently to Supabase
+        populateLists(); // Refresh all dropdowns
+        
+        toast("Saved "+newHubs.length+" Hubs & Emails to Cloud Database!");
+        e.target.value="";
+    };
+    reader.readAsText(file);
+}
 
 function downloadCSV(tblId,fname){
   var rows=document.querySelectorAll("#"+tblId+" tr"),csv=[];
