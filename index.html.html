@@ -1052,8 +1052,177 @@ async function handleLogin(e) {
 
 function showPortal(id,title,user){document.getElementById("login-container").style.display="none";document.getElementById("app-container").classList.add("show");document.getElementById("tb-title").textContent=title;document.getElementById("tb-user").textContent=user;document.querySelectorAll(".portal").forEach(p=>p.classList.remove("show"));document.getElementById(id).classList.add("show");}
 function logout(){document.getElementById("app-container").classList.remove("show");document.getElementById("login-container").style.display="flex";document.getElementById("username").value="";document.getElementById("password").value="";document.getElementById("login-error").style.display="none";currentVendor=null;currentHubName="Hub Manager";window.currentAllowedHubs=[...predefinedHubs];}
+
 // ==========================================
-// HAPPAY LIVE FETCH & FILTER ENGINE
+// GOOGLE SHEETS LIVE FETCH & FILTER ENGINE (Dashboard 1)
+// ==========================================
+let globalGSheetData = []; 
+
+async function loadGoogleSheetData() {
+    const loadingDiv = document.getElementById("gsheet-loading");
+    const contentDiv = document.getElementById("gsheet-content");
+    const errorEl = document.getElementById("gsheet-error");
+    
+    loadingDiv.style.display = "block";
+    contentDiv.style.display = "none";
+    errorEl.innerText = "";
+
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/1XNGWihuLVmRSoGouuVROkbZ2OqKCtuhIXBaEpShabw0/export?format=csv&gid=875407165";
+
+    try {
+        const response = await fetch(sheetUrl);
+        if (!response.ok) throw new Error("Could not read sheet.");
+        
+        const csvText = await response.text();
+        const rows = parseCSV(csvText);
+        if (rows.length < 2) throw new Error("Sheet appears to be empty.");
+
+        const headers = rows[0].map(h => h.trim().toLowerCase());
+        const getCol = (name) => headers.findIndex(h => h === name.toLowerCase() || h === name.toLowerCase().trim());
+        
+        const colHub = getCol("hub name");
+        const colPod = getCol("pod mapped");
+        const colZone = getCol("zone");
+        const colStatus = getCol("status");
+        const colHI = getCol("hi attendance");
+        const colVenAtt = getCol("vendor attendance");
+        const colVehicleNo = getCol("vehicle no.");
+        const colVendor = getCol("vendor name");
+        const colDate = headers.findIndex(h => h === "date"); 
+
+        globalGSheetData = [];
+        let uHubs = new Set(), uPods = new Set(), uZones = new Set(), uStatus = new Set();
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        for(let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            if(!row[colHub]) continue; 
+
+            const dateVal = row[colDate] || "";
+            let monthVal = "";
+            let stdDate = ""; 
+            
+            if(dateVal) {
+                const dateRegex = /^(\d{1,2})[\/\-\:\.](\d{1,2})[\/\-\:\.](\d{2,4})$/;
+                const match = dateVal.trim().match(dateRegex);
+                if (match) {
+                    let dd = match[1].padStart(2, '0');
+                    let mm = match[2].padStart(2, '0');
+                    let yy = match[3];
+                    if (yy.length === 2) yy = "20" + yy; 
+                    const mIndex = parseInt(mm, 10) - 1; 
+                    if (mIndex >= 0 && mIndex < 12) monthVal = monthNames[mIndex];
+                    stdDate = `${yy}-${mm}-${dd}`; 
+                } else {
+                    try { 
+                        const d = new Date(dateVal); 
+                        if(!isNaN(d)) { monthVal = d.toLocaleString('default', { month: 'long' }); stdDate = d.toISOString().split('T')[0]; }
+                    } catch(e){}
+                }
+            }
+
+            const obj = {
+                hub: (row[colHub] || "").trim(),
+                pod: (row[colPod] || "").trim(),
+                zone: (row[colZone] || "").trim(),
+                status: (row[colStatus] || "").trim(),
+                hiAtt: (row[colHI] || "").trim(),
+                venAtt: (row[colVenAtt] || "").trim(),
+                vNo: (row[colVehicleNo] || "").trim(),
+                vendor: (row[colVendor] || "").trim(),
+                date: dateVal.trim(), 
+                stdDate: stdDate,     
+                month: monthVal       
+            };
+
+            globalGSheetData.push(obj);
+            if(obj.hub) uHubs.add(obj.hub);
+            if(obj.pod) uPods.add(obj.pod);
+            if(obj.zone) uZones.add(obj.zone);
+            if(obj.status) uStatus.add(obj.status);
+        }
+
+        const pop = (id, set, def) => {
+            const el = document.getElementById(id);
+            if(el) { el.innerHTML = `<option value="">${def}</option>`; [...set].sort().forEach(v => el.appendChild(new Option(v, v))); }
+        };
+        pop("g-filter-hub", uHubs, "All Hubs");
+        pop("g-filter-pod", uPods, "All PODs");
+        pop("g-filter-zone", uZones, "All Zones");
+        pop("g-filter-status", uStatus, "All Statuses");
+
+        loadingDiv.style.display = "none";
+        contentDiv.style.display = "block";
+        renderGSheetDashboard(); 
+
+    } catch (err) { errorEl.innerText = "Error: " + err.message; }
+}
+
+function renderGSheetDashboard() {
+    const fMonth = document.getElementById("g-filter-month").value;
+    const fHub = document.getElementById("g-filter-hub").value;
+    const fDate = document.getElementById("g-filter-date").value; 
+    const fPod = document.getElementById("g-filter-pod").value;
+    const fZone = document.getElementById("g-filter-zone").value;
+    const fStatus = document.getElementById("g-filter-status").value;
+    const fHi = document.getElementById("g-filter-hi").value.toLowerCase();
+
+    let filtered = globalGSheetData.filter(r => {
+        if(fMonth && r.month !== fMonth) return false;
+        if(fHub && r.hub !== fHub) return false;
+        if(fDate && r.stdDate !== fDate) return false; 
+        if(fPod && r.pod !== fPod) return false;
+        if(fZone && r.zone !== fZone) return false;
+        if(fStatus && r.status !== fStatus) return false;
+        if(fHi && !r.hiAtt.toLowerCase().includes(fHi)) return false;
+        return true;
+    });
+
+    let uniqueHubs = new Set(), uniqueVehicles = new Set();
+    let hiPresent = 0, venPresent = 0;
+    let tableHtml = "";
+    let rowCount = 0;
+
+    filtered.forEach(r => {
+        uniqueHubs.add(r.hub);
+        if(r.vNo && r.vNo !== "—") uniqueVehicles.add(r.vNo);
+
+        const hi = r.hiAtt.toLowerCase();
+        const ven = r.venAtt.toLowerCase();
+
+        if(hi.includes("p") || hi.includes("present") || hi === "1") hiPresent++;
+        if(ven.includes("p") || ven.includes("present") || ven === "1") venPresent++;
+
+        if(rowCount < 50) {
+            const pHi = hi.includes("p") ? `<span style="color:var(--sf-green);font-weight:700">P</span>` : r.hiAtt;
+            const pVen = ven.includes("p") ? `<span style="color:var(--sf-green);font-weight:700">P</span>` : r.venAtt;
+
+            tableHtml += `<tr>
+                <td>${r.date || "—"}</td>
+                <td><strong>${r.hub}</strong></td>
+                <td style="font-size:12px;color:var(--sf-gray-500)">${r.vendor || "—"}</td>
+                <td style="font-family:DM Mono,monospace">${r.vNo || "—"}</td>
+                <td style="text-align:center">${pHi || "—"}</td>
+                <td style="text-align:center">${pVen || "—"}</td>
+            </tr>`;
+            rowCount++;
+        }
+    });
+
+    document.getElementById("g-stat-hubs").innerText = uniqueHubs.size;
+    document.getElementById("g-stat-vehicles").innerText = uniqueVehicles.size;
+    document.getElementById("g-stat-hi-att").innerText = hiPresent;
+    document.getElementById("g-stat-ven-att").innerText = venPresent;
+    document.getElementById("gsheet-table-body").innerHTML = tableHtml || `<tr><td colspan="6" class="empty-c">No data matches these filters.</td></tr>`;
+}
+
+function clearGSheetFilters() {
+    ["g-filter-month", "g-filter-hub", "g-filter-date", "g-filter-pod", "g-filter-zone", "g-filter-status", "g-filter-hi"].forEach(id => document.getElementById(id).value = "");
+    renderGSheetDashboard();
+}
+
+// ==========================================
+// HAPPAY LIVE FETCH & FILTER ENGINE (Dashboard 2)
 // ==========================================
 let globalHappayData = []; 
 
@@ -1097,7 +1266,7 @@ async function loadHappaySheetData() {
         const colSpna = headers.findIndex(h => h.includes("spna")); 
         const colRegion = headers.findIndex(h => h.includes("actual region") || h.includes("region"));
         const colPod = headers.findIndex(h => h.includes("actual pod") || h.includes("pod"));
-        const colSzm = headers.findIndex(h => h.includes("szm name") || h.includes("szm")); // 🚨 NEW: SZM Column
+        const colSzm = headers.findIndex(h => h.includes("szm name") || h.includes("szm")); 
 
         globalHappayData = [];
         let uHubs = new Set(), uRegions = new Set(), uPods = new Set(), uSpna = new Set(), uSzm = new Set();
@@ -1144,7 +1313,7 @@ async function loadHappaySheetData() {
                 spna: colSpna > -1 ? (row[colSpna] || "").trim() : "",
                 region: colRegion > -1 ? (row[colRegion] || "").trim() : "",
                 pod: colPod > -1 ? (row[colPod] || "").trim() : "",
-                szm: colSzm > -1 ? (row[colSzm] || "").trim() : "" // 🚨 NEW: Extract SZM
+                szm: colSzm > -1 ? (row[colSzm] || "").trim() : "" 
             };
 
             globalHappayData.push(obj);
@@ -1152,15 +1321,13 @@ async function loadHappaySheetData() {
             if(obj.region) uRegions.add(obj.region);
             if(obj.pod) uPods.add(obj.pod);
             if(obj.spna) uSpna.add(obj.spna);
-            if(obj.szm) uSzm.add(obj.szm); // 🚨 NEW: Store Unique SZM
+            if(obj.szm) uSzm.add(obj.szm); 
         }
 
-        // Populates Standard Select Dropdowns
         const popSelect = (id, set, def) => {
             const el = document.getElementById(id);
             if(el) { el.innerHTML = `<option value="">${def}</option>`; [...set].sort().forEach(v => el.appendChild(new Option(v, v))); }
         };
-        // 🚨 NEW: Populates Searchable Datalists
         const popDatalist = (id, set) => {
             const el = document.getElementById(id);
             if(el) { el.innerHTML = ""; [...set].sort().forEach(v => el.appendChild(new Option(v, v))); }
@@ -1170,8 +1337,8 @@ async function loadHappaySheetData() {
         popSelect("h-filter-pod", uPods, "All PODs");
         popSelect("h-filter-spna", uSpna, "All Approvals");
         
-        popDatalist("h-hubs-list", uHubs); // Searchable list
-        popDatalist("h-szm-list", uSzm);   // Searchable list
+        popDatalist("h-hubs-list", uHubs); 
+        popDatalist("h-szm-list", uSzm);   
 
         loadingDiv.style.display = "none";
         contentDiv.style.display = "block";
@@ -1183,8 +1350,8 @@ async function loadHappaySheetData() {
 function renderHappayDashboard() {
     const fMonth = document.getElementById("h-filter-month").value;
     const fRegion = document.getElementById("h-filter-region").value;
-    const fHub = document.getElementById("h-filter-hub").value.toLowerCase(); // Text Search
-    const fSzm = document.getElementById("h-filter-szm").value.toLowerCase(); // Text Search
+    const fHub = document.getElementById("h-filter-hub").value.toLowerCase(); 
+    const fSzm = document.getElementById("h-filter-szm").value.toLowerCase(); 
     const fDate = document.getElementById("h-filter-date").value; 
     const fPod = document.getElementById("h-filter-pod").value;
     const fSpna = document.getElementById("h-filter-spna").value;
@@ -1196,7 +1363,6 @@ function renderHappayDashboard() {
         if(fPod && r.pod !== fPod) return false;
         if(fSpna && r.spna !== fSpna) return false;
         
-        // 🚨 Searchable Text Filters (matches even if you type part of the word!)
         if(fHub && !r.hub.toLowerCase().includes(fHub)) return false;
         if(fSzm && !r.szm.toLowerCase().includes(fSzm)) return false;
         
@@ -1206,8 +1372,8 @@ function renderHappayDashboard() {
     let uniqueHubs = new Set();
     let totalCharges = 0;
     let approvedCount = 0;
-    let appCharges = 0;    // 🚨 NEW Math
-    let notAppCharges = 0; // 🚨 NEW Math
+    let appCharges = 0;    
+    let notAppCharges = 0; 
     let tableHtml = "";
     let rowCount = 0;
 
@@ -1247,7 +1413,6 @@ function renderHappayDashboard() {
     document.getElementById("h-stat-charges").innerText = "₹" + totalCharges.toLocaleString("en-IN");
     document.getElementById("h-stat-app").innerText = approvedCount;
     
-    // 🚨 Output New Financial Math
     document.getElementById("h-stat-app-charges").innerText = "₹" + appCharges.toLocaleString("en-IN");
     document.getElementById("h-stat-not-app-charges").innerText = "₹" + notAppCharges.toLocaleString("en-IN");
     
@@ -1257,6 +1422,21 @@ function renderHappayDashboard() {
 function clearHappayFilters() {
     ["h-filter-month", "h-filter-region", "h-filter-hub", "h-filter-szm", "h-filter-date", "h-filter-pod", "h-filter-spna"].forEach(id => document.getElementById(id).value = "");
     renderHappayDashboard();
+}
+
+// 🚨 MANDATORY CSV PARSER (Required for both dashboards to work)
+function parseCSV(str) {
+    const result = []; let row = [], inQuotes = false, val = '';
+    for (let i = 0; i < str.length; i++) {
+        let c = str[i];
+        if (c === '"' && str[i+1] === '"') { val += '"'; i++; }
+        else if (c === '"') { inQuotes = !inQuotes; }
+        else if (c === ',' && !inQuotes) { row.push(val); val = ''; }
+        else if (c === '\n' && !inQuotes) { row.push(val); result.push(row); row = []; val = ''; }
+        else { val += c; }
+    }
+    row.push(val); result.push(row);
+    return result;
 }
 </script>
 </body>
