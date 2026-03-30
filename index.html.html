@@ -337,12 +337,52 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
    </div>
    <div id="admin-summary-view" class="admin-view active">
     <div class="ph">
-     <div><h2>Live Executive Summary</h2><p>Real-time overview of fleet operations, deployments, and costs</p></div>
+     <div><h2>Live Executive Summary</h2><p>Real-time metrics synced directly from your Master Google Sheet</p></div>
+     <button class="btn btn-primary" onclick="loadGoogleSheetData()">🔄 Refresh Live Data</button>
     </div>
     
-    <div style="background: white; padding: 40px; text-align: center; border-radius: 12px; border: 1px dashed var(--sf-gray-300); color: var(--sf-gray-500); margin-top: 20px;">
-        <h3>Live Summary Dashboard</h3>
-        <p>Metrics and charts will go here...</p>
+    <div id="gsheet-loading" style="background: white; padding: 40px; text-align: center; border-radius: 12px; border: 1px dashed var(--sf-gray-300); color: var(--sf-gray-500); margin-top: 20px;">
+        <h3 style="color:var(--sf-black); margin-bottom: 8px;">⏳ Connecting to Google Sheets...</h3>
+        <p>Fetching the latest deployment data...</p>
+        <p style="font-size:11px; margin-top:10px; color:#ef4444;" id="gsheet-error"></p>
+    </div>
+
+    <div id="gsheet-content" style="display:none;">
+        <div class="stat-grid" style="margin-bottom: 24px;">
+            <div class="stat-card" style="border-top: 4px solid var(--sf-gray-500)">
+                <div class="sc-label">TOTAL HUBS</div>
+                <div class="sc-val" id="g-stat-hubs">0</div>
+                <div class="sc-sub">mapped in sheet</div>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid var(--sf-blue)">
+                <div class="sc-label">TOTAL VEHICLES</div>
+                <div class="sc-val" id="g-stat-vehicles">0</div>
+                <div class="sc-sub">deployed fleet</div>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid var(--sf-green)">
+                <div class="sc-label">HI ATTENDANCE</div>
+                <div class="sc-val" id="g-stat-hi-att" style="color:var(--sf-green)">0</div>
+                <div class="sc-sub">marked present</div>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid var(--sf-amber)">
+                <div class="sc-label">VENDOR ATTENDANCE</div>
+                <div class="sc-val" id="g-stat-ven-att" style="color:var(--sf-amber)">0</div>
+                <div class="sc-sub">marked present</div>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid var(--sf-red)">
+                <div class="sc-label">PENDING CLEARENCE (D-1)</div>
+                <div class="sc-val" id="g-stat-clear" style="color:var(--sf-red)">0</div>
+                <div class="sc-sub">awaiting sign-off</div>
+            </div>
+        </div>
+
+        <div class="ph" style="margin-top:28px;margin-bottom:10px"><h3 style="font-size:16px;font-weight:700">Recent Sheet Entries</h3></div>
+        <div class="tbl-wrap">
+            <table class="data-tbl">
+                <thead><tr><th>Date</th><th>Hub Name</th><th>Vendor</th><th>Vehicle No.</th><th>HI Att.</th><th>Vendor Att.</th><th>D-1 Clearence</th></tr></thead>
+                <tbody id="gsheet-table-body"></tbody>
+            </table>
+        </div>
     </div>
    </div>
 
@@ -857,6 +897,8 @@ async function handleLogin(e) {
         recomputeStats(getActiveFilters());
         renderAdminRequests();
         switchGenericTab("admin-summary-view", document.querySelector(".admin-tab"), "admin-view", "admin-tab");
+        switchGenericTab("admin-summary-view", document.querySelector(".admin-tab"), "admin-view", "admin-tab");
+        loadGoogleSheetData(); // 👈 ADD THIS LINE HERE!
         return;
     }
 
@@ -931,6 +973,122 @@ async function handleLogin(e) {
 
 function showPortal(id,title,user){document.getElementById("login-container").style.display="none";document.getElementById("app-container").classList.add("show");document.getElementById("tb-title").textContent=title;document.getElementById("tb-user").textContent=user;document.querySelectorAll(".portal").forEach(p=>p.classList.remove("show"));document.getElementById(id).classList.add("show");}
 function logout(){document.getElementById("app-container").classList.remove("show");document.getElementById("login-container").style.display="flex";document.getElementById("username").value="";document.getElementById("password").value="";document.getElementById("login-error").style.display="none";currentVendor=null;currentHubName="Hub Manager";window.currentAllowedHubs=[...predefinedHubs];}
+// ==========================================
+// GOOGLE SHEETS LIVE FETCH ENGINE
+// ==========================================
+async function loadGoogleSheetData() {
+    const loadingDiv = document.getElementById("gsheet-loading");
+    const contentDiv = document.getElementById("gsheet-content");
+    const errorEl = document.getElementById("gsheet-error");
+    
+    loadingDiv.style.display = "block";
+    contentDiv.style.display = "none";
+    errorEl.innerText = "";
+
+    // The official Google Sheets CSV Export URL using your exact Sheet ID and GID
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/1XNGWihuLVmRSoGouuVROkbZ2OqKCtuhIXBaEpShabw0/export?format=csv&gid=875407165";
+
+    try {
+        const response = await fetch(sheetUrl);
+        if (!response.ok) throw new Error("Could not read sheet. Is it set to 'Anyone with the link can view'?");
+        
+        const csvText = await response.text();
+        const rows = parseCSV(csvText);
+        
+        if (rows.length < 2) throw new Error("Sheet appears to be empty.");
+
+        // Grab headers from the first row
+        const headers = rows[0].map(h => h.trim().toLowerCase());
+        
+        // Find column indexes based on your exact header names
+        const colHub = headers.findIndex(h => h.includes("hub name"));
+        const colVehicleNo = headers.findIndex(h => h.includes("vehicle no"));
+        const colDate = headers.findIndex(h => h.includes("date") && !h.includes("deployment"));
+        const colVendor = headers.findIndex(h => h.includes("vendor name"));
+        const colHI = headers.findIndex(h => h.includes("hi attendance"));
+        const colVenAtt = headers.findIndex(h => h.includes("vendor attendance"));
+        const colD1 = headers.findIndex(h => h.includes("d-1"));
+
+        let uniqueHubs = new Set();
+        let uniqueVehicles = new Set();
+        let hiPresent = 0;
+        let venPresent = 0;
+        let pendingD1 = 0;
+        
+        let recentHtml = "";
+        let validRowsCount = 0;
+
+        // Loop through data rows (skip header)
+        for(let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            if(!row[colHub]) continue; // Skip empty rows
+
+            const hub = row[colHub];
+            const vNo = row[colVehicleNo] || "—";
+            const hiAtt = (row[colHI] || "").trim().toLowerCase();
+            const venAtt = (row[colVenAtt] || "").trim().toLowerCase();
+            const d1 = (row[colD1] || "").trim().toLowerCase();
+
+            uniqueHubs.add(hub);
+            if(vNo !== "—") uniqueVehicles.add(vNo);
+            
+            if(hiAtt.includes("p") || hiAtt.includes("present") || hiAtt === "1") hiPresent++;
+            if(venAtt.includes("p") || venAtt.includes("present") || venAtt === "1") venPresent++;
+            if(d1 === "" || d1.includes("pending") || d1.includes("no")) pendingD1++;
+
+            // Grab the first 15 rows for the preview table
+            if (validRowsCount < 15) {
+                const pHi = hiAtt.includes("p") ? `<span style="color:var(--sf-green);font-weight:700">P</span>` : hiAtt;
+                const pVen = venAtt.includes("p") ? `<span style="color:var(--sf-green);font-weight:700">P</span>` : venAtt;
+                const pD1 = d1.includes("clear") || d1.includes("yes") ? `<span style="color:var(--sf-green)">Cleared</span>` : `<span style="color:var(--sf-red)">Pending</span>`;
+                
+                recentHtml += `<tr>
+                    <td>${row[colDate] || "—"}</td>
+                    <td><strong>${hub}</strong></td>
+                    <td style="font-size:12px;color:var(--sf-gray-500)">${row[colVendor] || "—"}</td>
+                    <td style="font-family:DM Mono,monospace">${vNo}</td>
+                    <td style="text-align:center">${pHi || "—"}</td>
+                    <td style="text-align:center">${pVen || "—"}</td>
+                    <td>${pD1}</td>
+                </tr>`;
+                validRowsCount++;
+            }
+        }
+
+        // Inject the math into the cards
+        document.getElementById("g-stat-hubs").innerText = uniqueHubs.size;
+        document.getElementById("g-stat-vehicles").innerText = uniqueVehicles.size;
+        document.getElementById("g-stat-hi-att").innerText = hiPresent;
+        document.getElementById("g-stat-ven-att").innerText = venPresent;
+        document.getElementById("g-stat-clear").innerText = pendingD1;
+        
+        document.getElementById("gsheet-table-body").innerHTML = recentHtml || `<tr><td colspan="7" class="empty-c">No recent data found.</td></tr>`;
+
+        // Hide loading, show content
+        loadingDiv.style.display = "none";
+        contentDiv.style.display = "block";
+        toast("Live Google Sheet synced successfully!");
+
+    } catch (err) {
+        errorEl.innerText = "Error: " + err.message + " (Please ensure Google Sheet sharing is set to 'Anyone with the link can view')";
+    }
+}
+
+// Helper Function: Parses CSV text perfectly, even if cells contain commas inside quotes
+function parseCSV(str) {
+    const result = [];
+    let row = [], inQuotes = false, val = '';
+    for (let i = 0; i < str.length; i++) {
+        let c = str[i];
+        if (c === '"' && str[i+1] === '"') { val += '"'; i++; }
+        else if (c === '"') { inQuotes = !inQuotes; }
+        else if (c === ',' && !inQuotes) { row.push(val); val = ''; }
+        else if (c === '\n' && !inQuotes) { row.push(val); result.push(row); row = []; val = ''; }
+        else { val += c; }
+    }
+    row.push(val); result.push(row);
+    return result;
+}
 </script>
 </body>
 </html>
