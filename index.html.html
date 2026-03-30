@@ -722,7 +722,7 @@ function populateLists() {
     const avs=document.getElementById("admin-vendor-filter");if(avs){avs.innerHTML="<option value=''>All Vendors</option>";predefinedVendors.forEach(v=>avs.appendChild(new Option(v.name,v.name.toUpperCase())));}
 }
 
-function setMonth(){const m=new Date().toLocaleString("default",{month:"long"});["hub-month-filter","vendor-month-filter","admin-month-filter"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=m;});}
+function setMonth(){const m=new Date().toLocaleString("default",{month:"long"});["hub-month-filter","vendor-month-filter","admin-month-filter","h-filter-month","g-filter-month"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=m;});}
 
 window.onload=async()=>{
     await load(); // ⏳ WAIT for the cloud data first!
