@@ -1375,24 +1375,33 @@ function renderHappayDashboard() {
     const fPod = document.getElementById("h-filter-pod").value;
     const fSpna = document.getElementById("h-filter-spna").value;
 
+    // 1. FILTER FOR CARDS & TABLE (Respects the Date Picker)
     let filtered = globalHappayData.filter(r => {
         if(fMonth && r.month !== fMonth) return false;
         if(fRegion && r.region !== fRegion) return false;
-        if(fDate && r.stdDate !== fDate) return false; 
+        if(fDate && r.stdDate !== fDate) return false; // 👈 Date is strictly applied here
         if(fPod && r.pod !== fPod) return false;
         if(fSpna && r.spna !== fSpna) return false;
-        
         if(fHub && !r.hub.toLowerCase().includes(fHub)) return false;
         if(fSzm && !r.szm.toLowerCase().includes(fSzm)) return false;
-        
         return true;
     });
 
+    // 2. 🚨 NEW: FILTER FOR THE CHART (Ignores the Date Picker)
+    let chartFiltered = globalHappayData.filter(r => {
+        if(fMonth && r.month !== fMonth) return false;
+        if(fRegion && r.region !== fRegion) return false;
+        // 🚨 Notice fDate is missing here! The chart will ignore the calendar.
+        if(fPod && r.pod !== fPod) return false;
+        if(fSpna && r.spna !== fSpna) return false;
+        if(fHub && !r.hub.toLowerCase().includes(fHub)) return false;
+        if(fSzm && !r.szm.toLowerCase().includes(fSzm)) return false;
+        return true;
+    });
+
+    // Calculate Metric Cards (Uses 'filtered')
     let uniqueHubs = new Set();
-    let totalCharges = 0;
-    let approvedCount = 0;
-    let appCharges = 0;    
-    let notAppCharges = 0; 
+    let totalCharges = 0, approvedCount = 0, appCharges = 0, notAppCharges = 0; 
     let tableHtml = "";
     let rowCount = 0;
 
@@ -1412,7 +1421,6 @@ function renderHappayDashboard() {
 
         if(rowCount < 50) {
             const pSpna = isApproved ? `<span style="color:var(--sf-green);font-weight:700">${r.spna}</span>` : `<span style="color:var(--sf-amber);font-weight:700">${r.spna}</span>`;
-
             tableHtml += `<tr>
                 <td>${r.date || "—"}</td>
                 <td>${r.region || "—"}</td>
@@ -1431,14 +1439,17 @@ function renderHappayDashboard() {
     document.getElementById("h-stat-lcvs").innerText = filtered.length;
     document.getElementById("h-stat-charges").innerText = "₹" + totalCharges.toLocaleString("en-IN");
     document.getElementById("h-stat-app").innerText = approvedCount;
-    
     document.getElementById("h-stat-app-charges").innerText = "₹" + appCharges.toLocaleString("en-IN");
     document.getElementById("h-stat-not-app-charges").innerText = "₹" + notAppCharges.toLocaleString("en-IN");
+    document.getElementById("happay-table-body").innerHTML = tableHtml || `<tr><td colspan="8" class="empty-c">No data matches these filters.</td></tr>`;
+
     // ==========================================
     // 📈 DYNAMIC MULTI-LINE CHART ENGINE
     // ==========================================
     const dateGroups = {};
-    filtered.forEach(r => {
+    
+    // 🚨 CRITICAL CHANGE: The chart now loops through 'chartFiltered' instead of 'filtered'
+    chartFiltered.forEach(r => {
         const d = r.stdDate || "Unknown";
         if (!dateGroups[d]) {
             dateGroups[d] = { charges: 0, entries: 0, hubs: new Set() };
@@ -1449,7 +1460,6 @@ function renderHappayDashboard() {
     });
 
     const sortedDates = Object.keys(dateGroups).sort();
-    
     const chartLabels = sortedDates.map(d => {
         if (d === "Unknown") return d;
         const p = d.split("-"); 
@@ -1460,55 +1470,43 @@ function renderHappayDashboard() {
     const chartDataEntries = sortedDates.map(d => dateGroups[d].entries);
     const chartDataHubs = sortedDates.map(d => dateGroups[d].hubs.size);
 
-    // Read the Checkboxes!
     const chkCharges = document.getElementById('toggle-charges') ? document.getElementById('toggle-charges').checked : true;
     const chkEntries = document.getElementById('toggle-entries') ? document.getElementById('toggle-entries').checked : false;
     const chkHubs = document.getElementById('toggle-hubs') ? document.getElementById('toggle-hubs').checked : false;
 
-    // Build only the selected lines
     const activeDatasets = [];
     if (chkCharges) {
         activeDatasets.push({
-            label: 'Total Charges (₹)',
-            data: chartDataCharges,
+            label: 'Total Charges (₹)', data: chartDataCharges,
             borderColor: '#00A651', backgroundColor: 'rgba(0, 166, 81, 0.1)', borderWidth: 3,
-            pointBackgroundColor: '#00A651', pointRadius: 4, fill: true, tension: 0.3,
-            yAxisID: 'y'
+            pointBackgroundColor: '#00A651', pointRadius: 4, fill: true, tension: 0.3, yAxisID: 'y'
         });
     }
     if (chkEntries) {
         activeDatasets.push({
-            label: 'Total LCV Entries',
-            data: chartDataEntries,
+            label: 'Total LCV Entries', data: chartDataEntries,
             borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 3,
-            pointBackgroundColor: '#3b82f6', pointRadius: 4, fill: true, tension: 0.3,
-            yAxisID: 'y1'
+            pointBackgroundColor: '#3b82f6', pointRadius: 4, fill: true, tension: 0.3, yAxisID: 'y1'
         });
     }
     if (chkHubs) {
         activeDatasets.push({
-            label: 'Total Hubs',
-            data: chartDataHubs,
+            label: 'Total Hubs', data: chartDataHubs,
             borderColor: '#374151', backgroundColor: 'rgba(55, 65, 81, 0.1)', borderWidth: 3,
-            pointBackgroundColor: '#374151', pointRadius: 4, fill: true, tension: 0.3,
-            yAxisID: 'y1'
+            pointBackgroundColor: '#374151', pointRadius: 4, fill: true, tension: 0.3, yAxisID: 'y1'
         });
     }
 
     const ctx = document.getElementById('happayLineChart');
     if(ctx) {
-        if(window.happayLineChartInstance) {
-            window.happayLineChartInstance.destroy(); 
-        }
+        if(window.happayLineChartInstance) window.happayLineChartInstance.destroy(); 
+        
         window.happayLineChartInstance = new Chart(ctx, {
             type: 'line',
             data: { labels: chartLabels, datasets: activeDatasets },
             options: {
-                responsive: true,
-                interaction: { mode: 'index', intersect: false }, 
-                plugins: { 
-                    legend: { display: false } // Hide default legend because we use checkboxes now!
-                },
+                responsive: true, interaction: { mode: 'index', intersect: false }, 
+                plugins: { legend: { display: false } },
                 scales: {
                     y: { 
                         type: 'linear', display: chkCharges, position: 'left',
@@ -1524,6 +1522,7 @@ function renderHappayDashboard() {
             }
         });
     }
+}
     // ==========================================
     document.getElementById("happay-table-body").innerHTML = tableHtml || `<tr><td colspan="8" class="empty-c">No data matches these filters.</td></tr>`;
 }
