@@ -331,6 +331,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
   <div id="admin-portal" class="portal">
    <div class="tabs" id="admin-tabs">
     <button class="tab admin-tab active" onclick="switchGenericTab('admin-summary-view',this,'admin-view','admin-tab')">🔴 Live Summary</button>
+    <button class="tab admin-tab" onclick="switchGenericTab('admin-happay-view',this,'admin-view','admin-tab')">💳 Live Happay Summary</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-recon-view',this,'admin-view','admin-tab')">📊 Reconciliation</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-deploy-view',this,'admin-view','admin-tab')">🗺️ Deployment Page</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-req-view',this,'admin-view','admin-tab')">🚚 Adhoc LCV Happay Requests <span id="req-badge" style="display:none;background:#ef4444;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
@@ -393,6 +394,61 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
    </div>
 
+   <div id="admin-happay-view" class="admin-view">
+    <div class="ph">
+     <div><h2>Live Happay Summary</h2><p>Real-time LCV metrics synced directly from your Happay Master Sheet</p></div>
+     <button class="btn btn-primary" onclick="loadHappaySheetData()">🔄 Refresh Happay Data</button>
+    </div>
+    
+    <div id="happay-loading" style="background: white; padding: 40px; text-align: center; border-radius: 12px; border: 1px dashed var(--sf-gray-300); color: var(--sf-gray-500); margin-top: 20px;">
+        <h3 style="color:var(--sf-black); margin-bottom: 8px;">⏳ Connecting to Happay Sheet...</h3>
+        <p>Fetching the latest LCV requests...</p>
+        <p style="font-size:11px; margin-top:10px; color:#ef4444;" id="happay-error"></p>
+    </div>
+
+    <div id="happay-content" style="display:none;">
+        <div class="toolbar" style="margin-bottom: 24px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding: 12px 16px; background: white; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <select id="h-filter-month" class="f-sel" onchange="renderHappayDashboard()"><option value="">All Months</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
+            <select id="h-filter-region" class="f-sel" onchange="renderHappayDashboard()"><option value="">All Regions</option></select>
+            <select id="h-filter-hub" class="f-sel" onchange="renderHappayDashboard()"><option value="">All Hubs</option></select>
+            <input type="date" id="h-filter-date" class="f-sel" onchange="renderHappayDashboard()" title="Select Date">
+            <select id="h-filter-pod" class="f-sel" onchange="renderHappayDashboard()"><option value="">All PODs</option></select>
+            <select id="h-filter-spna" class="f-sel" onchange="renderHappayDashboard()"><option value="">All Approvals</option></select>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="clearHappayFilters()">✕ Clear</button>
+        </div>
+
+        <div class="stat-grid" style="margin-bottom: 24px;">
+            <div class="stat-card" style="border-top: 4px solid var(--sf-gray-500)">
+                <div class="sc-label">TOTAL HUBS</div>
+                <div class="sc-val" id="h-stat-hubs">0</div>
+                <div class="sc-sub">mapped in sheet</div>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid var(--sf-blue)">
+                <div class="sc-label">TOTAL LCV ENTRIES</div>
+                <div class="sc-val" id="h-stat-lcvs">0</div>
+                <div class="sc-sub">total records</div>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid var(--sf-green)">
+                <div class="sc-label">TOTAL CHARGES</div>
+                <div class="sc-val" id="h-stat-charges" style="color:var(--sf-green)">₹0</div>
+                <div class="sc-sub">sum of vehicle charges</div>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid var(--sf-amber)">
+                <div class="sc-label">APPROVED</div>
+                <div class="sc-val" id="h-stat-app" style="color:var(--sf-amber)">0</div>
+                <div class="sc-sub">SPNA approved</div>
+            </div>
+        </div>
+
+        <div class="ph" style="margin-top:28px;margin-bottom:10px"><h3 style="font-size:16px;font-weight:700">Recent Happay Entries</h3></div>
+        <div class="tbl-wrap">
+            <table class="data-tbl">
+                <thead><tr><th>Date</th><th>Region</th><th>Hub Name</th><th>POD</th><th>Rider ID</th><th>Runsheet ID</th><th style="text-align:right">Charges (₹)</th><th style="text-align:center">SPNA Approval</th></tr></thead>
+                <tbody id="happay-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+   </div>
    <div id="admin-recon-view" class="admin-view">
     <div class="ph">
      <div><h2>Reconciliation Dashboard</h2><p>Compare Hub HI vs Vendor attendance across all deployments</p></div>
@@ -906,6 +962,7 @@ async function handleLogin(e) {
         switchGenericTab("admin-summary-view", document.querySelector(".admin-tab"), "admin-view", "admin-tab");
         switchGenericTab("admin-summary-view", document.querySelector(".admin-tab"), "admin-view", "admin-tab");
         loadGoogleSheetData(); // 👈 ADD THIS LINE HERE!
+        loadHappaySheetData();
         return;
     }
 
@@ -1180,6 +1237,184 @@ function parseCSV(str) {
     }
     row.push(val); result.push(row);
     return result;
+}
+// ==========================================
+// HAPPAY LIVE FETCH & FILTER ENGINE
+// ==========================================
+let globalHappayData = []; 
+
+async function loadHappaySheetData() {
+    const loadingDiv = document.getElementById("happay-loading");
+    const contentDiv = document.getElementById("happay-content");
+    const errorEl = document.getElementById("happay-error");
+    
+    loadingDiv.style.display = "block";
+    contentDiv.style.display = "none";
+    errorEl.innerText = "";
+
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/1DEH8pEK3fEw_LOSqTDVK4KEQmv0c5eyEEKoAltMmnxQ/export?format=csv&gid=1401113037";
+
+    try {
+        const response = await fetch(sheetUrl);
+        if (!response.ok) throw new Error("Could not read sheet.");
+        
+        const csvText = await response.text();
+        const rows = parseCSV(csvText); 
+        if (rows.length < 2) throw new Error("Sheet appears to be empty.");
+
+        const headers = rows[0].map(h => h.trim().toLowerCase());
+        
+        // Smart matching (ignores spelling mistakes like "Approvel")
+        const colHub = headers.findIndex(h => h === "hub name");
+        const colDate = headers.findIndex(h => h.includes("lcv used date"));
+        const colRider = headers.findIndex(h => h.includes("rider id"));
+        const colRunsheet = headers.findIndex(h => h.includes("runsheet id"));
+        const colCharges = headers.findIndex(h => h.includes("vehicle charge"));
+        const colSpna = headers.findIndex(h => h.includes("spna")); 
+        const colRegion = headers.findIndex(h => h.includes("actual region"));
+        const colPod = headers.findIndex(h => h.includes("actual pod"));
+
+        globalHappayData = [];
+        let uHubs = new Set(), uRegions = new Set(), uPods = new Set(), uSpna = new Set();
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        for(let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            if(!row[colHub] && !row[colDate]) continue; 
+
+            const dateVal = (row[colDate] || "").trim();
+            let monthVal = "";
+            let stdDate = ""; 
+            
+            if(dateVal) {
+                const dateRegex = /^(\d{1,2})[\/\-\:\.](\d{1,2})[\/\-\:\.](\d{2,4})$/;
+                const match = dateVal.match(dateRegex);
+                
+                if (match) {
+                    let dd = match[1].padStart(2, '0');
+                    let mm = match[2].padStart(2, '0');
+                    let yy = match[3];
+                    if (yy.length === 2) yy = "20" + yy; 
+                    
+                    const mIndex = parseInt(mm, 10) - 1; 
+                    if (mIndex >= 0 && mIndex < 12) monthVal = monthNames[mIndex];
+                    stdDate = `${yy}-${mm}-${dd}`; 
+                } else {
+                    try { 
+                        const d = new Date(dateVal); 
+                        if(!isNaN(d)) {
+                            monthVal = d.toLocaleString('default', { month: 'long' }); 
+                            stdDate = d.toISOString().split('T')[0];
+                        }
+                    } catch(e){}
+                }
+            }
+            
+            // Clean currency string to a pure number for math
+            let chargesRaw = (row[colCharges] || "").trim();
+            let chargeNum = parseFloat(chargesRaw.replace(/[^\d.-]/g, '')) || 0;
+
+            const obj = {
+                hub: (row[colHub] || "").trim(),
+                date: dateVal,
+                stdDate: stdDate,
+                month: monthVal,
+                rider: (row[colRider] || "").trim(),
+                runsheet: (row[colRunsheet] || "").trim(),
+                chargeStr: chargesRaw,
+                chargeNum: chargeNum,
+                spna: (row[colSpna] || "").trim(),
+                region: (row[colRegion] || "").trim(),
+                pod: (row[colPod] || "").trim()
+            };
+
+            globalHappayData.push(obj);
+            if(obj.hub) uHubs.add(obj.hub);
+            if(obj.region) uRegions.add(obj.region);
+            if(obj.pod) uPods.add(obj.pod);
+            if(obj.spna) uSpna.add(obj.spna);
+        }
+
+        const pop = (id, set, def) => {
+            const el = document.getElementById(id);
+            if(el) { el.innerHTML = `<option value="">${def}</option>`; [...set].sort().forEach(v => el.appendChild(new Option(v, v))); }
+        };
+        pop("h-filter-hub", uHubs, "All Hubs");
+        pop("h-filter-region", uRegions, "All Regions");
+        pop("h-filter-pod", uPods, "All PODs");
+        pop("h-filter-spna", uSpna, "All Approvals");
+
+        loadingDiv.style.display = "none";
+        contentDiv.style.display = "block";
+        
+        renderHappayDashboard(); 
+
+    } catch (err) {
+        errorEl.innerText = "Error: " + err.message + " (Check if sheet is set to 'Anyone with the link can view')";
+    }
+}
+
+function renderHappayDashboard() {
+    const fMonth = document.getElementById("h-filter-month").value;
+    const fRegion = document.getElementById("h-filter-region").value;
+    const fHub = document.getElementById("h-filter-hub").value;
+    const fDate = document.getElementById("h-filter-date").value; 
+    const fPod = document.getElementById("h-filter-pod").value;
+    const fSpna = document.getElementById("h-filter-spna").value;
+
+    let filtered = globalHappayData.filter(r => {
+        if(fMonth && r.month !== fMonth) return false;
+        if(fRegion && r.region !== fRegion) return false;
+        if(fHub && r.hub !== fHub) return false;
+        if(fDate && r.stdDate !== fDate) return false; 
+        if(fPod && r.pod !== fPod) return false;
+        if(fSpna && r.spna !== fSpna) return false;
+        return true;
+    });
+
+    let uniqueHubs = new Set();
+    let totalCharges = 0;
+    let approvedCount = 0;
+    let tableHtml = "";
+    let rowCount = 0;
+
+    filtered.forEach(r => {
+        if (r.hub) uniqueHubs.add(r.hub);
+        totalCharges += r.chargeNum;
+        
+        const spnaLower = r.spna.toLowerCase();
+        if(spnaLower.includes("app") || spnaLower.includes("yes") || spnaLower === "ok") {
+            approvedCount++;
+        }
+
+        if(rowCount < 50) {
+            const pSpna = spnaLower.includes("app") ? `<span style="color:var(--sf-green);font-weight:700">${r.spna}</span>` : `<span style="color:var(--sf-amber);font-weight:700">${r.spna}</span>`;
+
+            tableHtml += `<tr>
+                <td>${r.date || "—"}</td>
+                <td>${r.region || "—"}</td>
+                <td><strong>${r.hub}</strong></td>
+                <td style="font-size:12px;color:var(--sf-gray-500)">${r.pod || "—"}</td>
+                <td style="font-family:DM Mono,monospace">${r.rider || "—"}</td>
+                <td style="font-family:DM Mono,monospace;font-size:11px">${r.runsheet || "—"}</td>
+                <td style="text-align:right;font-weight:600">₹${r.chargeNum.toLocaleString("en-IN")}</td>
+                <td style="text-align:center">${pSpna}</td>
+            </tr>`;
+            rowCount++;
+        }
+    });
+
+    document.getElementById("h-stat-hubs").innerText = uniqueHubs.size;
+    document.getElementById("h-stat-lcvs").innerText = filtered.length;
+    document.getElementById("h-stat-charges").innerText = "₹" + totalCharges.toLocaleString("en-IN");
+    document.getElementById("h-stat-app").innerText = approvedCount;
+    
+    document.getElementById("happay-table-body").innerHTML = tableHtml || `<tr><td colspan="8" class="empty-c">No data matches these filters.</td></tr>`;
+}
+
+function clearHappayFilters() {
+    ["h-filter-month", "h-filter-region", "h-filter-hub", "h-filter-date", "h-filter-pod", "h-filter-spna"].forEach(id => document.getElementById(id).value = "");
+    renderHappayDashboard();
 }
 </script>
 </body>
