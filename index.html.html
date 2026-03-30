@@ -394,7 +394,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
    </div>
 
-   <div id="admin-happay-view" class="admin-view">
+  <div id="admin-happay-view" class="admin-view">
     <div class="ph">
      <div><h2>Live Happay Summary</h2><p>Real-time LCV metrics synced directly from your Happay Master Sheet</p></div>
      <button class="btn btn-primary" onclick="loadHappaySheetData()">🔄 Refresh Happay Data</button>
@@ -406,7 +406,9 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
         <p style="font-size:11px; margin-top:10px; color:#ef4444;" id="happay-error"></p>
     </div>
 
-    <div class="toolbar" style="margin-bottom: 24px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding: 12px 16px; background: white; border-radius: 8px; border: 1px solid #e2e8f0;">
+    <div id="happay-content" style="display:none;">
+
+        <div class="toolbar" style="margin-bottom: 24px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding: 12px 16px; background: white; border-radius: 8px; border: 1px solid #e2e8f0;">
             <select id="h-filter-month" class="f-sel" onchange="renderHappayDashboard()"><option value="">All Months</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
             <select id="h-filter-region" class="f-sel" onchange="renderHappayDashboard()"><option value="">All Regions</option></select>
             
@@ -422,7 +424,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
             <button type="button" class="btn btn-ghost btn-sm" onclick="clearHappayFilters()">✕ Clear</button>
         </div>
 
-        <div class="stat-grid" style="margin-bottom: 24px;">
+        <div class="stat-grid" style="grid-template-columns: repeat(6, 1fr); margin-bottom: 24px;">
             <div class="stat-card" style="border-top: 4px solid var(--sf-gray-500)">
                 <div class="sc-label">TOTAL HUBS</div>
                 <div class="sc-val" id="h-stat-hubs">0</div>
@@ -451,7 +453,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
             <div class="stat-card" style="border-top: 4px solid #ef4444">
                 <div class="sc-label">NOT APPROVED CHARGES</div>
                 <div class="sc-val" id="h-stat-not-app-charges" style="color:#ef4444">₹0</div>
-                <div class="sc-sub">pending/rejected amount</div>
+                <div class="sc-sub">pending/rejected</div>
             </div>
         </div>
 
@@ -462,8 +464,8 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
                 <tbody id="happay-table-body"></tbody>
             </table>
         </div>
-    </div>
-   </div>
+
+    </div> </div>
    <div id="admin-recon-view" class="admin-view">
     <div class="ph">
      <div><h2>Reconciliation Dashboard</h2><p>Compare Hub HI vs Vendor attendance across all deployments</p></div>
@@ -974,7 +976,6 @@ async function handleLogin(e) {
         updateAdminDashboard();
         recomputeStats(getActiveFilters());
         renderAdminRequests();
-        switchGenericTab("admin-summary-view", document.querySelector(".admin-tab"), "admin-view", "admin-tab");
         switchGenericTab("admin-summary-view", document.querySelector(".admin-tab"), "admin-view", "admin-tab");
         loadGoogleSheetData(); // 👈 ADD THIS LINE HERE!
         loadHappaySheetData();
