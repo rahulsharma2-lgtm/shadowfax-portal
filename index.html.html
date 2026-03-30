@@ -1022,10 +1022,11 @@ async function loadGoogleSheetData() {
         const colD1 = getCol("d-1 clearence");
         const colVehicleNo = getCol("vehicle no.");
         const colVendor = getCol("vendor name");
-        const colDate = headers.findIndex(h => h === "date"); // Strict match for Date
+        const colDate = headers.findIndex(h => h === "date"); 
 
         globalGSheetData = [];
         let uHubs = new Set(), uPods = new Set(), uZones = new Set(), uStatus = new Set();
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
         // 1. Process and save all rows internally
         for(let i = 1; i < rows.length; i++) {
@@ -1034,8 +1035,19 @@ async function loadGoogleSheetData() {
 
             const dateVal = row[colDate] || "";
             let monthVal = "";
+            
+            // 🚨 NEW: Smart Date Parser for DD:MM:YY 🚨
             if(dateVal) {
-                try { const d = new Date(dateVal); if(!isNaN(d)) monthVal = d.toLocaleString('default', { month: 'long' }); } catch(e){}
+                if(dateVal.includes(":")) {
+                    const dParts = dateVal.split(":");
+                    if(dParts.length >= 2) {
+                        const mIndex = parseInt(dParts[1], 10) - 1; // Get Month Number
+                        if(mIndex >= 0 && mIndex < 12) monthVal = monthNames[mIndex];
+                    }
+                } else {
+                    // Fallback for normal dates
+                    try { const d = new Date(dateVal); if(!isNaN(d)) monthVal = d.toLocaleString('default', { month: 'long' }); } catch(e){}
+                }
             }
 
             const obj = {
@@ -1083,7 +1095,6 @@ async function loadGoogleSheetData() {
 
 // Applies filters, updates cards, and draws table instantly
 function renderGSheetDashboard() {
-    // Read Filter Values
     const fMonth = document.getElementById("g-filter-month").value;
     const fHub = document.getElementById("g-filter-hub").value;
     const fDate = document.getElementById("g-filter-date").value; 
@@ -1092,19 +1103,20 @@ function renderGSheetDashboard() {
     const fStatus = document.getElementById("g-filter-status").value;
     const fHi = document.getElementById("g-filter-hi").value.toLowerCase();
 
-    // Format HTML Date (YYYY-MM-DD) to check against common sheet formats
-    let fDateStr = fDate; let fDateStr2 = fDate;
+    // 🚨 NEW: Translate HTML Picker Date to DD:MM:YY 🚨
+    let fDateColYY = fDate; let fDateColYYYY = fDate;
     if(fDate) {
-        const parts = fDate.split("-");
-        fDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`; // DD-MM-YYYY
-        fDateStr2 = `${parts[2]}/${parts[1]}/${parts[0]}`; // DD/MM/YYYY
+        const p = fDate.split("-"); // Input is always YYYY-MM-DD
+        const yy = p[0].substring(2);
+        fDateColYY = `${p[2]}:${p[1]}:${yy}`;     // DD:MM:YY
+        fDateColYYYY = `${p[2]}:${p[1]}:${p[0]}`; // DD:MM:YYYY
     }
 
     // Filter Data
     let filtered = globalGSheetData.filter(r => {
         if(fMonth && r.month !== fMonth) return false;
         if(fHub && r.hub !== fHub) return false;
-        if(fDate && !r.date.includes(fDate) && !r.date.includes(fDateStr) && !r.date.includes(fDateStr2)) return false; 
+        if(fDate && !r.date.includes(fDate) && !r.date.includes(fDateColYY) && !r.date.includes(fDateColYYYY)) return false; 
         if(fPod && r.pod !== fPod) return false;
         if(fZone && r.zone !== fZone) return false;
         if(fStatus && r.status !== fStatus) return false;
@@ -1130,7 +1142,6 @@ function renderGSheetDashboard() {
         if(ven.includes("p") || ven.includes("present") || ven === "1") venPresent++;
         if(d1 === "" || d1.includes("pending") || d1.includes("no")) pendingD1++;
 
-        // Render Top 50 matched rows for performance
         if(rowCount < 50) {
             const pHi = hi.includes("p") ? `<span style="color:var(--sf-green);font-weight:700">P</span>` : r.hiAtt;
             const pVen = ven.includes("p") ? `<span style="color:var(--sf-green);font-weight:700">P</span>` : r.venAtt;
@@ -1149,7 +1160,6 @@ function renderGSheetDashboard() {
         }
     });
 
-    // Update UI Cards and Table
     document.getElementById("g-stat-hubs").innerText = uniqueHubs.size;
     document.getElementById("g-stat-vehicles").innerText = uniqueVehicles.size;
     document.getElementById("g-stat-hi-att").innerText = hiPresent;
