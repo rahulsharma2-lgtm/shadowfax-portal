@@ -459,7 +459,21 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
 
         <div class="ph" style="margin-top:28px;margin-bottom:10px"><h3 style="font-size:16px;font-weight:700">Recent Happay Entries</h3></div>
      <div style="background: white; padding: 20px; border-radius: 10px; border: 1px solid var(--sf-gray-200); box-shadow: var(--shadow-sm); margin-bottom: 24px;">
-            <h3 style="font-size:13px; font-weight:700; color:var(--sf-gray-500); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:15px;">Daily Cost Trend</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                <h3 style="font-size:13px; font-weight:700; color:var(--sf-gray-500); text-transform:uppercase; letter-spacing:0.5px; margin:0;">Daily Trend Analysis</h3>
+                
+                <div style="display:flex; gap:15px; font-size:12px; font-weight:600;">
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:4px; color:var(--sf-green)">
+                        <input type="checkbox" id="toggle-charges" checked onchange="renderHappayDashboard()" style="accent-color:var(--sf-green);width:15px;height:15px;"> Total Charges (₹)
+                    </label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:4px; color:var(--sf-blue)">
+                        <input type="checkbox" id="toggle-entries" onchange="renderHappayDashboard()" style="accent-color:var(--sf-blue);width:15px;height:15px;"> Total LCV Entries
+                    </label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:4px; color:var(--sf-gray-700)">
+                        <input type="checkbox" id="toggle-hubs" onchange="renderHappayDashboard()" style="accent-color:var(--sf-gray-700);width:15px;height:15px;"> Total Hubs
+                    </label>
+                </div>
+            </div>
             <canvas id="happayLineChart" height="70"></canvas>
         </div>
         <div class="tbl-wrap">
@@ -1434,90 +1448,77 @@ function renderHappayDashboard() {
         if (r.hub) dateGroups[d].hubs.add(r.hub);
     });
 
-    // Sort dates chronologically (Oldest to Newest)
     const sortedDates = Object.keys(dateGroups).sort();
     
-    // Format dates for the bottom of the chart
     const chartLabels = sortedDates.map(d => {
         if (d === "Unknown") return d;
-        const p = d.split("-"); // Input is YYYY-MM-DD
-        return p.length === 3 ? `${p[2]}/${p[1]}` : d; // Outputs DD/MM
+        const p = d.split("-"); 
+        return p.length === 3 ? `${p[2]}/${p[1]}` : d; 
     });
     
-    // Extract the 3 specific data arrays
     const chartDataCharges = sortedDates.map(d => dateGroups[d].charges);
     const chartDataEntries = sortedDates.map(d => dateGroups[d].entries);
     const chartDataHubs = sortedDates.map(d => dateGroups[d].hubs.size);
 
-    // Draw or Update the Chart
+    // Read the Checkboxes!
+    const chkCharges = document.getElementById('toggle-charges') ? document.getElementById('toggle-charges').checked : true;
+    const chkEntries = document.getElementById('toggle-entries') ? document.getElementById('toggle-entries').checked : false;
+    const chkHubs = document.getElementById('toggle-hubs') ? document.getElementById('toggle-hubs').checked : false;
+
+    // Build only the selected lines
+    const activeDatasets = [];
+    if (chkCharges) {
+        activeDatasets.push({
+            label: 'Total Charges (₹)',
+            data: chartDataCharges,
+            borderColor: '#00A651', backgroundColor: 'rgba(0, 166, 81, 0.1)', borderWidth: 3,
+            pointBackgroundColor: '#00A651', pointRadius: 4, fill: true, tension: 0.3,
+            yAxisID: 'y'
+        });
+    }
+    if (chkEntries) {
+        activeDatasets.push({
+            label: 'Total LCV Entries',
+            data: chartDataEntries,
+            borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 3,
+            pointBackgroundColor: '#3b82f6', pointRadius: 4, fill: true, tension: 0.3,
+            yAxisID: 'y1'
+        });
+    }
+    if (chkHubs) {
+        activeDatasets.push({
+            label: 'Total Hubs',
+            data: chartDataHubs,
+            borderColor: '#374151', backgroundColor: 'rgba(55, 65, 81, 0.1)', borderWidth: 3,
+            pointBackgroundColor: '#374151', pointRadius: 4, fill: true, tension: 0.3,
+            yAxisID: 'y1'
+        });
+    }
+
     const ctx = document.getElementById('happayLineChart');
     if(ctx) {
         if(window.happayLineChartInstance) {
-            window.happayLineChartInstance.destroy(); // Destroy old chart before drawing new one
+            window.happayLineChartInstance.destroy(); 
         }
         window.happayLineChartInstance = new Chart(ctx, {
             type: 'line',
-            data: {
-                labels: chartLabels,
-                datasets: [
-                    {
-                        label: 'Total Charges (₹)',
-                        data: chartDataCharges,
-                        borderColor: '#00A651', // Green
-                        backgroundColor: 'rgba(0, 166, 81, 0.1)',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#00A651',
-                        pointRadius: 4,
-                        fill: true,
-                        tension: 0.3,
-                        yAxisID: 'y' // Uses the Left Axis
-                    },
-                    {
-                        label: 'Total LCV Entries',
-                        data: chartDataEntries,
-                        borderColor: '#3b82f6', // Blue
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        borderDash: [5, 5], // Dashed line to distinguish it easily
-                        pointBackgroundColor: '#3b82f6',
-                        pointRadius: 4,
-                        tension: 0.3,
-                        yAxisID: 'y1' // Uses the Right Axis
-                    },
-                    {
-                        label: 'Total Hubs',
-                        data: chartDataHubs,
-                        borderColor: '#6b7280', // Gray
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#6b7280',
-                        pointRadius: 4,
-                        tension: 0.3,
-                        yAxisID: 'y1' // Uses the Right Axis
-                    }
-                ]
-            },
+            data: { labels: chartLabels, datasets: activeDatasets },
             options: {
                 responsive: true,
-                interaction: { mode: 'index', intersect: false }, // Hovering shows all 3 values at once!
+                interaction: { mode: 'index', intersect: false }, 
                 plugins: { 
-                    legend: { display: true, position: 'top' } // Show the legend
+                    legend: { display: false } // Hide default legend because we use checkboxes now!
                 },
                 scales: {
                     y: { 
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
+                        type: 'linear', display: chkCharges, position: 'left',
                         title: { display: true, text: 'Charges (₹)', color: '#00A651', font: {weight: 'bold'} },
                         ticks: { callback: function(val) { return '₹' + val.toLocaleString("en-IN"); } } 
                     },
                     y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
+                        type: 'linear', display: (chkEntries || chkHubs), position: 'right',
                         title: { display: true, text: 'Count (Hubs / Entries)', color: '#3b82f6', font: {weight: 'bold'} },
-                        grid: { drawOnChartArea: false }, // Hides right-axis grid lines to keep it clean
-                        beginAtZero: true
+                        grid: { drawOnChartArea: false }, beginAtZero: true
                     }
                 }
             }
