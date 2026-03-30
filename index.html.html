@@ -348,6 +348,17 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
 
     <div id="gsheet-content" style="display:none;">
+        
+        <div class="toolbar" style="margin-bottom: 24px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding: 12px 16px; background: white; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <select id="g-filter-month" class="f-sel" onchange="renderGSheetDashboard()"><option value="">All Months</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
+            <select id="g-filter-hub" class="f-sel" onchange="renderGSheetDashboard()"><option value="">All Hubs</option></select>
+            <input type="date" id="g-filter-date" class="f-sel" onchange="renderGSheetDashboard()" title="Select Date">
+            <select id="g-filter-pod" class="f-sel" onchange="renderGSheetDashboard()"><option value="">All PODs</option></select>
+            <select id="g-filter-zone" class="f-sel" onchange="renderGSheetDashboard()"><option value="">All Zones</option></select>
+            <select id="g-filter-status" class="f-sel" onchange="renderGSheetDashboard()"><option value="">All Statuses</option></select>
+            <select id="g-filter-hi" class="f-sel" onchange="renderGSheetDashboard()"><option value="">HI Att. (All)</option><option value="p">Present</option><option value="a">Absent</option></select>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="clearGSheetFilters()">✕ Clear</button>
+        </div>
         <div class="stat-grid" style="margin-bottom: 24px;">
             <div class="stat-card" style="border-top: 4px solid var(--sf-gray-500)">
                 <div class="sc-label">TOTAL HUBS</div>
@@ -974,8 +985,10 @@ async function handleLogin(e) {
 function showPortal(id,title,user){document.getElementById("login-container").style.display="none";document.getElementById("app-container").classList.add("show");document.getElementById("tb-title").textContent=title;document.getElementById("tb-user").textContent=user;document.querySelectorAll(".portal").forEach(p=>p.classList.remove("show"));document.getElementById(id).classList.add("show");}
 function logout(){document.getElementById("app-container").classList.remove("show");document.getElementById("login-container").style.display="flex";document.getElementById("username").value="";document.getElementById("password").value="";document.getElementById("login-error").style.display="none";currentVendor=null;currentHubName="Hub Manager";window.currentAllowedHubs=[...predefinedHubs];}
 // ==========================================
-// GOOGLE SHEETS LIVE FETCH ENGINE
+// GOOGLE SHEETS LIVE FETCH & FILTER ENGINE
 // ==========================================
+let globalGSheetData = []; // Stores the live data so filters are instant
+
 async function loadGoogleSheetData() {
     const loadingDiv = document.getElementById("gsheet-loading");
     const contentDiv = document.getElementById("gsheet-content");
@@ -985,99 +998,174 @@ async function loadGoogleSheetData() {
     contentDiv.style.display = "none";
     errorEl.innerText = "";
 
-    // The official Google Sheets CSV Export URL using your exact Sheet ID and GID
     const sheetUrl = "https://docs.google.com/spreadsheets/d/1XNGWihuLVmRSoGouuVROkbZ2OqKCtuhIXBaEpShabw0/export?format=csv&gid=875407165";
 
     try {
         const response = await fetch(sheetUrl);
-        if (!response.ok) throw new Error("Could not read sheet. Is it set to 'Anyone with the link can view'?");
+        if (!response.ok) throw new Error("Could not read sheet.");
         
         const csvText = await response.text();
         const rows = parseCSV(csvText);
-        
         if (rows.length < 2) throw new Error("Sheet appears to be empty.");
 
-        // Grab headers from the first row
         const headers = rows[0].map(h => h.trim().toLowerCase());
         
-        // Find column indexes based on your exact header names
-        const colHub = headers.findIndex(h => h.includes("hub name"));
-        const colVehicleNo = headers.findIndex(h => h.includes("vehicle no"));
-        const colDate = headers.findIndex(h => h.includes("date") && !h.includes("deployment"));
-        const colVendor = headers.findIndex(h => h.includes("vendor name"));
-        const colHI = headers.findIndex(h => h.includes("hi attendance"));
-        const colVenAtt = headers.findIndex(h => h.includes("vendor attendance"));
-        const colD1 = headers.findIndex(h => h.includes("d-1"));
-
-        let uniqueHubs = new Set();
-        let uniqueVehicles = new Set();
-        let hiPresent = 0;
-        let venPresent = 0;
-        let pendingD1 = 0;
+        // Strict mapping for column names
+        const getCol = (name) => headers.findIndex(h => h === name.toLowerCase() || h === name.toLowerCase().trim());
         
-        let recentHtml = "";
-        let validRowsCount = 0;
+        const colHub = getCol("hub name");
+        const colPod = getCol("pod mapped");
+        const colZone = getCol("zone");
+        const colStatus = getCol("status");
+        const colHI = getCol("hi attendance");
+        const colVenAtt = getCol("vendor attendance");
+        const colD1 = getCol("d-1 clearence");
+        const colVehicleNo = getCol("vehicle no.");
+        const colVendor = getCol("vendor name");
+        const colDate = headers.findIndex(h => h === "date"); // Strict match for Date
 
-        // Loop through data rows (skip header)
+        globalGSheetData = [];
+        let uHubs = new Set(), uPods = new Set(), uZones = new Set(), uStatus = new Set();
+
+        // 1. Process and save all rows internally
         for(let i = 1; i < rows.length; i++) {
             const row = rows[i];
             if(!row[colHub]) continue; // Skip empty rows
 
-            const hub = row[colHub];
-            const vNo = row[colVehicleNo] || "—";
-            const hiAtt = (row[colHI] || "").trim().toLowerCase();
-            const venAtt = (row[colVenAtt] || "").trim().toLowerCase();
-            const d1 = (row[colD1] || "").trim().toLowerCase();
-
-            uniqueHubs.add(hub);
-            if(vNo !== "—") uniqueVehicles.add(vNo);
-            
-            if(hiAtt.includes("p") || hiAtt.includes("present") || hiAtt === "1") hiPresent++;
-            if(venAtt.includes("p") || venAtt.includes("present") || venAtt === "1") venPresent++;
-            if(d1 === "" || d1.includes("pending") || d1.includes("no")) pendingD1++;
-
-            // Grab the first 15 rows for the preview table
-            if (validRowsCount < 15) {
-                const pHi = hiAtt.includes("p") ? `<span style="color:var(--sf-green);font-weight:700">P</span>` : hiAtt;
-                const pVen = venAtt.includes("p") ? `<span style="color:var(--sf-green);font-weight:700">P</span>` : venAtt;
-                const pD1 = d1.includes("clear") || d1.includes("yes") ? `<span style="color:var(--sf-green)">Cleared</span>` : `<span style="color:var(--sf-red)">Pending</span>`;
-                
-                recentHtml += `<tr>
-                    <td>${row[colDate] || "—"}</td>
-                    <td><strong>${hub}</strong></td>
-                    <td style="font-size:12px;color:var(--sf-gray-500)">${row[colVendor] || "—"}</td>
-                    <td style="font-family:DM Mono,monospace">${vNo}</td>
-                    <td style="text-align:center">${pHi || "—"}</td>
-                    <td style="text-align:center">${pVen || "—"}</td>
-                    <td>${pD1}</td>
-                </tr>`;
-                validRowsCount++;
+            const dateVal = row[colDate] || "";
+            let monthVal = "";
+            if(dateVal) {
+                try { const d = new Date(dateVal); if(!isNaN(d)) monthVal = d.toLocaleString('default', { month: 'long' }); } catch(e){}
             }
+
+            const obj = {
+                hub: (row[colHub] || "").trim(),
+                pod: (row[colPod] || "").trim(),
+                zone: (row[colZone] || "").trim(),
+                status: (row[colStatus] || "").trim(),
+                hiAtt: (row[colHI] || "").trim(),
+                venAtt: (row[colVenAtt] || "").trim(),
+                d1: (row[colD1] || "").trim(),
+                vNo: (row[colVehicleNo] || "").trim(),
+                vendor: (row[colVendor] || "").trim(),
+                date: dateVal.trim(),
+                month: monthVal
+            };
+
+            globalGSheetData.push(obj);
+            if(obj.hub) uHubs.add(obj.hub);
+            if(obj.pod) uPods.add(obj.pod);
+            if(obj.zone) uZones.add(obj.zone);
+            if(obj.status) uStatus.add(obj.status);
         }
 
-        // Inject the math into the cards
-        document.getElementById("g-stat-hubs").innerText = uniqueHubs.size;
-        document.getElementById("g-stat-vehicles").innerText = uniqueVehicles.size;
-        document.getElementById("g-stat-hi-att").innerText = hiPresent;
-        document.getElementById("g-stat-ven-att").innerText = venPresent;
-        document.getElementById("g-stat-clear").innerText = pendingD1;
-        
-        document.getElementById("gsheet-table-body").innerHTML = recentHtml || `<tr><td colspan="7" class="empty-c">No recent data found.</td></tr>`;
+        // 2. Auto-Populate the Filter Dropdowns from the Sheet Data
+        const pop = (id, set, def) => {
+            const el = document.getElementById(id);
+            if(el) { el.innerHTML = `<option value="">${def}</option>`; [...set].sort().forEach(v => el.appendChild(new Option(v, v))); }
+        };
+        pop("g-filter-hub", uHubs, "All Hubs");
+        pop("g-filter-pod", uPods, "All PODs");
+        pop("g-filter-zone", uZones, "All Zones");
+        pop("g-filter-status", uStatus, "All Statuses");
 
-        // Hide loading, show content
         loadingDiv.style.display = "none";
         contentDiv.style.display = "block";
         toast("Live Google Sheet synced successfully!");
 
+        // 3. Render the initial view
+        renderGSheetDashboard(); 
+
     } catch (err) {
-        errorEl.innerText = "Error: " + err.message + " (Please ensure Google Sheet sharing is set to 'Anyone with the link can view')";
+        errorEl.innerText = "Error: " + err.message + " (Check if sheet is set to 'Anyone with the link can view')";
     }
 }
 
-// Helper Function: Parses CSV text perfectly, even if cells contain commas inside quotes
+// Applies filters, updates cards, and draws table instantly
+function renderGSheetDashboard() {
+    // Read Filter Values
+    const fMonth = document.getElementById("g-filter-month").value;
+    const fHub = document.getElementById("g-filter-hub").value;
+    const fDate = document.getElementById("g-filter-date").value; 
+    const fPod = document.getElementById("g-filter-pod").value;
+    const fZone = document.getElementById("g-filter-zone").value;
+    const fStatus = document.getElementById("g-filter-status").value;
+    const fHi = document.getElementById("g-filter-hi").value.toLowerCase();
+
+    // Format HTML Date (YYYY-MM-DD) to check against common sheet formats
+    let fDateStr = fDate; let fDateStr2 = fDate;
+    if(fDate) {
+        const parts = fDate.split("-");
+        fDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`; // DD-MM-YYYY
+        fDateStr2 = `${parts[2]}/${parts[1]}/${parts[0]}`; // DD/MM/YYYY
+    }
+
+    // Filter Data
+    let filtered = globalGSheetData.filter(r => {
+        if(fMonth && r.month !== fMonth) return false;
+        if(fHub && r.hub !== fHub) return false;
+        if(fDate && !r.date.includes(fDate) && !r.date.includes(fDateStr) && !r.date.includes(fDateStr2)) return false; 
+        if(fPod && r.pod !== fPod) return false;
+        if(fZone && r.zone !== fZone) return false;
+        if(fStatus && r.status !== fStatus) return false;
+        if(fHi && !r.hiAtt.toLowerCase().includes(fHi)) return false;
+        return true;
+    });
+
+    // Calculate Dynamic Stats
+    let uniqueHubs = new Set(), uniqueVehicles = new Set();
+    let hiPresent = 0, venPresent = 0, pendingD1 = 0;
+    let tableHtml = "";
+    let rowCount = 0;
+
+    filtered.forEach(r => {
+        uniqueHubs.add(r.hub);
+        if(r.vNo && r.vNo !== "—") uniqueVehicles.add(r.vNo);
+
+        const hi = r.hiAtt.toLowerCase();
+        const ven = r.venAtt.toLowerCase();
+        const d1 = r.d1.toLowerCase();
+
+        if(hi.includes("p") || hi.includes("present") || hi === "1") hiPresent++;
+        if(ven.includes("p") || ven.includes("present") || ven === "1") venPresent++;
+        if(d1 === "" || d1.includes("pending") || d1.includes("no")) pendingD1++;
+
+        // Render Top 50 matched rows for performance
+        if(rowCount < 50) {
+            const pHi = hi.includes("p") ? `<span style="color:var(--sf-green);font-weight:700">P</span>` : r.hiAtt;
+            const pVen = ven.includes("p") ? `<span style="color:var(--sf-green);font-weight:700">P</span>` : r.venAtt;
+            const pD1 = d1.includes("clear") || d1.includes("yes") ? `<span style="color:var(--sf-green)">Cleared</span>` : `<span style="color:var(--sf-red)">Pending</span>`;
+
+            tableHtml += `<tr>
+                <td>${r.date || "—"}</td>
+                <td><strong>${r.hub}</strong></td>
+                <td style="font-size:12px;color:var(--sf-gray-500)">${r.vendor || "—"}</td>
+                <td style="font-family:DM Mono,monospace">${r.vNo || "—"}</td>
+                <td style="text-align:center">${pHi || "—"}</td>
+                <td style="text-align:center">${pVen || "—"}</td>
+                <td>${pD1}</td>
+            </tr>`;
+            rowCount++;
+        }
+    });
+
+    // Update UI Cards and Table
+    document.getElementById("g-stat-hubs").innerText = uniqueHubs.size;
+    document.getElementById("g-stat-vehicles").innerText = uniqueVehicles.size;
+    document.getElementById("g-stat-hi-att").innerText = hiPresent;
+    document.getElementById("g-stat-ven-att").innerText = venPresent;
+    document.getElementById("g-stat-clear").innerText = pendingD1;
+    document.getElementById("gsheet-table-body").innerHTML = tableHtml || `<tr><td colspan="7" class="empty-c">No data matches these filters.</td></tr>`;
+}
+
+function clearGSheetFilters() {
+    ["g-filter-month", "g-filter-hub", "g-filter-date", "g-filter-pod", "g-filter-zone", "g-filter-status", "g-filter-hi"].forEach(id => document.getElementById(id).value = "");
+    renderGSheetDashboard();
+}
+
+// Helper Function: Parses CSV text
 function parseCSV(str) {
-    const result = [];
-    let row = [], inQuotes = false, val = '';
+    const result = []; let row = [], inQuotes = false, val = '';
     for (let i = 0; i < str.length; i++) {
         let c = str[i];
         if (c === '"' && str[i+1] === '"') { val += '"'; i++; }
