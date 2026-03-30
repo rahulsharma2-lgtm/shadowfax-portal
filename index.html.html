@@ -902,57 +902,74 @@ function renderHubAnnouncements(){
 /* ══════════════════════════════════════════════════════════════
    MONTH-OVER-MONTH CHART
 ══════════════════════════════════════════════════════════════ */
-const monthOrder=["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 function renderMoMChart(){
-  const metric=document.getElementById("mom-metric")?.value||"charges";
-  const monthGroups={};
-  globalHappayData.forEach(r=>{
-    if(!r.month)return;
-    if(!monthGroups[r.month])monthGroups[r.month]={charges:0,entries:0,hubs:new Set()};
-    monthGroups[r.month].charges+=r.chargeNum;
-    monthGroups[r.month].entries+=1;
-    if(r.hub)monthGroups[r.month].hubs.add(r.hub);
+  const metric = document.getElementById("mom-metric")?.value || "charges";
+  const monthGroups = {};
+  const shortMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  globalHappayData.forEach(r => {
+    if(!r.stdDate) return; // Skip if no valid date
+    
+    // Extract "YYYY-MM" (e.g., "2025-12" or "2026-03")
+    const yearMonthKey = r.stdDate.substring(0, 7); 
+    
+    if(!monthGroups[yearMonthKey]) {
+      // Create a clean label like "Dec '25"
+      const parts = yearMonthKey.split("-");
+      const mName = shortMonths[parseInt(parts[1], 10) - 1] + " '" + parts[0].substring(2);
+      
+      monthGroups[yearMonthKey] = { labelName: mName, charges: 0, entries: 0, hubs: new Set() };
+    }
+    
+    monthGroups[yearMonthKey].charges += r.chargeNum;
+    monthGroups[yearMonthKey].entries += 1;
+    if(r.hub) monthGroups[yearMonthKey].hubs.add(r.hub);
   });
-  const labels=monthOrder.filter(m=>monthGroups[m]);
-  const values=labels.map(m=>metric==="hubs"?monthGroups[m].hubs.size:monthGroups[m][metric]);
-  const ctx=document.getElementById("momBarChart");
-  if(!ctx)return;
-  if(window.momChartInstance)window.momChartInstance.destroy();
+
+  // Because the keys are "YYYY-MM", standard sorting naturally orders them oldest to newest!
+  const sortedKeys = Object.keys(monthGroups).sort();
   
-  window.momChartInstance=new Chart(ctx,{
-    type:"line", // Swapped from "bar" to "line"
-    data:{
+  const labels = sortedKeys.map(k => monthGroups[k].labelName);
+  const values = sortedKeys.map(k => metric === "hubs" ? monthGroups[k].hubs.size : monthGroups[k][metric]);
+
+  const ctx = document.getElementById("momBarChart");
+  if(!ctx) return;
+  if(window.momChartInstance) window.momChartInstance.destroy();
+  
+  window.momChartInstance = new Chart(ctx,{
+    type: "line", 
+    data: {
       labels,
-      datasets:[{
-        label:metric==="charges"?"Total Charges (₹)":metric==="entries"?"Total LCV Entries":"Unique Hubs",
-        data:values,
-        backgroundColor:"rgba(0,166,81,0.1)", // Light green fill
-        borderColor:"#00A651", // Solid green line
-        borderWidth:3,
-        pointBackgroundColor:"#00A651",
+      datasets: [{
+        label: metric === "charges" ? "Total Charges (₹)" : metric === "entries" ? "Total LCV Entries" : "Unique Hubs",
+        data: values,
+        backgroundColor: "rgba(0,166,81,0.1)",
+        borderColor: "#00A651",
+        borderWidth: 3,
+        pointBackgroundColor: "#00A651",
         pointBorderColor: "#ffffff",
         pointBorderWidth: 2,
-        pointRadius:6,
+        pointRadius: 6,
         pointHoverRadius: 8,
-        fill:true, // Fills the area under the line
-        tension:0.3 // Adds a smooth curve to the line
+        fill: true,
+        tension: 0.3 
       }]
     },
-    options:{
-      responsive:true,
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:v=>metric==="charges"?"₹"+v.raw.toLocaleString("en-IN"):v.raw}}
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: v => metric === "charges" ? "₹" + v.raw.toLocaleString("en-IN") : v.raw } }
       },
-      scales:{
-        y:{
-          beginAtZero:true,
-          ticks:{callback:v=>metric==="charges"?"₹"+v.toLocaleString("en-IN"):v},
-          grid:{color:"rgba(0,0,0,0.04)"}
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: v => metric === "charges" ? "₹" + v.toLocaleString("en-IN") : v },
+          grid: { color: "rgba(0,0,0,0.04)" }
         },
-        x:{
-          grid:{display:false}
+        x: {
+          grid: { display: false }
         }
       }
     }
