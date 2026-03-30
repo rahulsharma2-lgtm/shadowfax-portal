@@ -1035,18 +1035,33 @@ async function loadGoogleSheetData() {
 
             const dateVal = row[colDate] || "";
             let monthVal = "";
+            let stdDate = ""; // Hidden standard date for PERFECT filtering
             
-            // 🚨 NEW: Smart Date Parser for DD:MM:YY 🚨
+            // 🚨 ULTIMATE DATE PARSER: Handles DD:MM:YY, DD/MM/YYYY, DD-MM-YY 🚨
             if(dateVal) {
-                if(dateVal.includes(":")) {
-                    const dParts = dateVal.split(":");
-                    if(dParts.length >= 2) {
-                        const mIndex = parseInt(dParts[1], 10) - 1; // Get Month Number
-                        if(mIndex >= 0 && mIndex < 12) monthVal = monthNames[mIndex];
-                    }
+                // Looks for 2 digits, a separator (: / -), 2 digits, a separator, and 2 or 4 digits
+                const dateRegex = /^(\d{1,2})[\/\-\:\.](\d{1,2})[\/\-\:\.](\d{2,4})$/;
+                const match = dateVal.trim().match(dateRegex);
+                
+                if (match) {
+                    let dd = match[1].padStart(2, '0');
+                    let mm = match[2].padStart(2, '0');
+                    let yy = match[3];
+                    if (yy.length === 2) yy = "20" + yy; // Converts '26' to '2026'
+                    
+                    const mIndex = parseInt(mm, 10) - 1; // Extract exact Month
+                    if (mIndex >= 0 && mIndex < 12) monthVal = monthNames[mIndex];
+                    
+                    stdDate = `${yy}-${mm}-${dd}`; // Translates to YYYY-MM-DD for the HTML picker
                 } else {
-                    // Fallback for normal dates
-                    try { const d = new Date(dateVal); if(!isNaN(d)) monthVal = d.toLocaleString('default', { month: 'long' }); } catch(e){}
+                    // Fallback for native computer dates
+                    try { 
+                        const d = new Date(dateVal); 
+                        if(!isNaN(d)) {
+                            monthVal = d.toLocaleString('default', { month: 'long' }); 
+                            stdDate = d.toISOString().split('T')[0];
+                        }
+                    } catch(e){}
                 }
             }
 
@@ -1060,8 +1075,9 @@ async function loadGoogleSheetData() {
                 d1: (row[colD1] || "").trim(),
                 vNo: (row[colVehicleNo] || "").trim(),
                 vendor: (row[colVendor] || "").trim(),
-                date: dateVal.trim(),
-                month: monthVal
+                date: dateVal.trim(), // Keep original text for display
+                stdDate: stdDate,     // Hidden standardized date for filtering
+                month: monthVal       // Extracted Month Name
             };
 
             globalGSheetData.push(obj);
@@ -1097,26 +1113,17 @@ async function loadGoogleSheetData() {
 function renderGSheetDashboard() {
     const fMonth = document.getElementById("g-filter-month").value;
     const fHub = document.getElementById("g-filter-hub").value;
-    const fDate = document.getElementById("g-filter-date").value; 
+    const fDate = document.getElementById("g-filter-date").value; // Always outputs YYYY-MM-DD
     const fPod = document.getElementById("g-filter-pod").value;
     const fZone = document.getElementById("g-filter-zone").value;
     const fStatus = document.getElementById("g-filter-status").value;
     const fHi = document.getElementById("g-filter-hi").value.toLowerCase();
 
-    // 🚨 NEW: Translate HTML Picker Date to DD:MM:YY 🚨
-    let fDateColYY = fDate; let fDateColYYYY = fDate;
-    if(fDate) {
-        const p = fDate.split("-"); // Input is always YYYY-MM-DD
-        const yy = p[0].substring(2);
-        fDateColYY = `${p[2]}:${p[1]}:${yy}`;     // DD:MM:YY
-        fDateColYYYY = `${p[2]}:${p[1]}:${p[0]}`; // DD:MM:YYYY
-    }
-
-    // Filter Data
+    // Filter Data using the perfect hidden standard date
     let filtered = globalGSheetData.filter(r => {
         if(fMonth && r.month !== fMonth) return false;
         if(fHub && r.hub !== fHub) return false;
-        if(fDate && !r.date.includes(fDate) && !r.date.includes(fDateColYY) && !r.date.includes(fDateColYYYY)) return false; 
+        if(fDate && r.stdDate !== fDate) return false; // PERFECT DATE MATCH
         if(fPod && r.pod !== fPod) return false;
         if(fZone && r.zone !== fZone) return false;
         if(fStatus && r.status !== fStatus) return false;
