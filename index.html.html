@@ -1258,7 +1258,7 @@ async function loadHappaySheetData() {
         const rows = parseCSV(csvText); 
         if (rows.length < 2) throw new Error("Sheet appears to be empty.");
 
-        // 🚨 NEW: Smart Header Scanner! Looks through the first 10 rows to find headers.
+        // Smart Header Scanner! Looks through the first 10 rows to find headers.
         let headerRowIndex = -1;
         let headers = [];
         for (let i = 0; i < Math.min(10, rows.length); i++) {
@@ -1298,19 +1298,20 @@ async function loadHappaySheetData() {
             let monthVal = "";
             let stdDate = ""; 
             
+            // 🚨 UPDATED DATE PARSER: Specifically handles MM/DD/YYYY or MM/DD/YY 🚨
             if(dateVal) {
                 const dateRegex = /^(\d{1,2})[\/\-\:\.](\d{1,2})[\/\-\:\.](\d{2,4})$/;
                 const match = dateVal.match(dateRegex);
                 
                 if (match) {
-                    let dd = match[1].padStart(2, '0');
-                    let mm = match[2].padStart(2, '0');
+                    let mm = match[1].padStart(2, '0'); // <-- MONTH is now First!
+                    let dd = match[2].padStart(2, '0'); // <-- DAY is now Second!
                     let yy = match[3];
                     if (yy.length === 2) yy = "20" + yy; 
                     
                     const mIndex = parseInt(mm, 10) - 1; 
                     if (mIndex >= 0 && mIndex < 12) monthVal = monthNames[mIndex];
-                    stdDate = `${yy}-${mm}-${dd}`; 
+                    stdDate = `${yy}-${mm}-${dd}`; // Computer format: YYYY-MM-DD
                 } else {
                     try { 
                         const d = new Date(dateVal); 
