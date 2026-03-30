@@ -54,10 +54,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
 .tb-logout{background:transparent;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);padding:5px 13px;border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;transition:var(--t)}
 .tb-logout:hover{border-color:rgba(255,255,255,.3);color:white}
 
-/* Session timer */
-#session-timer{font-size:11px;color:rgba(255,165,0,.7);font-family:'DM Mono',monospace;border:1px solid rgba(255,165,0,.2);padding:3px 9px;border-radius:12px}
-#session-timer.warn{color:#fca5a5;border-color:rgba(239,68,68,.3);animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 
 .main{flex:1;padding:26px 28px;max-width:1600px;width:100%;margin:0 auto}
 .portal{display:none;animation:fadeUp .3s ease}
@@ -284,7 +280,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
    <span id="tb-title">Portal</span>
   </div>
   <div class="tb-right">
-   <span id="session-timer" title="Session expires in...">⏱ --:--</span>
    <span id="tb-user">—</span>
    <button class="tb-logout" onclick="logout()">Sign Out</button>
   </div>
@@ -402,18 +397,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
    </form>
   </div>
 
-  <!-- ═══ FINANCE PORTAL ═══ -->
-  <div id="finance-portal" class="portal">
-   <div class="ph">
-    <div><h2>Finance View <span class="role-badge role-finance">Read Only</span></h2><p>View-only access to Happay and attendance data</p></div>
-    <button class="btn btn-primary" onclick="loadHappaySheetData()">🔄 Refresh Data</button>
-   </div>
-   <div id="finance-happay-content">
-    <div id="finance-loading" style="background:white;padding:40px;text-align:center;border-radius:12px;border:1px dashed var(--sf-gray-300);color:var(--sf-gray-500);">
-     <h3 style="color:var(--sf-black);margin-bottom:8px;">⏳ Loading Finance Data...</h3><p>Fetching Happay records...</p>
-    </div>
-   </div>
-  </div>
 
   <!-- ═══ ADMIN PORTAL ═══ -->
   <div id="admin-portal" class="portal">
@@ -577,9 +560,8 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
        <div class="f-group"><label class="f-label">WORKING PLAN</label><select id="deploy-plan" class="f-sel"><option value="3000KM . 12 Hrs . 31 Days">3000KM . 12 Hrs . 31 Days</option><option value="2500KM . 10 Hrs . 26 Days">2500KM . 10 Hrs . 26 Days</option></select></div>
        <div class="f-group"><label class="f-label">DEPLOYMENT DATE</label><input type="date" id="deploy-date" class="f-in" required></div>
 
-       <!-- Finance viewer -->
-       <div class="f-group"><label class="f-label">FINANCE VIEWER EMAIL</label><input type="email" id="deploy-finance-email" class="f-in" placeholder="finance@company.in"><small style="color:var(--sf-gray-400);font-size:11px;margin-top:4px;display:block">Optional. Grants read-only Finance access.</small></div>
-       <div class="f-group"><label class="f-label">FINANCE VIEWER PASSWORD</label><input type="text" id="deploy-finance-pass" class="f-in" placeholder="Set password (default: 123)"></div>
+       
+
       </div>
       <button type="submit" class="btn btn-primary" style="margin-bottom:20px">+ Add Deployment Rule</button>
      </form>
@@ -744,37 +726,6 @@ async function verifyPassword(plain,stored){
   return plain===stored; // legacy plain-text fallback
 }
 
-/* ══════════════════════════════════════════════════════════════
-   SESSION MANAGEMENT — 8 HOUR TIMEOUT
-══════════════════════════════════════════════════════════════ */
-const SESSION_DURATION=8*60*60*1000; // 8 hours
-let sessionExpiry=0,sessionTimerInterval=null;
-
-function startSession(){
-  sessionExpiry=Date.now()+SESSION_DURATION;
-  sessionStorage.setItem("sf_session_expiry",sessionExpiry);
-  updateSessionTimer();
-  sessionTimerInterval=setInterval(()=>{
-    if(Date.now()>=sessionExpiry){
-      clearInterval(sessionTimerInterval);
-      toast("Session expired. Please log in again.","err");
-      setTimeout(logout,2000);
-    } else updateSessionTimer();
-  },60000); // update every minute
-}
-function updateSessionTimer(){
-  const el=document.getElementById("session-timer");
-  if(!el)return;
-  const rem=sessionExpiry-Date.now();
-  if(rem<=0){el.textContent="⏱ Expired";return;}
-  const h=Math.floor(rem/3600000),m=Math.floor((rem%3600000)/60000);
-  el.textContent=`⏱ ${h}h ${String(m).padStart(2,'0')}m`;
-  el.className=rem<30*60*1000?"warn":""; // warn if < 30 min
-}
-function endSession(){
-  clearInterval(sessionTimerInterval);
-  sessionStorage.removeItem("sf_session_expiry");
-}
 
 /* ══════════════════════════════════════════════════════════════
    SUPABASE CLOUD DATABASE
@@ -968,23 +919,45 @@ function renderMoMChart(){
   const ctx=document.getElementById("momBarChart");
   if(!ctx)return;
   if(window.momChartInstance)window.momChartInstance.destroy();
-  // Color bars: last bar highlighted in green, rest in soft gray
-  const colors=labels.map((_,i)=>i===labels.length-1?"rgba(0,166,81,0.85)":"rgba(0,166,81,0.25)");
-  const borderColors=labels.map((_,i)=>i===labels.length-1?"#007a3d":"rgba(0,166,81,0.5)");
+  
   window.momChartInstance=new Chart(ctx,{
-    type:"bar",
-    data:{labels,datasets:[{
-      label:metric==="charges"?"Total Charges (₹)":metric==="entries"?"Total LCV Entries":"Unique Hubs",
-      data:values,backgroundColor:colors,borderColor:borderColors,borderWidth:2,borderRadius:5
-    }]},
+    type:"line", // Swapped from "bar" to "line"
+    data:{
+      labels,
+      datasets:[{
+        label:metric==="charges"?"Total Charges (₹)":metric==="entries"?"Total LCV Entries":"Unique Hubs",
+        data:values,
+        backgroundColor:"rgba(0,166,81,0.1)", // Light green fill
+        borderColor:"#00A651", // Solid green line
+        borderWidth:3,
+        pointBackgroundColor:"#00A651",
+        pointBorderColor: "#ffffff",
+        pointBorderWidth: 2,
+        pointRadius:6,
+        pointHoverRadius: 8,
+        fill:true, // Fills the area under the line
+        tension:0.3 // Adds a smooth curve to the line
+      }]
+    },
     options:{
       responsive:true,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>metric==="charges"?"₹"+v.raw.toLocaleString("en-IN"):v.raw}}},
-      scales:{y:{beginAtZero:true,ticks:{callback:v=>metric==="charges"?"₹"+v.toLocaleString("en-IN"):v},grid:{color:"rgba(0,0,0,0.04)"}},x:{grid:{display:false}}}
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:v=>metric==="charges"?"₹"+v.raw.toLocaleString("en-IN"):v.raw}}
+      },
+      scales:{
+        y:{
+          beginAtZero:true,
+          ticks:{callback:v=>metric==="charges"?"₹"+v.toLocaleString("en-IN"):v},
+          grid:{color:"rgba(0,0,0,0.04)"}
+        },
+        x:{
+          grid:{display:false}
+        }
+      }
     }
   });
 }
-
 /* ══════════════════════════════════════════════════════════════
    CORE UTILITIES
 ══════════════════════════════════════════════════════════════ */
@@ -1067,7 +1040,6 @@ async function handleLogin(e){
     await save();
     showPortal("admin-portal","Admin Control Center","Admin");
     currentRole="admin";
-    startSession();
     updateAdminDashboard();
     recomputeStats(getActiveFilters());
     renderAdminRequests();
@@ -1099,7 +1071,6 @@ async function handleLogin(e){
       logAudit("login","Hub Manager logged in: "+currentHubName,currentHubName);
       await save();
       showPortal("hub-portal","Hub Operations",currentHubName);
-      startSession();
       renderHubGrid();renderHubRequests();renderHubAnnouncements();
       switchGenericTab("hub-req-view",document.querySelector(".hub-tab"),"hub-view","hub-tab");
       return;
@@ -1111,25 +1082,10 @@ async function handleLogin(e){
     loginAttempts=0;
     window.currentAllowedHubs=[...predefinedHubs];currentHubName="Hub Manager";currentRole="hub";
     document.querySelectorAll(".dynamic-hub-list,#req-hub").forEach(sel=>{sel.innerHTML="<option value=''>— Select —</option>";predefinedHubs.forEach(h=>sel.appendChild(new Option(h,h)));});
-    showPortal("hub-portal","Hub Operations","Hub Manager");startSession();
+    showPortal("hub-portal","Hub Operations","Hub Manager");
     renderHubGrid();renderHubRequests();renderHubAnnouncements();
     switchGenericTab("hub-req-view",document.querySelector(".hub-tab"),"hub-view","hub-tab");
     return;
-  }
-
-  // 3. Finance viewer login
-  const financeMatch=deploymentDatabase.find(r=>r.financeEmail&&r.financeEmail.toLowerCase()===user);
-  if(financeMatch){
-    const ok=await verifyPassword(pass,financeMatch.financePass||"123");
-    if(ok){
-      loginAttempts=0;currentRole="finance";
-      logAudit("login","Finance viewer logged in: "+user,user);
-      await save();
-      showPortal("finance-portal","Finance View",user+" 📊");
-      startSession();
-      loadHappaySheetData();
-      return;
-    }
   }
 
   // 4. Vendor login
@@ -1150,7 +1106,7 @@ async function handleLogin(e){
       logAudit("login","Vendor logged in: "+currentVendor,currentVendor);
       await save();
       showPortal("vendor-portal","Fleet Operational Log",currentVendor);
-      startSession();renderVendorGrid();
+      renderVendorGrid();
       return;
     }
   }
@@ -1170,7 +1126,6 @@ function showPortal(id,title,user){
 }
 
 function logout(){
-  endSession();
   logAudit("login","User logged out",currentHubName||currentVendor||"Unknown");
   // save audit silently
   supabaseClient.from('sf_data').upsert([{id:'auditLog',data:auditLog.slice(0,500)}]).catch(()=>{});
@@ -1471,8 +1426,6 @@ function addDeployment(e){
   const vendorPass=document.getElementById("deploy-vendor-pass").value.trim()||"123";
   const hubEmail=document.getElementById("deploy-hub-email").value.trim();
   const hubPass=document.getElementById("deploy-hub-pass").value.trim()||"123";
-  const financeEmail=document.getElementById("deploy-finance-email").value.trim();
-  const financePass=document.getElementById("deploy-finance-pass").value.trim()||"123";
   const model=document.getElementById("deploy-model").value;
   const type=document.getElementById("deploy-type").value;
   const dayRate=parseFloat(document.getElementById("deploy-day-rate").value)||0;
@@ -1480,7 +1433,10 @@ function addDeployment(e){
   const plan=document.getElementById("deploy-plan").value;
   const deployDate=document.getElementById("deploy-date").value;
   if(deploymentDatabase.find(r=>r.vendorId===vendorId&&r.hubName===hubName)){toast("This deployment rule already exists.","err");return;}
-  deploymentDatabase.push({id:Date.now(),vendorId,hubName,email,vendorPass,hubEmail,hubPass,financeEmail,financePass,model,vehicleType:type,dayRate,monthRate,working:plan,deployDate});
+  
+  // Cleaned push (no finance vars)
+  deploymentDatabase.push({id:Date.now(),vendorId,hubName,email,vendorPass,hubEmail,hubPass,model,vehicleType:type,dayRate,monthRate,working:plan,deployDate});
+  
   logAudit("deploy",`Added deployment: ${vendorId} → ${hubName}`,"Admin");
   save();renderDeployTable();populateLists();
   document.getElementById("deploy-form").reset();document.getElementById("deploy-date").value=today();
