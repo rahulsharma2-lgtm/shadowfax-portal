@@ -1421,13 +1421,17 @@ function renderHappayDashboard() {
     document.getElementById("h-stat-app-charges").innerText = "₹" + appCharges.toLocaleString("en-IN");
     document.getElementById("h-stat-not-app-charges").innerText = "₹" + notAppCharges.toLocaleString("en-IN");
     // ==========================================
-    // 📈 DYNAMIC LINE CHART ENGINE
+    // 📈 DYNAMIC MULTI-LINE CHART ENGINE
     // ==========================================
     const dateGroups = {};
     filtered.forEach(r => {
         const d = r.stdDate || "Unknown";
-        if (!dateGroups[d]) dateGroups[d] = 0;
-        dateGroups[d] += r.chargeNum;
+        if (!dateGroups[d]) {
+            dateGroups[d] = { charges: 0, entries: 0, hubs: new Set() };
+        }
+        dateGroups[d].charges += r.chargeNum;
+        dateGroups[d].entries += 1;
+        if (r.hub) dateGroups[d].hubs.add(r.hub);
     });
 
     // Sort dates chronologically (Oldest to Newest)
@@ -1440,7 +1444,10 @@ function renderHappayDashboard() {
         return p.length === 3 ? `${p[2]}/${p[1]}` : d; // Outputs DD/MM
     });
     
-    const chartData = sortedDates.map(d => dateGroups[d]);
+    // Extract the 3 specific data arrays
+    const chartDataCharges = sortedDates.map(d => dateGroups[d].charges);
+    const chartDataEntries = sortedDates.map(d => dateGroups[d].entries);
+    const chartDataHubs = sortedDates.map(d => dateGroups[d].hubs.size);
 
     // Draw or Update the Chart
     const ctx = document.getElementById('happayLineChart');
@@ -1452,25 +1459,65 @@ function renderHappayDashboard() {
             type: 'line',
             data: {
                 labels: chartLabels,
-                datasets: [{
-                    label: 'Total Charges (₹)',
-                    data: chartData,
-                    borderColor: '#00A651', // Shadowfax Green
-                    backgroundColor: 'rgba(0, 166, 81, 0.1)',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#00A651',
-                    pointRadius: 4,
-                    fill: true,
-                    tension: 0.3 // Smooth curves
-                }]
+                datasets: [
+                    {
+                        label: 'Total Charges (₹)',
+                        data: chartDataCharges,
+                        borderColor: '#00A651', // Green
+                        backgroundColor: 'rgba(0, 166, 81, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#00A651',
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.3,
+                        yAxisID: 'y' // Uses the Left Axis
+                    },
+                    {
+                        label: 'Total LCV Entries',
+                        data: chartDataEntries,
+                        borderColor: '#3b82f6', // Blue
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [5, 5], // Dashed line to distinguish it easily
+                        pointBackgroundColor: '#3b82f6',
+                        pointRadius: 4,
+                        tension: 0.3,
+                        yAxisID: 'y1' // Uses the Right Axis
+                    },
+                    {
+                        label: 'Total Hubs',
+                        data: chartDataHubs,
+                        borderColor: '#6b7280', // Gray
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#6b7280',
+                        pointRadius: 4,
+                        tension: 0.3,
+                        yAxisID: 'y1' // Uses the Right Axis
+                    }
+                ]
             },
             options: {
                 responsive: true,
-                plugins: { legend: { display: false } },
+                interaction: { mode: 'index', intersect: false }, // Hovering shows all 3 values at once!
+                plugins: { 
+                    legend: { display: true, position: 'top' } // Show the legend
+                },
                 scales: {
                     y: { 
-                        beginAtZero: true, 
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Charges (₹)', color: '#00A651', font: {weight: 'bold'} },
                         ticks: { callback: function(val) { return '₹' + val.toLocaleString("en-IN"); } } 
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: 'Count (Hubs / Entries)', color: '#3b82f6', font: {weight: 'bold'} },
+                        grid: { drawOnChartArea: false }, // Hides right-axis grid lines to keep it clean
+                        beginAtZero: true
                     }
                 }
             }
