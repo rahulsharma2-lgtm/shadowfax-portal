@@ -330,11 +330,23 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
 
   <div id="admin-portal" class="portal">
    <div class="tabs" id="admin-tabs">
-    <button class="tab admin-tab active" onclick="switchGenericTab('admin-recon-view',this,'admin-view','admin-tab')">&#128202; Reconciliation</button>
-    <button class="tab admin-tab" onclick="switchGenericTab('admin-deploy-view',this,'admin-view','admin-tab')">&#128506; Deployment Page</button>
-    <button class="tab admin-tab" onclick="switchGenericTab('admin-req-view',this,'admin-view','admin-tab')">&#128666; Adhoc LCV Happay Requests <span id="req-badge" style="display:none;background:#ef4444;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
+    <button class="tab admin-tab active" onclick="switchGenericTab('admin-summary-view',this,'admin-view','admin-tab')">🔴 Live Summary</button>
+    <button class="tab admin-tab" onclick="switchGenericTab('admin-recon-view',this,'admin-view','admin-tab')">📊 Reconciliation</button>
+    <button class="tab admin-tab" onclick="switchGenericTab('admin-deploy-view',this,'admin-view','admin-tab')">🗺️ Deployment Page</button>
+    <button class="tab admin-tab" onclick="switchGenericTab('admin-req-view',this,'admin-view','admin-tab')">🚚 Adhoc LCV Happay Requests <span id="req-badge" style="display:none;background:#ef4444;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
    </div>
-   <div id="admin-recon-view" class="admin-view active">
+   <div id="admin-summary-view" class="admin-view active">
+    <div class="ph">
+     <div><h2>Live Executive Summary</h2><p>Real-time overview of fleet operations, deployments, and costs</p></div>
+    </div>
+    
+    <div style="background: white; padding: 40px; text-align: center; border-radius: 12px; border: 1px dashed var(--sf-gray-300); color: var(--sf-gray-500); margin-top: 20px;">
+        <h3>Live Summary Dashboard</h3>
+        <p>Metrics and charts will go here...</p>
+    </div>
+   </div>
+
+   <div id="admin-recon-view" class="admin-view">
     <div class="ph">
      <div><h2>Reconciliation Dashboard</h2><p>Compare Hub HI vs Vendor attendance across all deployments</p></div>
      <button type="button" id="admin-lock-btn" class="btn btn-sm" style="display:none;background:#ef4444;color:white" onclick="toggleMonthLock()">&#128274; Lock Month</button>
@@ -844,7 +856,7 @@ async function handleLogin(e) {
         updateAdminDashboard();
         recomputeStats(getActiveFilters());
         renderAdminRequests();
-        switchGenericTab("admin-recon-view", document.querySelector(".admin-tab"), "admin-view", "admin-tab");
+        switchGenericTab("admin-summary-view", document.querySelector(".admin-tab"), "admin-view", "admin-tab");
         return;
     }
 
