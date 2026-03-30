@@ -331,19 +331,19 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
   <div id="admin-portal" class="portal">
    <div class="tabs" id="admin-tabs">
     <button class="tab admin-tab active" onclick="switchGenericTab('admin-summary-view',this,'admin-view','admin-tab')">🔴 Live Summary</button>
-    <button class="tab admin-tab" onclick="switchGenericTab('admin-happay-view',this,'admin-view','admin-tab')">💳 Live Happay Summary</button>
+    <button class="tab admin-tab" onclick="switchGenericTab('admin-happay-view',this,'admin-view','admin-tab')">🔴 Live Happay Summary</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-recon-view',this,'admin-view','admin-tab')">📊 Reconciliation</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-deploy-view',this,'admin-view','admin-tab')">🗺️ Deployment Page</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-req-view',this,'admin-view','admin-tab')">🚚 Adhoc LCV Happay Requests <span id="req-badge" style="display:none;background:#ef4444;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
    </div>
    <div id="admin-summary-view" class="admin-view active">
     <div class="ph">
-     <div><h2>Live Executive Summary</h2><p>Real-time metrics synced directly from your Master Google Sheet</p></div>
+     <div><h2>Live Executive Summary</h2><p>Real-time metrics synced directly from your Master Database</p></div>
      <button class="btn btn-primary" onclick="loadGoogleSheetData()">🔄 Refresh Live Data</button>
     </div>
     
     <div id="gsheet-loading" style="background: white; padding: 40px; text-align: center; border-radius: 12px; border: 1px dashed var(--sf-gray-300); color: var(--sf-gray-500); margin-top: 20px;">
-        <h3 style="color:var(--sf-black); margin-bottom: 8px;">⏳ Connecting to Google Sheets...</h3>
+        <h3 style="color:var(--sf-black); margin-bottom: 8px;">⏳ Connecting to Database...</h3>
         <p>Fetching the latest deployment data...</p>
         <p style="font-size:11px; margin-top:10px; color:#ef4444;" id="gsheet-error"></p>
     </div>
