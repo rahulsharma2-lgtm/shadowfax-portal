@@ -458,6 +458,10 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
         </div>
 
         <div class="ph" style="margin-top:28px;margin-bottom:10px"><h3 style="font-size:16px;font-weight:700">Recent Happay Entries</h3></div>
+     <div style="background: white; padding: 20px; border-radius: 10px; border: 1px solid var(--sf-gray-200); box-shadow: var(--shadow-sm); margin-bottom: 24px;">
+            <h3 style="font-size:13px; font-weight:700; color:var(--sf-gray-500); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:15px;">Daily Cost Trend</h3>
+            <canvas id="happayLineChart" height="70"></canvas>
+        </div>
         <div class="tbl-wrap">
             <table class="data-tbl">
                 <thead><tr><th>Date</th><th>Region</th><th>Hub Name</th><th>POD</th><th>Rider ID</th><th>Runsheet ID</th><th style="text-align:right">Charges (₹)</th><th style="text-align:center">SPNA Approval</th></tr></thead>
@@ -1416,7 +1420,63 @@ function renderHappayDashboard() {
     
     document.getElementById("h-stat-app-charges").innerText = "₹" + appCharges.toLocaleString("en-IN");
     document.getElementById("h-stat-not-app-charges").innerText = "₹" + notAppCharges.toLocaleString("en-IN");
+    // ==========================================
+    // 📈 DYNAMIC LINE CHART ENGINE
+    // ==========================================
+    const dateGroups = {};
+    filtered.forEach(r => {
+        const d = r.stdDate || "Unknown";
+        if (!dateGroups[d]) dateGroups[d] = 0;
+        dateGroups[d] += r.chargeNum;
+    });
+
+    // Sort dates chronologically (Oldest to Newest)
+    const sortedDates = Object.keys(dateGroups).sort();
     
+    // Format dates for the bottom of the chart
+    const chartLabels = sortedDates.map(d => {
+        if (d === "Unknown") return d;
+        const p = d.split("-"); // Input is YYYY-MM-DD
+        return p.length === 3 ? `${p[2]}/${p[1]}` : d; // Outputs DD/MM
+    });
+    
+    const chartData = sortedDates.map(d => dateGroups[d]);
+
+    // Draw or Update the Chart
+    const ctx = document.getElementById('happayLineChart');
+    if(ctx) {
+        if(window.happayLineChartInstance) {
+            window.happayLineChartInstance.destroy(); // Destroy old chart before drawing new one
+        }
+        window.happayLineChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Total Charges (₹)',
+                    data: chartData,
+                    borderColor: '#00A651', // Shadowfax Green
+                    backgroundColor: 'rgba(0, 166, 81, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#00A651',
+                    pointRadius: 4,
+                    fill: true,
+                    tension: 0.3 // Smooth curves
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { callback: function(val) { return '₹' + val.toLocaleString("en-IN"); } } 
+                    }
+                }
+            }
+        });
+    }
+    // ==========================================
     document.getElementById("happay-table-body").innerHTML = tableHtml || `<tr><td colspan="8" class="empty-c">No data matches these filters.</td></tr>`;
 }
 
