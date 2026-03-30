@@ -1238,11 +1238,6 @@ function parseCSV(str) {
     row.push(val); result.push(row);
     return result;
 }
-// ==========================================
-// HAPPAY LIVE FETCH & FILTER ENGINE
-// ==========================================
-let globalHappayData = []; 
-
 async function loadHappaySheetData() {
     const loadingDiv = document.getElementById("happay-loading");
     const contentDiv = document.getElementById("happay-content");
@@ -1252,7 +1247,8 @@ async function loadHappaySheetData() {
     contentDiv.style.display = "none";
     errorEl.innerText = "";
 
-    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTDPzmpFqxC5azVhlwNS1ngtNLrLKoXwFwW7lEEeJ1AhtZ7qogXfkpe3RV-aiXIGA4hGsszyyy38Gg/pubhtml";
+    // The perfect published CSV link
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTDPzmpFqxC5azVhlwNS1ngtNLrLKoXwFwW7lEEeJ1AhtZ7qogXfkpe3RV-aiXIGA4hGsszyyy38Gg/pub?gid=0&single=true&output=csv";
 
     try {
         const response = await fetch(sheetUrl);
@@ -1262,29 +1258,43 @@ async function loadHappaySheetData() {
         const rows = parseCSV(csvText); 
         if (rows.length < 2) throw new Error("Sheet appears to be empty.");
 
-        const headers = rows[0].map(h => h.trim().toLowerCase());
+        // 🚨 NEW: Smart Header Scanner! Looks through the first 10 rows to find headers.
+        let headerRowIndex = -1;
+        let headers = [];
+        for (let i = 0; i < Math.min(10, rows.length); i++) {
+            let tempHeaders = rows[i].map(h => (h || "").trim().toLowerCase());
+            if (tempHeaders.some(h => h.includes("hub name"))) {
+                headerRowIndex = i;
+                headers = tempHeaders;
+                break;
+            }
+        }
+
+        if (headerRowIndex === -1) {
+            throw new Error("Could not find 'Hub Name' column. Make sure the IMPORTRANGE data has loaded in your Bridge Sheet!");
+        }
         
-        // Smart matching (ignores spelling mistakes like "Approvel")
-        const colHub = headers.findIndex(h => h === "hub name");
-        const colDate = headers.findIndex(h => h.includes("lcv used date"));
+        // Smart matching
+        const colHub = headers.findIndex(h => h.includes("hub name"));
+        const colDate = headers.findIndex(h => h.includes("lcv used date") || h.includes("date"));
         const colRider = headers.findIndex(h => h.includes("rider id"));
         const colRunsheet = headers.findIndex(h => h.includes("runsheet id"));
-        const colCharges = headers.findIndex(h => h.includes("vehicle charge"));
+        const colCharges = headers.findIndex(h => h.includes("vehicle charge") || h.includes("charges"));
         const colSpna = headers.findIndex(h => h.includes("spna")); 
-        const colRegion = headers.findIndex(h => h.includes("actual region"));
-        const colPod = headers.findIndex(h => h.includes("actual pod"));
-        if (colHub === -1) {
-            throw new Error("Could not find 'Hub Name' column. Did you Publish the Bridge Sheet to the web as a CSV?");
-        }
+        const colRegion = headers.findIndex(h => h.includes("actual region") || h.includes("region"));
+        const colPod = headers.findIndex(h => h.includes("actual pod") || h.includes("pod"));
+
         globalHappayData = [];
         let uHubs = new Set(), uRegions = new Set(), uPods = new Set(), uSpna = new Set();
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-        for(let i = 1; i < rows.length; i++) {
+        // Start looping right AFTER the header row we found
+        for(let i = headerRowIndex + 1; i < rows.length; i++) {
             const row = rows[i];
-            if(!row[colHub] && !row[colDate]) continue; 
+            
+            if(!row[colHub] || row[colHub].trim() === "") continue; 
 
-            const dateVal = (row[colDate] || "").trim();
+            const dateVal = colDate > -1 ? (row[colDate] || "").trim() : "";
             let monthVal = "";
             let stdDate = ""; 
             
@@ -1312,8 +1322,7 @@ async function loadHappaySheetData() {
                 }
             }
             
-            // Clean currency string to a pure number for math
-            let chargesRaw = (row[colCharges] || "").trim();
+            let chargesRaw = colCharges > -1 ? (row[colCharges] || "").trim() : "0";
             let chargeNum = parseFloat(chargesRaw.replace(/[^\d.-]/g, '')) || 0;
 
             const obj = {
@@ -1321,13 +1330,13 @@ async function loadHappaySheetData() {
                 date: dateVal,
                 stdDate: stdDate,
                 month: monthVal,
-                rider: (row[colRider] || "").trim(),
-                runsheet: (row[colRunsheet] || "").trim(),
+                rider: colRider > -1 ? (row[colRider] || "").trim() : "",
+                runsheet: colRunsheet > -1 ? (row[colRunsheet] || "").trim() : "",
                 chargeStr: chargesRaw,
                 chargeNum: chargeNum,
-                spna: (row[colSpna] || "").trim(),
-                region: (row[colRegion] || "").trim(),
-                pod: (row[colPod] || "").trim()
+                spna: colSpna > -1 ? (row[colSpna] || "").trim() : "",
+                region: colRegion > -1 ? (row[colRegion] || "").trim() : "",
+                pod: colPod > -1 ? (row[colPod] || "").trim() : ""
             };
 
             globalHappayData.push(obj);
@@ -1352,7 +1361,7 @@ async function loadHappaySheetData() {
         renderHappayDashboard(); 
 
     } catch (err) {
-        errorEl.innerText = "Error: " + err.message + " (Check if sheet is set to 'Anyone with the link can view')";
+        errorEl.innerText = "Error: " + err.message;
     }
 }
 
