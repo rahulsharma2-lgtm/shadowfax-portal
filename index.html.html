@@ -1273,7 +1273,9 @@ async function loadHappaySheetData() {
         const colSpna = headers.findIndex(h => h.includes("spna")); 
         const colRegion = headers.findIndex(h => h.includes("actual region"));
         const colPod = headers.findIndex(h => h.includes("actual pod"));
-
+        if (colHub === -1) {
+            throw new Error("Could not find 'Hub Name' column. Did you Publish the Bridge Sheet to the web as a CSV?");
+        }
         globalHappayData = [];
         let uHubs = new Set(), uRegions = new Set(), uPods = new Set(), uSpna = new Set();
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
