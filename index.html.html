@@ -332,7 +332,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
    <div class="tabs" id="admin-tabs">
     <button class="tab admin-tab active" onclick="switchGenericTab('admin-summary-view',this,'admin-view','admin-tab')">🔴 Live Summary</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-happay-view',this,'admin-view','admin-tab')">🔴 Live Happay Summary</button>
-    <button class="tab admin-tab" onclick="switchGenericTab('admin-recon-view',this,'admin-view','admin-tab')">📊 Reconciliation</button>
+    <button class="tab admin-tab" onclick="switchGenericTab('admin-recon-view',this,'admin-view','admin-tab')">📊MIS Verification Page</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-deploy-view',this,'admin-view','admin-tab')">🗺️ Deployment Page</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-req-view',this,'admin-view','admin-tab')">🚚 Adhoc LCV Happay Requests <span id="req-badge" style="display:none;background:#ef4444;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
    </div>
@@ -486,7 +486,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div> </div>
    <div id="admin-recon-view" class="admin-view">
     <div class="ph">
-     <div><h2>Reconciliation Dashboard</h2><p>Compare Hub HI vs Vendor attendance across all deployments</p></div>
+     <div><h2>MIS Verification Dashboard</h2><p>Compare Hub HI vs Vendor attendance across all deployments</p></div>
      <button type="button" id="admin-lock-btn" class="btn btn-sm" style="display:none;background:#ef4444;color:white" onclick="toggleMonthLock()">&#128274; Lock Month</button>
     </div>
     <div class="stat-grid">
