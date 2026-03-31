@@ -502,6 +502,27 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
       </div>
       <canvas id="happayLineChart" height="70"></canvas>
      </div>
+      <div style="background:white;padding:20px;border-radius:10px;border:1px solid var(--sf-gray-200);box-shadow:var(--shadow-sm);margin-bottom:24px;">
+           <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:15px;margin-top:0;">SZM Wise Summary</h3>
+           <div class="tbl-wrap">
+            <table class="data-tbl">
+             <thead>
+              <tr>
+               <th>SZM Name</th>
+               <th style="text-align:center">Total Hubs</th>
+               <th style="text-align:center">Total LCV Entries</th>
+               <th style="text-align:center">Total Approved</th>
+               <th style="text-align:right">Total Charges (₹)</th>
+               <th style="text-align:right">Approved Charges (₹)</th>
+               <th style="text-align:right">Not Approved (₹)</th>
+              </tr>
+             </thead>
+             <tbody id="szm-summary-body">
+              <tr><td colspan="7" class="empty-c">No data available.</td></tr>
+             </tbody>
+            </table>
+           </div>
+          </div>
      <div class="tbl-wrap">
       <table class="data-tbl"><thead><tr><th>Date</th><th>Region</th><th>Hub Name</th><th>POD</th><th>Rider ID</th><th>Runsheet ID</th><th style="text-align:right">Charges (₹)</th><th style="text-align:center">SPNA Approval</th></tr></thead><tbody id="happay-table-body"></tbody></table>
      </div>
@@ -1605,18 +1626,64 @@ async function loadHappaySheetData(){
 function renderHappayDashboard(){
   const fMonth=document.getElementById("h-filter-month")?.value||"",fRegion=document.getElementById("h-filter-region")?.value||"",fHub=(document.getElementById("h-filter-hub")?.value||"").toLowerCase(),fSzm=(document.getElementById("h-filter-szm")?.value||"").toLowerCase(),fDate=document.getElementById("h-filter-date")?.value||"",fPod=document.getElementById("h-filter-pod")?.value||"",fSpna=document.getElementById("h-filter-spna")?.value||"";
   const base=r=>{if(fMonth&&r.month!==fMonth)return false;if(fRegion&&r.region!==fRegion)return false;if(fPod&&r.pod!==fPod)return false;if(fSpna&&r.spna!==fSpna)return false;if(fHub&&!r.hub.toLowerCase().includes(fHub))return false;if(fSzm&&!r.szm.toLowerCase().includes(fSzm))return false;return true;};
+  
   let filtered=globalHappayData.filter(r=>base(r)&&(!fDate||r.stdDate===fDate));
   let chartFiltered=globalHappayData.filter(r=>base(r));
   let uniqueHubs=new Set(),totalCharges=0,approvedCount=0,appCharges=0,notAppCharges=0,tableHtml="",rowCount=0;
+  
+  // NEW: Object to hold SZM aggregations
+  const szmGroups = {};
+
   filtered.forEach(r=>{
-    if(r.hub)uniqueHubs.add(r.hub);totalCharges+=r.chargeNum;
+    if(r.hub)uniqueHubs.add(r.hub);
+    totalCharges+=r.chargeNum;
     const isApp=r.spna.toLowerCase().includes("app")||r.spna.toLowerCase().includes("yes")||r.spna.toLowerCase()==="ok";
     if(isApp){approvedCount++;appCharges+=r.chargeNum;}else notAppCharges+=r.chargeNum;
     if(rowCount<50){const pSpna=isApp?`<span style="color:var(--sf-green);font-weight:700">${r.spna}</span>`:`<span style="color:var(--sf-amber);font-weight:700">${r.spna}</span>`;tableHtml+=`<tr><td>${r.date||"—"}</td><td>${r.region||"—"}</td><td><strong>${r.hub}</strong></td><td style="font-size:12px;color:var(--sf-gray-500)">${r.pod||"—"}</td><td style="font-family:DM Mono,monospace">${r.rider||"—"}</td><td style="font-family:DM Mono,monospace;font-size:11px">${r.runsheet||"—"}</td><td style="text-align:right;font-weight:600">₹${r.chargeNum.toLocaleString("en-IN")}</td><td style="text-align:center">${pSpna}</td></tr>`;rowCount++;}
+
+    // NEW: Populate SZM grouping
+    const szmName = r.szm || "Unassigned";
+    if (!szmGroups[szmName]) {
+      szmGroups[szmName] = { hubs: new Set(), entries: 0, approved: 0, totalCharges: 0, approvedCharges: 0, notApprovedCharges: 0 };
+    }
+    if (r.hub) szmGroups[szmName].hubs.add(r.hub);
+    szmGroups[szmName].entries++;
+    szmGroups[szmName].totalCharges += r.chargeNum;
+    if (isApp) {
+      szmGroups[szmName].approved++;
+      szmGroups[szmName].approvedCharges += r.chargeNum;
+    } else {
+      szmGroups[szmName].notApprovedCharges += r.chargeNum;
+    }
   });
+
+  // Update existing top stats
   document.getElementById("h-stat-hubs").innerText=uniqueHubs.size;document.getElementById("h-stat-lcvs").innerText=filtered.length;document.getElementById("h-stat-charges").innerText="₹"+totalCharges.toLocaleString("en-IN");document.getElementById("h-stat-app").innerText=approvedCount;document.getElementById("h-stat-app-charges").innerText="₹"+appCharges.toLocaleString("en-IN");document.getElementById("h-stat-not-app-charges").innerText="₹"+notAppCharges.toLocaleString("en-IN");
   document.getElementById("happay-table-body").innerHTML=tableHtml||`<tr><td colspan="8" class="empty-c">No data matches.</td></tr>`;
-  // Daily trend chart
+
+  // NEW: Render the SZM Wise Summary Table
+  let szmHtml = "";
+  const sortedSzms = Object.keys(szmGroups).sort();
+  if (sortedSzms.length === 0) {
+    szmHtml = `<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;
+  } else {
+    sortedSzms.forEach(szm => {
+      const g = szmGroups[szm];
+      szmHtml += `<tr>
+        <td><strong>${szm}</strong></td>
+        <td style="text-align:center">${g.hubs.size}</td>
+        <td style="text-align:center">${g.entries}</td>
+        <td style="text-align:center">${g.approved}</td>
+        <td style="text-align:right;font-weight:600">₹${g.totalCharges.toLocaleString("en-IN")}</td>
+        <td style="text-align:right;font-weight:600;color:#10b981">₹${g.approvedCharges.toLocaleString("en-IN")}</td>
+        <td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td>
+      </tr>`;
+    });
+  }
+  const szmBody = document.getElementById("szm-summary-body");
+  if (szmBody) szmBody.innerHTML = szmHtml;
+
+  // Daily trend chart (Unchanged)
   const dateGroups={};
   chartFiltered.forEach(r=>{const d=r.stdDate||"Unknown";if(!dateGroups[d])dateGroups[d]={charges:0,entries:0,hubs:new Set()};dateGroups[d].charges+=r.chargeNum;dateGroups[d].entries+=1;if(r.hub)dateGroups[d].hubs.add(r.hub);});
   const sortedDates=Object.keys(dateGroups).sort();
