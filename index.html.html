@@ -502,32 +502,53 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
       </div>
       <canvas id="happayLineChart" height="70"></canvas>
      </div>
-      <div style="background:white;padding:20px;border-radius:10px;border:1px solid var(--sf-gray-200);box-shadow:var(--shadow-sm);margin-bottom:24px;">
-           <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:15px;margin-top:0;">SZM Wise Summary</h3>
-           <div class="tbl-wrap">
-            <table class="data-tbl">
-             <thead>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 24px; margin-bottom: 24px;">
+      
+      <div style="background:white;padding:20px;border-radius:10px;border:1px solid var(--sf-gray-200);box-shadow:var(--shadow-sm);">
+        <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:15px;margin-top:0;">POD Wise Summary</h3>
+        <div style="max-height: 320px; overflow-y: auto; border: 1px solid var(--sf-gray-200); border-radius: var(--radius-sm);">
+          <table class="data-tbl" style="width: 100%; margin: 0;">
+            <thead style="position: sticky; top: 0; z-index: 10;">
               <tr>
-               <th>SZM Name</th>
-               <th style="text-align:center">Total Hubs</th>
-               <th style="text-align:center">Total LCV Entries</th>
-               <th style="text-align:center">Total Approved</th>
-               <th style="text-align:right">Total Charges (₹)</th>
-               <th style="text-align:right">Approved Charges (₹)</th>
-               <th style="text-align:right">Not Approved (₹)</th>
+                <th>POD Name</th>
+                <th style="text-align:center">Total Hubs</th>
+                <th style="text-align:center">LCV Entries</th>
+                <th style="text-align:center">Approved</th>
+                <th style="text-align:right">Total (₹)</th>
+                <th style="text-align:right">Approved (₹)</th>
+                <th style="text-align:right">Not App. (₹)</th>
               </tr>
-             </thead>
-             <tbody id="szm-summary-body">
+            </thead>
+            <tbody id="pod-summary-body">
               <tr><td colspan="7" class="empty-c">No data available.</td></tr>
-             </tbody>
-            </table>
-           </div>
-          </div>
-     <div class="tbl-wrap">
-      <table class="data-tbl"><thead><tr><th>Date</th><th>Region</th><th>Hub Name</th><th>POD</th><th>Rider ID</th><th>Runsheet ID</th><th style="text-align:right">Charges (₹)</th><th style="text-align:center">SPNA Approval</th></tr></thead><tbody id="happay-table-body"></tbody></table>
-     </div>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="background:white;padding:20px;border-radius:10px;border:1px solid var(--sf-gray-200);box-shadow:var(--shadow-sm);">
+        <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:15px;margin-top:0;">SZM Wise Summary</h3>
+        <div style="max-height: 320px; overflow-y: auto; border: 1px solid var(--sf-gray-200); border-radius: var(--radius-sm);">
+          <table class="data-tbl" style="width: 100%; margin: 0;">
+            <thead style="position: sticky; top: 0; z-index: 10;">
+              <tr>
+                <th>SZM Name</th>
+                <th style="text-align:center">Total Hubs</th>
+                <th style="text-align:center">LCV Entries</th>
+                <th style="text-align:center">Approved</th>
+                <th style="text-align:right">Total (₹)</th>
+                <th style="text-align:right">Approved (₹)</th>
+                <th style="text-align:right">Not App. (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="szm-summary-body">
+              <tr><td colspan="7" class="empty-c">No data available.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
-   </div>
 
    <!-- MIS VERIFICATION -->
    <div id="admin-recon-view" class="admin-view">
@@ -1631,50 +1652,79 @@ function renderHappayDashboard(){
   let chartFiltered=globalHappayData.filter(r=>base(r));
   let uniqueHubs=new Set(),totalCharges=0,approvedCount=0,appCharges=0,notAppCharges=0,tableHtml="",rowCount=0;
   
-  // NEW: Object to hold SZM aggregations
+  // Grouping objects for both SZM and POD
   const szmGroups = {};
+  const podGroups = {};
 
   filtered.forEach(r=>{
     if(r.hub)uniqueHubs.add(r.hub);
     totalCharges+=r.chargeNum;
     const isApp=r.spna.toLowerCase().includes("app")||r.spna.toLowerCase().includes("yes")||r.spna.toLowerCase()==="ok";
     if(isApp){approvedCount++;appCharges+=r.chargeNum;}else notAppCharges+=r.chargeNum;
+    
+    // Main Table Rows (limit to 50 for performance)
     if(rowCount<50){const pSpna=isApp?`<span style="color:var(--sf-green);font-weight:700">${r.spna}</span>`:`<span style="color:var(--sf-amber);font-weight:700">${r.spna}</span>`;tableHtml+=`<tr><td>${r.date||"—"}</td><td>${r.region||"—"}</td><td><strong>${r.hub}</strong></td><td style="font-size:12px;color:var(--sf-gray-500)">${r.pod||"—"}</td><td style="font-family:DM Mono,monospace">${r.rider||"—"}</td><td style="font-family:DM Mono,monospace;font-size:11px">${r.runsheet||"—"}</td><td style="text-align:right;font-weight:600">₹${r.chargeNum.toLocaleString("en-IN")}</td><td style="text-align:center">${pSpna}</td></tr>`;rowCount++;}
 
-    // NEW: Populate SZM grouping
+    // Populate SZM grouping
     const szmName = r.szm || "Unassigned";
-    if (!szmGroups[szmName]) {
-      szmGroups[szmName] = { hubs: new Set(), entries: 0, approved: 0, totalCharges: 0, approvedCharges: 0, notApprovedCharges: 0 };
-    }
+    if (!szmGroups[szmName]) szmGroups[szmName] = { hubs: new Set(), entries: 0, approved: 0, totalCharges: 0, approvedCharges: 0, notApprovedCharges: 0 };
     if (r.hub) szmGroups[szmName].hubs.add(r.hub);
     szmGroups[szmName].entries++;
     szmGroups[szmName].totalCharges += r.chargeNum;
-    if (isApp) {
-      szmGroups[szmName].approved++;
-      szmGroups[szmName].approvedCharges += r.chargeNum;
-    } else {
-      szmGroups[szmName].notApprovedCharges += r.chargeNum;
-    }
+    if (isApp) { szmGroups[szmName].approved++; szmGroups[szmName].approvedCharges += r.chargeNum; } 
+    else { szmGroups[szmName].notApprovedCharges += r.chargeNum; }
+
+    // Populate POD grouping
+    const podName = r.pod || "Unassigned";
+    if (!podGroups[podName]) podGroups[podName] = { hubs: new Set(), entries: 0, approved: 0, totalCharges: 0, approvedCharges: 0, notApprovedCharges: 0 };
+    if (r.hub) podGroups[podName].hubs.add(r.hub);
+    podGroups[podName].entries++;
+    podGroups[podName].totalCharges += r.chargeNum;
+    if (isApp) { podGroups[podName].approved++; podGroups[podName].approvedCharges += r.chargeNum; } 
+    else { podGroups[podName].notApprovedCharges += r.chargeNum; }
   });
 
-  // Update existing top stats
+  // Update existing top stats & main table
   document.getElementById("h-stat-hubs").innerText=uniqueHubs.size;document.getElementById("h-stat-lcvs").innerText=filtered.length;document.getElementById("h-stat-charges").innerText="₹"+totalCharges.toLocaleString("en-IN");document.getElementById("h-stat-app").innerText=approvedCount;document.getElementById("h-stat-app-charges").innerText="₹"+appCharges.toLocaleString("en-IN");document.getElementById("h-stat-not-app-charges").innerText="₹"+notAppCharges.toLocaleString("en-IN");
   document.getElementById("happay-table-body").innerHTML=tableHtml||`<tr><td colspan="8" class="empty-c">No data matches.</td></tr>`;
 
-  // NEW: Render the SZM Wise Summary Table
-  // NEW: Render the SZM Wise Summary Table
-  let szmHtml = "";
+  // --- RENDER POD SUMMARY ---
+  let podHtml = "";
+  const sortedPods = Object.keys(podGroups).sort((a, b) => podGroups[b].totalCharges - podGroups[a].totalCharges);
   
-  // 1. Sort by totalCharges descending (highest to lowest)
-  const sortedSzms = Object.keys(szmGroups).sort((a, b) => {
-    return szmGroups[b].totalCharges - szmGroups[a].totalCharges;
-  });
+  if (sortedPods.length === 0) {
+    podHtml = `<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;
+  } else {
+    // Grand Total Row at TOP
+    podHtml += `<tr style="background: var(--sf-charcoal); color: white; border-bottom: 2px solid var(--sf-green);">
+      <td style="font-weight: 700; color: white;">GRAND TOTAL</td>
+      <td style="text-align:center; font-weight: 700; color: white;">${uniqueHubs.size}</td>
+      <td style="text-align:center; font-weight: 700; color: white;">${filtered.length}</td>
+      <td style="text-align:center; font-weight: 700; color: white;">${approvedCount}</td>
+      <td style="text-align:right; font-weight: 700; color: white;">₹${totalCharges.toLocaleString("en-IN")}</td>
+      <td style="text-align:right; font-weight: 700; color: #4ade80;">₹${appCharges.toLocaleString("en-IN")}</td>
+      <td style="text-align:right; font-weight: 700; color: #fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td>
+    </tr>`;
+    // Individual POD Rows
+    sortedPods.forEach(pod => {
+      const g = podGroups[pod];
+      podHtml += `<tr>
+        <td><strong>${pod}</strong></td><td style="text-align:center">${g.hubs.size}</td><td style="text-align:center">${g.entries}</td><td style="text-align:center">${g.approved}</td>
+        <td style="text-align:right;font-weight:600">₹${g.totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#10b981">₹${g.approvedCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td>
+      </tr>`;
+    });
+  }
+  const podBody = document.getElementById("pod-summary-body");
+  if (podBody) podBody.innerHTML = podHtml;
 
+  // --- RENDER SZM SUMMARY ---
+  let szmHtml = "";
+  const sortedSzms = Object.keys(szmGroups).sort((a, b) => szmGroups[b].totalCharges - szmGroups[a].totalCharges);
+  
   if (sortedSzms.length === 0) {
     szmHtml = `<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;
   } else {
-    // 2. Add the Grand Total row FIRST (at the top)
-    // We use uniqueHubs.size which is already calculated by your main dashboard loop
+    // Grand Total Row at TOP
     szmHtml += `<tr style="background: var(--sf-charcoal); color: white; border-bottom: 2px solid var(--sf-green);">
       <td style="font-weight: 700; color: white;">GRAND TOTAL</td>
       <td style="text-align:center; font-weight: 700; color: white;">${uniqueHubs.size}</td>
@@ -1684,25 +1734,19 @@ function renderHappayDashboard(){
       <td style="text-align:right; font-weight: 700; color: #4ade80;">₹${appCharges.toLocaleString("en-IN")}</td>
       <td style="text-align:right; font-weight: 700; color: #fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td>
     </tr>`;
-
-    // 3. Loop through individual SZMs and append them BELOW the Grand Total
+    // Individual SZM Rows
     sortedSzms.forEach(szm => {
       const g = szmGroups[szm];
       szmHtml += `<tr>
-        <td><strong>${szm}</strong></td>
-        <td style="text-align:center">${g.hubs.size}</td>
-        <td style="text-align:center">${g.entries}</td>
-        <td style="text-align:center">${g.approved}</td>
-        <td style="text-align:right;font-weight:600">₹${g.totalCharges.toLocaleString("en-IN")}</td>
-        <td style="text-align:right;font-weight:600;color:#10b981">₹${g.approvedCharges.toLocaleString("en-IN")}</td>
-        <td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td>
+        <td><strong>${szm}</strong></td><td style="text-align:center">${g.hubs.size}</td><td style="text-align:center">${g.entries}</td><td style="text-align:center">${g.approved}</td>
+        <td style="text-align:right;font-weight:600">₹${g.totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#10b981">₹${g.approvedCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td>
       </tr>`;
     });
   }
-  
   const szmBody = document.getElementById("szm-summary-body");
   if (szmBody) szmBody.innerHTML = szmHtml;
-  // Daily trend chart (Unchanged)
+
+  // --- Daily Trend Chart (Existing logic) ---
   const dateGroups={};
   chartFiltered.forEach(r=>{const d=r.stdDate||"Unknown";if(!dateGroups[d])dateGroups[d]={charges:0,entries:0,hubs:new Set()};dateGroups[d].charges+=r.chargeNum;dateGroups[d].entries+=1;if(r.hub)dateGroups[d].hubs.add(r.hub);});
   const sortedDates=Object.keys(dateGroups).sort();
@@ -1714,6 +1758,7 @@ function renderHappayDashboard(){
   if(chkH)datasets.push({label:'Hubs',data:sortedDates.map(d=>dateGroups[d].hubs.size),borderColor:'#374151',backgroundColor:'rgba(55,65,81,0.1)',borderWidth:3,pointBackgroundColor:'#374151',pointRadius:4,fill:true,tension:0.3,yAxisID:'y1'});
   const ctx=document.getElementById('happayLineChart');
   if(ctx){if(window.happayLineChartInstance)window.happayLineChartInstance.destroy();window.happayLineChartInstance=new Chart(ctx,{type:'line',data:{labels:chartLabels,datasets},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false}},scales:{y:{type:'linear',display:!!chkC,position:'left',title:{display:true,text:'Charges (₹)',color:'#00A651',font:{weight:'bold'}},ticks:{callback:v=>'₹'+v.toLocaleString("en-IN")}},y1:{type:'linear',display:!!(chkE||chkH),position:'right',title:{display:true,text:'Count',color:'#3b82f6',font:{weight:'bold'}},grid:{drawOnChartArea:false},beginAtZero:true}}}});}
+  
   renderMoMChart();
 }
 
