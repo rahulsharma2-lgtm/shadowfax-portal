@@ -494,7 +494,8 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
       </div>
       <canvas id="happayLineChart" height="70"></canvas>
      </div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 24px; margin-bottom: 24px;">
+
+     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 24px; margin-bottom: 24px;">
       
       <div style="background:white;padding:20px;border-radius:10px;border:1px solid var(--sf-gray-200);box-shadow:var(--shadow-sm);">
         <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:15px;margin-top:0;">POD Wise Summary</h3>
@@ -540,27 +541,30 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
         </div>
       </div>
 
-    </div>
+     </div>
 
-    <div class="tbl-wrap">
-     <table class="data-tbl">
-      <thead>
-       <tr>
-        <th>Date</th>
-        <th>Region</th>
-        <th>Hub Name</th>
-        <th>POD</th>
-        <th>Rider ID</th>
-        <th>Runsheet ID</th>
-        <th style="text-align:right">Charges (₹)</th>
-        <th style="text-align:center">SPNA Approval</th>
-       </tr>
-      </thead>
-      <tbody id="happay-table-body">
-       <tr><td colspan="8" class="empty-c">No data matches.</td></tr>
-      </tbody>
-     </table>
+     <div class="tbl-wrap">
+      <table class="data-tbl">
+       <thead>
+        <tr>
+         <th>Date</th>
+         <th>Region</th>
+         <th>Hub Name</th>
+         <th>POD</th>
+         <th>Rider ID</th>
+         <th>Runsheet ID</th>
+         <th style="text-align:right">Charges (₹)</th>
+         <th style="text-align:center">SPNA Approval</th>
+        </tr>
+       </thead>
+       <tbody id="happay-table-body">
+        <tr><td colspan="8" class="empty-c">No data matches.</td></tr>
+       </tbody>
+      </table>
+     </div>
+
     </div>
+   </div>
 
    <div id="admin-recon-view" class="admin-view">
     <div class="ph">
@@ -762,14 +766,12 @@ async function hashPassword(pass){
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 async function verifyPassword(plain,stored){
-  // If stored looks like a hash (64 hex chars), compare hash; else compare plain (legacy)
   if(/^[a-f0-9]{64}$/i.test(stored)){
     const h=await hashPassword(plain);
     return h===stored;
   }
-  return plain===stored; // legacy plain-text fallback
+  return plain===stored; 
 }
-
 
 /* ══════════════════════════════════════════════════════════════
    SUPABASE CLOUD DATABASE
@@ -788,7 +790,7 @@ async function save(){
       {id:'requests',data:requestsDatabase},
       {id:'hubs',data:hubsDatabase},
       {id:'announcements',data:announcementsDatabase},
-      {id:'auditLog',data:auditLog.slice(-500)} // keep last 500 events
+      {id:'auditLog',data:auditLog.slice(-500)}
     ]);
     if(error)toast("Database Error: "+error.message,"err");
   }catch(e){toast("Network error. Data not saved.","err");}
@@ -818,7 +820,7 @@ async function load(){
 function logAudit(type,action,user){
   const entry={
     id:Date.now(),
-    type, // login | submit | approve | reject | lock | deploy | delete
+    type, 
     action,
     user:user||currentHubName||currentVendor||"Unknown",
     timestamp:new Date().toISOString()
@@ -839,7 +841,6 @@ function renderAuditLog(){
   if(uf)logs=logs.filter(l=>l.user===uf);
   if(df)logs=logs.filter(l=>l.timestamp&&l.timestamp.startsWith(df));
   
-  // Populate user filter
   const userSel=document.getElementById("audit-user-filter");
   if(userSel){
     const users=[...new Set(auditLog.map(l=>l.user))].sort();
@@ -953,13 +954,11 @@ function renderMoMChart(){
   const shortMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
   globalHappayData.forEach(r => {
-    if(!r.stdDate) return; // Skip if no valid date
+    if(!r.stdDate) return; 
     
-    // Extract "YYYY-MM" (e.g., "2025-12" or "2026-03")
     const yearMonthKey = r.stdDate.substring(0, 7); 
     
     if(!monthGroups[yearMonthKey]) {
-      // Create a clean label like "Dec '25"
       const parts = yearMonthKey.split("-");
       const mName = shortMonths[parseInt(parts[1], 10) - 1] + " '" + parts[0].substring(2);
       
@@ -971,7 +970,6 @@ function renderMoMChart(){
     if(r.hub) monthGroups[yearMonthKey].hubs.add(r.hub);
   });
 
-  // Because the keys are "YYYY-MM", standard sorting naturally orders them oldest to newest!
   const sortedKeys = Object.keys(monthGroups).sort();
   
   const labels = sortedKeys.map(k => monthGroups[k].labelName);
@@ -1072,8 +1070,6 @@ window.onload=async()=>{
 /* ══════════════════════════════════════════════════════════════
    AUTHENTICATION
 ══════════════════════════════════════════════════════════════ */
-// Hardcoded admin hash — SHA-256 of "sf@Admin2024!" — change this in production
-// For demo, we keep legacy plain-text check via verifyPassword fallback
 const ADMIN_CREDENTIALS=[
   {user:"admin@shadowfax.in",passHash:"123"},
   {user:"sooriya.mohan@shadowfax.in",passHash:"123"},
@@ -1090,11 +1086,10 @@ async function handleLogin(e){
   err.style.display="none";
   btn.textContent="⏳ Authenticating...";btn.disabled=true;
 
-  await load(); // always fetch fresh data
+  await load();
 
   btn.textContent="Sign In →";btn.disabled=false;
 
-  // 1. Admin check
   const isAdmin=ADMIN_CREDENTIALS.some(a=>a.user===user&&a.passHash===pass);
   if(isAdmin){
     loginAttempts=0;
@@ -1113,7 +1108,6 @@ async function handleLogin(e){
     return;
   }
 
-  // 2. Hub login
   const hubMatch=deploymentDatabase.find(r=>r.hubEmail&&r.hubEmail.toLowerCase()===user);
   if(hubMatch){
     const ok=await verifyPassword(pass,hubMatch.hubPass||"123");
@@ -1139,7 +1133,6 @@ async function handleLogin(e){
     }
   }
 
-  // Legacy hub fallback
   if(user==="hub@shadowfax.in"&&pass==="123"){
     loginAttempts=0;
     window.currentAllowedHubs=[...predefinedHubs];currentHubName="Hub Manager";currentRole="hub";
@@ -1150,7 +1143,6 @@ async function handleLogin(e){
     return;
   }
 
-  // 4. Vendor login
   const vendorMatch=deploymentDatabase.find(r=>
     (r.email&&r.email.toLowerCase()===user)||
     (r.vendorId&&r.vendorId.toLowerCase()===user)
@@ -1173,7 +1165,6 @@ async function handleLogin(e){
     }
   }
 
-  // 5. Failed
   recordFailedAttempt();
   err.style.display="block";
 }
@@ -1188,11 +1179,9 @@ function showPortal(id,title,user){
 }
 
 function logout(){
-  // 1. Instantly update the UI so the user experiences an immediate sign-out
   document.getElementById("app-container").classList.remove("show");
   document.getElementById("login-container").style.display="flex";
   
-  // 2. Clear out all the local input values and global variables
   document.getElementById("username").value="";
   document.getElementById("password").value="";
   document.getElementById("login-error").style.display="none";
@@ -1202,11 +1191,8 @@ function logout(){
   currentRole=null;
   window.currentAllowedHubs=[...predefinedHubs];
 
-  // 3. Attempt to save the audit log safely in the background
   try {
     logAudit("login","User logged out", currentHubName || currentVendor || "Unknown");
-    // Note: I changed slice(0,500) to slice(-500) so it matches your main save() function 
-    // and keeps the newest logs rather than the oldest if it overflows!
     supabaseClient.from('sf_data').upsert([{id:'auditLog',data:auditLog.slice(-500)}]).catch(()=>{});
   } catch(err) {
     console.warn("Silent audit log sync failed during logout:", err);
@@ -1605,7 +1591,8 @@ function renderGSheetDashboard(){
   document.getElementById("g-stat-hubs").innerText=uniqueHubs.size;document.getElementById("g-stat-vehicles").innerText=uniqueVehicles.size;document.getElementById("g-stat-hi-att").innerText=hiPresent;document.getElementById("g-stat-ven-att").innerText=venPresent;
   document.getElementById("gsheet-table-body").innerHTML=tableHtml||`<tr><td colspan="6" class="empty-c">No data matches these filters.</td></tr>`;
 }
-function clearGSheetFilters(){["g-filter-month","g-filter-hub","g-filter-date","g-filter-pod","g-filter-zone","g-filter-status","g-filter-hi"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+function clearGSheetFilters(){
+  ["g-filter-month","g-filter-hub","g-filter-date","g-filter-pod","g-filter-zone","g-filter-status","g-filter-hi"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
   renderGSheetDashboard();
 }
 
@@ -1652,7 +1639,6 @@ function renderHappayDashboard(){
   let chartFiltered=globalHappayData.filter(r=>base(r));
   let uniqueHubs=new Set(),totalCharges=0,approvedCount=0,appCharges=0,notAppCharges=0,tableHtml="",rowCount=0;
   
-  // Grouping objects for both SZM and POD
   const szmGroups = {};
   const podGroups = {};
 
@@ -1662,10 +1648,8 @@ function renderHappayDashboard(){
     const isApp=r.spna.toLowerCase().includes("app")||r.spna.toLowerCase().includes("yes")||r.spna.toLowerCase()==="ok";
     if(isApp){approvedCount++;appCharges+=r.chargeNum;}else notAppCharges+=r.chargeNum;
     
-    // Main Table Rows (limit to 50 for performance)
     if(rowCount<50){const pSpna=isApp?`<span style="color:var(--sf-green);font-weight:700">${r.spna}</span>`:`<span style="color:var(--sf-amber);font-weight:700">${r.spna}</span>`;tableHtml+=`<tr><td>${r.date||"—"}</td><td>${r.region||"—"}</td><td><strong>${r.hub}</strong></td><td style="font-size:12px;color:var(--sf-gray-500)">${r.pod||"—"}</td><td style="font-family:DM Mono,monospace">${r.rider||"—"}</td><td style="font-family:DM Mono,monospace;font-size:11px">${r.runsheet||"—"}</td><td style="text-align:right;font-weight:600">₹${r.chargeNum.toLocaleString("en-IN")}</td><td style="text-align:center">${pSpna}</td></tr>`;rowCount++;}
 
-    // Populate SZM grouping
     const szmName = r.szm || "Unassigned";
     if (!szmGroups[szmName]) szmGroups[szmName] = { hubs: new Set(), entries: 0, approved: 0, totalCharges: 0, approvedCharges: 0, notApprovedCharges: 0 };
     if (r.hub) szmGroups[szmName].hubs.add(r.hub);
@@ -1674,7 +1658,6 @@ function renderHappayDashboard(){
     if (isApp) { szmGroups[szmName].approved++; szmGroups[szmName].approvedCharges += r.chargeNum; } 
     else { szmGroups[szmName].notApprovedCharges += r.chargeNum; }
 
-    // Populate POD grouping
     const podName = r.pod || "Unassigned";
     if (!podGroups[podName]) podGroups[podName] = { hubs: new Set(), entries: 0, approved: 0, totalCharges: 0, approvedCharges: 0, notApprovedCharges: 0 };
     if (r.hub) podGroups[podName].hubs.add(r.hub);
@@ -1684,7 +1667,6 @@ function renderHappayDashboard(){
     else { podGroups[podName].notApprovedCharges += r.chargeNum; }
   });
 
-  // Update existing top stats & main table
   document.getElementById("h-stat-hubs").innerText=uniqueHubs.size;document.getElementById("h-stat-lcvs").innerText=filtered.length;document.getElementById("h-stat-charges").innerText="₹"+totalCharges.toLocaleString("en-IN");document.getElementById("h-stat-app").innerText=approvedCount;document.getElementById("h-stat-app-charges").innerText="₹"+appCharges.toLocaleString("en-IN");document.getElementById("h-stat-not-app-charges").innerText="₹"+notAppCharges.toLocaleString("en-IN");
   document.getElementById("happay-table-body").innerHTML=tableHtml||`<tr><td colspan="8" class="empty-c">No data matches.</td></tr>`;
 
@@ -1695,7 +1677,6 @@ function renderHappayDashboard(){
   if (sortedPods.length === 0) {
     podHtml = `<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;
   } else {
-    // Grand Total Row at TOP
     podHtml += `<tr style="background: var(--sf-charcoal); color: white; border-bottom: 2px solid var(--sf-green);">
       <td style="font-weight: 700; color: white;">GRAND TOTAL</td>
       <td style="text-align:center; font-weight: 700; color: white;">${uniqueHubs.size}</td>
@@ -1705,7 +1686,6 @@ function renderHappayDashboard(){
       <td style="text-align:right; font-weight: 700; color: #4ade80;">₹${appCharges.toLocaleString("en-IN")}</td>
       <td style="text-align:right; font-weight: 700; color: #fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td>
     </tr>`;
-    // Individual POD Rows
     sortedPods.forEach(pod => {
       const g = podGroups[pod];
       podHtml += `<tr>
@@ -1724,7 +1704,6 @@ function renderHappayDashboard(){
   if (sortedSzms.length === 0) {
     szmHtml = `<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;
   } else {
-    // Grand Total Row at TOP
     szmHtml += `<tr style="background: var(--sf-charcoal); color: white; border-bottom: 2px solid var(--sf-green);">
       <td style="font-weight: 700; color: white;">GRAND TOTAL</td>
       <td style="text-align:center; font-weight: 700; color: white;">${uniqueHubs.size}</td>
@@ -1734,7 +1713,6 @@ function renderHappayDashboard(){
       <td style="text-align:right; font-weight: 700; color: #4ade80;">₹${appCharges.toLocaleString("en-IN")}</td>
       <td style="text-align:right; font-weight: 700; color: #fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td>
     </tr>`;
-    // Individual SZM Rows
     sortedSzms.forEach(szm => {
       const g = szmGroups[szm];
       szmHtml += `<tr>
@@ -1746,7 +1724,6 @@ function renderHappayDashboard(){
   const szmBody = document.getElementById("szm-summary-body");
   if (szmBody) szmBody.innerHTML = szmHtml;
 
-  // --- Daily Trend Chart ---
   const dateGroups={};
   chartFiltered.forEach(r=>{const d=r.stdDate||"Unknown";if(!dateGroups[d])dateGroups[d]={charges:0,entries:0,hubs:new Set()};dateGroups[d].charges+=r.chargeNum;dateGroups[d].entries+=1;if(r.hub)dateGroups[d].hubs.add(r.hub);});
   const sortedDates=Object.keys(dateGroups).sort();
