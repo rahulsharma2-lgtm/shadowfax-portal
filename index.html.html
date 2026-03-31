@@ -1662,13 +1662,23 @@ function renderHappayDashboard(){
   document.getElementById("happay-table-body").innerHTML=tableHtml||`<tr><td colspan="8" class="empty-c">No data matches.</td></tr>`;
 
   // NEW: Render the SZM Wise Summary Table
+  // NEW: Render the SZM Wise Summary Table
   let szmHtml = "";
-  const sortedSzms = Object.keys(szmGroups).sort();
+  
+  // 1. Sort by totalCharges descending (highest to lowest)
+  const sortedSzms = Object.keys(szmGroups).sort((a, b) => {
+    return szmGroups[b].totalCharges - szmGroups[a].totalCharges;
+  });
+
   if (sortedSzms.length === 0) {
     szmHtml = `<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;
   } else {
+    let sumHubs = 0; // Track total hubs to keep column math accurate
+    
     sortedSzms.forEach(szm => {
       const g = szmGroups[szm];
+      sumHubs += g.hubs.size;
+      
       szmHtml += `<tr>
         <td><strong>${szm}</strong></td>
         <td style="text-align:center">${g.hubs.size}</td>
@@ -1679,10 +1689,21 @@ function renderHappayDashboard(){
         <td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td>
       </tr>`;
     });
+
+    // 2. Add the Grand Total row at the bottom
+    szmHtml += `<tr style="background: var(--sf-charcoal); color: white; border-top: 2px solid var(--sf-green);">
+      <td style="font-weight: 700; color: white;">GRAND TOTAL</td>
+      <td style="text-align:center; font-weight: 700; color: white;">${sumHubs}</td>
+      <td style="text-align:center; font-weight: 700; color: white;">${filtered.length}</td>
+      <td style="text-align:center; font-weight: 700; color: white;">${approvedCount}</td>
+      <td style="text-align:right; font-weight: 700; color: white;">₹${totalCharges.toLocaleString("en-IN")}</td>
+      <td style="text-align:right; font-weight: 700; color: #4ade80;">₹${appCharges.toLocaleString("en-IN")}</td>
+      <td style="text-align:right; font-weight: 700; color: #fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td>
+    </tr>`;
   }
+  
   const szmBody = document.getElementById("szm-summary-body");
   if (szmBody) szmBody.innerHTML = szmHtml;
-
   // Daily trend chart (Unchanged)
   const dateGroups={};
   chartFiltered.forEach(r=>{const d=r.stdDate||"Unknown";if(!dateGroups[d])dateGroups[d]={charges:0,entries:0,hubs:new Set()};dateGroups[d].charges+=r.chargeNum;dateGroups[d].entries+=1;if(r.hub)dateGroups[d].hubs.add(r.hub);});
