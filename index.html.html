@@ -1762,6 +1762,25 @@ function renderHappayDashboard(){
   renderMoMChart();
 }
 
+<div class="tbl-wrap">
+     <table class="data-tbl">
+      <thead>
+       <tr>
+        <th>Date</th>
+        <th>Region</th>
+        <th>Hub Name</th>
+        <th>POD</th>
+        <th>Rider ID</th>
+        <th>Runsheet ID</th>
+        <th style="text-align:right">Charges (₹)</th>
+        <th style="text-align:center">SPNA Approval</th>
+       </tr>
+      </thead>
+      <tbody id="happay-table-body">
+       <tr><td colspan="8" class="empty-c">No data matches.</td></tr>
+      </tbody>
+     </table>
+    </div>
 function clearHappayFilters(){["h-filter-month","h-filter-region","h-filter-hub","h-filter-szm","h-filter-date","h-filter-pod","h-filter-spna"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});renderHappayDashboard();}
 
 /* ══════════════════════════════════════════════════════════════
