@@ -1673,12 +1673,21 @@ function renderHappayDashboard(){
   if (sortedSzms.length === 0) {
     szmHtml = `<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;
   } else {
-    let sumHubs = 0; // Track total hubs to keep column math accurate
-    
+    // 2. Add the Grand Total row FIRST (at the top)
+    // We use uniqueHubs.size which is already calculated by your main dashboard loop
+    szmHtml += `<tr style="background: var(--sf-charcoal); color: white; border-bottom: 2px solid var(--sf-green);">
+      <td style="font-weight: 700; color: white;">GRAND TOTAL</td>
+      <td style="text-align:center; font-weight: 700; color: white;">${uniqueHubs.size}</td>
+      <td style="text-align:center; font-weight: 700; color: white;">${filtered.length}</td>
+      <td style="text-align:center; font-weight: 700; color: white;">${approvedCount}</td>
+      <td style="text-align:right; font-weight: 700; color: white;">₹${totalCharges.toLocaleString("en-IN")}</td>
+      <td style="text-align:right; font-weight: 700; color: #4ade80;">₹${appCharges.toLocaleString("en-IN")}</td>
+      <td style="text-align:right; font-weight: 700; color: #fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td>
+    </tr>`;
+
+    // 3. Loop through individual SZMs and append them BELOW the Grand Total
     sortedSzms.forEach(szm => {
       const g = szmGroups[szm];
-      sumHubs += g.hubs.size;
-      
       szmHtml += `<tr>
         <td><strong>${szm}</strong></td>
         <td style="text-align:center">${g.hubs.size}</td>
@@ -1689,17 +1698,6 @@ function renderHappayDashboard(){
         <td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td>
       </tr>`;
     });
-
-    // 2. Add the Grand Total row at the bottom
-    szmHtml += `<tr style="background: var(--sf-charcoal); color: white; border-top: 2px solid var(--sf-green);">
-      <td style="font-weight: 700; color: white;">GRAND TOTAL</td>
-      <td style="text-align:center; font-weight: 700; color: white;">${sumHubs}</td>
-      <td style="text-align:center; font-weight: 700; color: white;">${filtered.length}</td>
-      <td style="text-align:center; font-weight: 700; color: white;">${approvedCount}</td>
-      <td style="text-align:right; font-weight: 700; color: white;">₹${totalCharges.toLocaleString("en-IN")}</td>
-      <td style="text-align:right; font-weight: 700; color: #4ade80;">₹${appCharges.toLocaleString("en-IN")}</td>
-      <td style="text-align:right; font-weight: 700; color: #fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td>
-    </tr>`;
   }
   
   const szmBody = document.getElementById("szm-summary-body");
