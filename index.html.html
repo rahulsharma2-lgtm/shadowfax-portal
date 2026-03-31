@@ -245,7 +245,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
 </style>
 </head>
 <body>
-<!-- ═══════════════════════════ LOGIN ═══════════════════════════ -->
 <div id="login-container">
  <div class="login-card">
   <div class="login-logo">
@@ -270,7 +269,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
  </div>
 </div>
 
-<!-- ═══════════════════════════ APP ═══════════════════════════ -->
 <div id="app-container">
  <div class="topbar">
   <div class="tb-left">
@@ -286,7 +284,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
  </div>
  <div class="main">
 
-  <!-- ═══ HUB PORTAL ═══ -->
   <div id="hub-portal" class="portal">
    <div id="hub-announcements"></div>
    <div class="tabs">
@@ -351,7 +348,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
        <div class="f-group"></div>
       </div>
       <button type="submit" class="btn btn-primary" style="margin-top:6px">Submit Request</button>
-     </form>
+      </form>
     </div>
     <div class="ph" style="margin-top:28px;margin-bottom:10px"><h3 style="font-size:16px;font-weight:700">My Requests</h3></div>
     <div class="tbl-wrap">
@@ -363,7 +360,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
    </div>
   </div>
 
-  <!-- ═══ VENDOR PORTAL ═══ -->
   <div id="vendor-portal" class="portal">
    <div class="ph">
     <div><h2>Vendor Fleet Operational Log</h2><p>Submit your fleet's daily deployment records</p></div>
@@ -398,7 +394,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
   </div>
 
 
-  <!-- ═══ ADMIN PORTAL ═══ -->
   <div id="admin-portal" class="portal">
    <div class="tabs" id="admin-tabs">
     <button class="tab admin-tab active" onclick="switchGenericTab('admin-summary-view',this,'admin-view','admin-tab')">🔴 Live Summary</button>
@@ -410,7 +405,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     <button class="tab admin-tab" onclick="switchGenericTab('admin-audit-view',this,'admin-view','admin-tab')">🔍 Audit Log</button>
    </div>
 
-   <!-- LIVE SUMMARY -->
    <div id="admin-summary-view" class="admin-view active">
     <div class="ph">
      <div><h2>Live Executive Summary</h2><p>Real-time metrics synced directly from your Master Database</p></div>
@@ -444,7 +438,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
    </div>
 
-   <!-- LIVE HAPPAY -->
    <div id="admin-happay-view" class="admin-view">
     <div class="ph">
      <div><h2>Live Happay Summary</h2><p>Real-time LCV metrics synced directly from your Happay Master Sheet</p></div>
@@ -476,7 +469,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
       <div class="stat-card" style="border-top:4px solid #ef4444"><div class="sc-label">NOT APPROVED</div><div class="sc-val" id="h-stat-not-app-charges" style="color:#ef4444">₹0</div><div class="sc-sub">pending/rejected</div></div>
      </div>
 
-     <!-- Month-over-Month Comparison -->
      <div class="mom-card">
       <div class="mom-title">
        Month-over-Month Comparison
@@ -550,7 +542,26 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
 
     </div>
 
-   <!-- MIS VERIFICATION -->
+    <div class="tbl-wrap">
+     <table class="data-tbl">
+      <thead>
+       <tr>
+        <th>Date</th>
+        <th>Region</th>
+        <th>Hub Name</th>
+        <th>POD</th>
+        <th>Rider ID</th>
+        <th>Runsheet ID</th>
+        <th style="text-align:right">Charges (₹)</th>
+        <th style="text-align:center">SPNA Approval</th>
+       </tr>
+      </thead>
+      <tbody id="happay-table-body">
+       <tr><td colspan="8" class="empty-c">No data matches.</td></tr>
+      </tbody>
+     </table>
+    </div>
+
    <div id="admin-recon-view" class="admin-view">
     <div class="ph">
      <div><h2>MIS Verification Dashboard</h2><p>Compare Hub HI vs Vendor attendance across all deployments</p></div>
@@ -580,7 +591,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
    </div>
 
-   <!-- DEPLOYMENT -->
    <div id="admin-deploy-view" class="admin-view">
     <div class="ph">
      <div><h2>Vehicle Deployment Setup</h2><p>Map vendors to hubs to control access and reporting</p></div>
@@ -606,7 +616,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
 
       </div>
       <button type="submit" class="btn btn-primary" style="margin-bottom:20px">+ Add Deployment Rule</button>
-     </form>
+      </form>
     </div>
     <div class="tbl-wrap">
      <table class="data-tbl" id="deployment-data-table">
@@ -616,7 +626,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
    </div>
 
-   <!-- REQUESTS -->
    <div id="admin-req-view" class="admin-view">
     <div class="ph"><div><h2>Adhoc LCV Happay Requests</h2><p>Manage and approve LCV requests submitted by Hub Managers</p></div></div>
     <div class="dash-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:15px;margin-bottom:20px;">
@@ -643,7 +652,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
    </div>
 
-   <!-- ANNOUNCEMENTS -->
    <div id="admin-announce-view" class="admin-view">
     <div class="ph"><div><h2>Hub Announcements</h2><p>Post messages visible to hub managers on login</p></div></div>
     <div class="ann-form">
@@ -666,13 +674,12 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
        <textarea id="ann-message" placeholder="Type your announcement here..." required></textarea>
       </div>
       <button type="submit" class="btn btn-primary">📢 Post Announcement</button>
-     </form>
+      </form>
     </div>
     <div class="ph" style="margin-bottom:10px"><h3 style="font-size:15px;font-weight:700">Active Announcements</h3></div>
     <div id="admin-ann-list"><p style="color:var(--sf-gray-400);font-size:13px;">No announcements yet.</p></div>
    </div>
 
-   <!-- AUDIT LOG -->
    <div id="admin-audit-view" class="admin-view">
     <div class="ph">
      <div><h2>Audit Log</h2><p>Track all actions performed by users across the portal</p></div>
@@ -698,12 +705,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
    </div>
 
-  </div><!-- end admin-portal -->
-
- </div><!-- end main -->
-</div><!-- end app-container -->
-
-<div id="toast"></div>
+  </div></div></div><div id="toast"></div>
 
 <script>
 /* ══════════════════════════════════════════════════════════════
@@ -1603,7 +1605,9 @@ function renderGSheetDashboard(){
   document.getElementById("g-stat-hubs").innerText=uniqueHubs.size;document.getElementById("g-stat-vehicles").innerText=uniqueVehicles.size;document.getElementById("g-stat-hi-att").innerText=hiPresent;document.getElementById("g-stat-ven-att").innerText=venPresent;
   document.getElementById("gsheet-table-body").innerHTML=tableHtml||`<tr><td colspan="6" class="empty-c">No data matches these filters.</td></tr>`;
 }
-function clearGSheetFilters(){["g-filter-month","g-filter-hub","g-filter-date","g-filter-pod","g-filter-zone","g-filter-status","g-filter-hi"].forEach(id=>document.getElementById(id).value="");renderGSheetDashboard();}
+function clearGSheetFilters(){["g-filter-month","g-filter-hub","g-filter-date","g-filter-pod","g-filter-zone","g-filter-status","g-filter-hi"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  renderGSheetDashboard();
+}
 
 /* ══════════════════════════════════════════════════════════════
    HAPPAY LIVE FETCH (Dashboard 2)
@@ -1637,10 +1641,6 @@ async function loadHappaySheetData(){
     popDatalist("h-hubs-list",uHubs);popDatalist("h-szm-list",uSzm);
     loadingDiv.style.display="none";if(contentDiv)contentDiv.style.display="block";
     renderHappayDashboard();renderMoMChart();
-
-    // Finance portal — render basic summary table
-    const financeLoading=document.getElementById("finance-loading");
-    if(financeLoading)financeLoading.innerHTML=`<div style="overflow-x:auto"><table class="data-tbl"><thead><tr><th>Date</th><th>Region</th><th>Hub Name</th><th>Rider ID</th><th style="text-align:right">Charges (₹)</th><th style="text-align:center">SPNA</th></tr></thead><tbody>${globalHappayData.slice(0,100).map(r=>`<tr><td>${r.date}</td><td>${r.region||"—"}</td><td><strong>${r.hub}</strong></td><td>${r.rider||"—"}</td><td style="text-align:right;font-weight:600">₹${r.chargeNum.toLocaleString("en-IN")}</td><td style="text-align:center">${r.spna||"—"}</td></tr>`).join('')}</tbody></table></div>`;
   }catch(err){if(errorEl)errorEl.innerText="Error: "+err.message;}
 }
 
@@ -1746,7 +1746,7 @@ function renderHappayDashboard(){
   const szmBody = document.getElementById("szm-summary-body");
   if (szmBody) szmBody.innerHTML = szmHtml;
 
-  // --- Daily Trend Chart (Existing logic) ---
+  // --- Daily Trend Chart ---
   const dateGroups={};
   chartFiltered.forEach(r=>{const d=r.stdDate||"Unknown";if(!dateGroups[d])dateGroups[d]={charges:0,entries:0,hubs:new Set()};dateGroups[d].charges+=r.chargeNum;dateGroups[d].entries+=1;if(r.hub)dateGroups[d].hubs.add(r.hub);});
   const sortedDates=Object.keys(dateGroups).sort();
@@ -1762,25 +1762,6 @@ function renderHappayDashboard(){
   renderMoMChart();
 }
 
-<div class="tbl-wrap">
-     <table class="data-tbl">
-      <thead>
-       <tr>
-        <th>Date</th>
-        <th>Region</th>
-        <th>Hub Name</th>
-        <th>POD</th>
-        <th>Rider ID</th>
-        <th>Runsheet ID</th>
-        <th style="text-align:right">Charges (₹)</th>
-        <th style="text-align:center">SPNA Approval</th>
-       </tr>
-      </thead>
-      <tbody id="happay-table-body">
-       <tr><td colspan="8" class="empty-c">No data matches.</td></tr>
-      </tbody>
-     </table>
-    </div>
 function clearHappayFilters(){["h-filter-month","h-filter-region","h-filter-hub","h-filter-szm","h-filter-date","h-filter-pod","h-filter-spna"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});renderHappayDashboard();}
 
 /* ══════════════════════════════════════════════════════════════
