@@ -1144,17 +1144,29 @@ function showPortal(id,title,user){
 }
 
 function logout(){
-  logAudit("login","User logged out",currentHubName||currentVendor||"Unknown");
-  // save audit silently
-  supabaseClient.from('sf_data').upsert([{id:'auditLog',data:auditLog.slice(0,500)}]).catch(()=>{});
+  // 1. Instantly update the UI so the user experiences an immediate sign-out
   document.getElementById("app-container").classList.remove("show");
   document.getElementById("login-container").style.display="flex";
+  
+  // 2. Clear out all the local input values and global variables
   document.getElementById("username").value="";
   document.getElementById("password").value="";
   document.getElementById("login-error").style.display="none";
   document.getElementById("rate-limit-bar").style.display="none";
-  currentVendor=null;currentHubName="Hub Manager";currentRole=null;
+  currentVendor=null;
+  currentHubName="Hub Manager";
+  currentRole=null;
   window.currentAllowedHubs=[...predefinedHubs];
+
+  // 3. Attempt to save the audit log safely in the background
+  try {
+    logAudit("login","User logged out", currentHubName || currentVendor || "Unknown");
+    // Note: I changed slice(0,500) to slice(-500) so it matches your main save() function 
+    // and keeps the newest logs rather than the oldest if it overflows!
+    supabaseClient.from('sf_data').upsert([{id:'auditLog',data:auditLog.slice(-500)}]).catch(()=>{});
+  } catch(err) {
+    console.warn("Silent audit log sync failed during logout:", err);
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
