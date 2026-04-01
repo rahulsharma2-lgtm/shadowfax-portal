@@ -401,8 +401,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     <button class="tab admin-tab" onclick="switchGenericTab('admin-recon-view',this,'admin-view','admin-tab')">📊 MIS Verification</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-deploy-view',this,'admin-view','admin-tab')">🗺️ Deployment</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-req-view',this,'admin-view','admin-tab')">🚚 Requests <span id="req-badge" style="display:none;background:#ef4444;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
-    <button class="tab admin-tab" onclick="switchGenericTab('admin-announce-view',this,'admin-view','admin-tab')">📢 Announcements</button>
-    <button class="tab admin-tab" onclick="switchGenericTab('admin-audit-view',this,'admin-view','admin-tab')">🔍 Audit Log</button>
    </div>
 
    <div id="admin-summary-view" class="admin-view active">
@@ -656,59 +654,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
    </div>
 
-   <div id="admin-announce-view" class="admin-view">
-    <div class="ph"><div><h2>Hub Announcements</h2><p>Post messages visible to hub managers on login</p></div></div>
-    <div class="ann-form">
-     <form onsubmit="postAnnouncement(event)">
-      <div class="form-grid" style="margin-bottom:14px;">
-       <div class="f-group">
-        <label class="f-label">Target</label>
-        <select id="ann-target" class="f-sel-form">
-         <option value="all">All Hubs</option>
-         <option value="specific">Specific Hub</option>
-        </select>
-       </div>
-       <div class="f-group" id="ann-hub-group" style="display:none">
-        <label class="f-label">Hub Name</label>
-        <select id="ann-hub" class="f-sel-form dynamic-hub-list"><option value="">— Select Hub —</option></select>
-       </div>
-      </div>
-      <div class="f-group">
-       <label class="f-label">Message</label>
-       <textarea id="ann-message" placeholder="Type your announcement here..." required></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary">📢 Post Announcement</button>
-      </form>
-    </div>
-    <div class="ph" style="margin-bottom:10px"><h3 style="font-size:15px;font-weight:700">Active Announcements</h3></div>
-    <div id="admin-ann-list"><p style="color:var(--sf-gray-400);font-size:13px;">No announcements yet.</p></div>
-   </div>
-
-   <div id="admin-audit-view" class="admin-view">
-    <div class="ph">
-     <div><h2>Audit Log</h2><p>Track all actions performed by users across the portal</p></div>
-     <button class="btn btn-ghost btn-sm" onclick="auditLog=[];save();renderAuditLog();toast('Audit log cleared.')">🗑 Clear Log</button>
-    </div>
-    <div class="toolbar" style="margin-bottom:14px;">
-     <select id="audit-type-filter" class="f-sel" onchange="renderAuditLog()">
-      <option value="">All Actions</option>
-      <option value="login">Login</option>
-      <option value="submit">Submit</option>
-      <option value="approve">Approve</option>
-      <option value="reject">Reject</option>
-      <option value="lock">Lock/Unlock</option>
-      <option value="deploy">Deployment</option>
-      <option value="delete">Delete</option>
-     </select>
-     <select id="audit-user-filter" class="f-sel" onchange="renderAuditLog()"><option value="">All Users</option></select>
-     <input type="date" id="audit-date-filter" class="f-sel" onchange="renderAuditLog()">
-     <button class="btn btn-dark btn-sm" onclick="downloadAuditCSV()">📥 Export CSV</button>
-    </div>
-    <div class="audit-wrap" id="audit-log-wrap">
-     <p style="text-align:center;padding:30px;color:var(--sf-gray-400)">No audit events yet.</p>
-    </div>
-   </div>
-
   </div></div></div><div id="toast"></div>
 
 <script>
@@ -814,57 +759,8 @@ async function load(){
   }catch(e){}
 }
 
-/* ══════════════════════════════════════════════════════════════
-   AUDIT LOG ENGINE
-══════════════════════════════════════════════════════════════ */
-function logAudit(type,action,user){
-  const entry={
-    id:Date.now(),
-    type, 
-    action,
-    user:user||currentHubName||currentVendor||"Unknown",
-    timestamp:new Date().toISOString()
-  };
-  auditLog.unshift(entry);
-  if(auditLog.length>500)auditLog=auditLog.slice(0,500);
-}
+/* ══════════════════════════════════════════════════════════════*/
 
-function renderAuditLog(){
-  const wrap=document.getElementById("audit-log-wrap");
-  if(!wrap)return;
-  const tf=document.getElementById("audit-type-filter")?.value||"";
-  const uf=document.getElementById("audit-user-filter")?.value||"";
-  const df=document.getElementById("audit-date-filter")?.value||"";
-  
-  let logs=[...auditLog];
-  if(tf)logs=logs.filter(l=>l.type===tf);
-  if(uf)logs=logs.filter(l=>l.user===uf);
-  if(df)logs=logs.filter(l=>l.timestamp&&l.timestamp.startsWith(df));
-  
-  const userSel=document.getElementById("audit-user-filter");
-  if(userSel){
-    const users=[...new Set(auditLog.map(l=>l.user))].sort();
-    const cur=userSel.value;
-    userSel.innerHTML='<option value="">All Users</option>';
-    users.forEach(u=>userSel.appendChild(new Option(u,u)));
-    userSel.value=cur;
-  }
-  
-  if(!logs.length){wrap.innerHTML='<p style="text-align:center;padding:30px;color:var(--sf-gray-400)">No audit events match filters.</p>';return;}
-  
-  const iconMap={login:'🔑',submit:'📝',approve:'✅',reject:'❌',lock:'🔒',deploy:'⚙️',delete:'🗑️'};
-  wrap.innerHTML=logs.map(l=>{
-    const d=new Date(l.timestamp);
-    const ts=isNaN(d)?l.timestamp:`${d.toLocaleDateString('en-IN')} ${d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`;
-    return`<div class="audit-row">
-      <div class="audit-icon ${l.type}">${iconMap[l.type]||'📌'}</div>
-      <div class="audit-content">
-        <div class="audit-action">${l.action}</div>
-        <div class="audit-meta">${l.user} &nbsp;·&nbsp; ${ts}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
 
 function downloadAuditCSV(){
   if(!auditLog.length)return toast("No audit events to export","err");
@@ -881,68 +777,6 @@ function downloadAuditCSV(){
 document.getElementById("ann-target").addEventListener("change",function(){
   document.getElementById("ann-hub-group").style.display=this.value==="specific"?"block":"none";
 });
-
-function postAnnouncement(e){
-  e.preventDefault();
-  const target=document.getElementById("ann-target").value;
-  const hub=target==="specific"?document.getElementById("ann-hub").value:"";
-  const message=document.getElementById("ann-message").value.trim();
-  if(!message)return;
-  if(target==="specific"&&!hub){toast("Please select a hub.","err");return;}
-  const ann={id:Date.now(),target,hub,message,postedBy:"Admin",createdAt:new Date().toISOString()};
-  announcementsDatabase.unshift(ann);
-  logAudit("deploy","Posted announcement: \""+message.slice(0,50)+"...\"","Admin");
-  save();
-  renderAdminAnnouncements();
-  renderHubAnnouncements();
-  document.getElementById("ann-message").value="";
-  toast("Announcement posted!");
-}
-
-function deleteAnnouncement(id){
-  announcementsDatabase=announcementsDatabase.filter(a=>a.id!==id);
-  logAudit("delete","Deleted announcement ID "+id,"Admin");
-  save();
-  renderAdminAnnouncements();
-  renderHubAnnouncements();
-  toast("Announcement removed.");
-}
-
-function renderAdminAnnouncements(){
-  const el=document.getElementById("admin-ann-list");if(!el)return;
-  if(!announcementsDatabase.length){el.innerHTML='<p style="color:var(--sf-gray-400);font-size:13px">No announcements yet.</p>';return;}
-  el.innerHTML=announcementsDatabase.map(a=>{
-    const d=new Date(a.createdAt);
-    const ts=isNaN(d)?a.createdAt:d.toLocaleDateString('en-IN')+" "+d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-    const targetLabel=a.target==="all"?"All Hubs":a.hub;
-    return`<div class="ann-card">
-      <div class="ann-header">
-        <span class="ann-badge ${a.target==='all'?'all':'hub'}">${targetLabel}</span>
-        <button class="btn btn-ghost btn-sm" onclick="deleteAnnouncement(${a.id})" style="color:var(--sf-red);border-color:#fca5a5">✕ Remove</button>
-      </div>
-      <div class="ann-body">${a.message}</div>
-      <div class="ann-meta">Posted by ${a.postedBy} · ${ts}</div>
-    </div>`;
-  }).join('');
-}
-
-function renderHubAnnouncements(){
-  const el=document.getElementById("hub-announcements");if(!el)return;
-  const allowed=window.currentAllowedHubs||predefinedHubs;
-  const relevant=announcementsDatabase.filter(a=>a.target==="all"||(a.target==="specific"&&allowed.includes(a.hub)));
-  if(!relevant.length){el.innerHTML="";return;}
-  el.innerHTML=relevant.map(a=>{
-    const d=new Date(a.createdAt);
-    const ts=isNaN(d)?a.createdAt:d.toLocaleDateString('en-IN');
-    return`<div class="ann-card">
-      <div class="ann-header">
-        <span class="ann-badge ${a.target==='all'?'all':'hub'}">${a.target==='all'?'📢 All Hubs':'📌 '+a.hub}</span>
-        <span style="font-size:11px;color:var(--sf-gray-400)">${ts}</span>
-      </div>
-      <div class="ann-body">${a.message}</div>
-    </div>`;
-  }).join('');
-}
 
 /* ══════════════════════════════════════════════════════════════
    MONTH-OVER-MONTH CHART
