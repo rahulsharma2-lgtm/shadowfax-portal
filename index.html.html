@@ -13,7 +13,7 @@
 body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);min-height:100vh;font-size:14px;line-height:1.5}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--sf-gray-300);border-radius:10px}
 
-/* ─── LOGIN ─── */
+/* LOGIN */
 #login-container{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:linear-gradient(135deg,#0a0f0c 0%,#13251a 50%,#0a0f0c 100%);position:relative;overflow:hidden}
 #login-container::before{content:'';position:absolute;width:700px;height:700px;background:radial-gradient(circle,rgba(0,166,81,.1) 0%,transparent 65%);top:-150px;right:-150px;pointer-events:none}
 #login-container::after{content:'';position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(0,166,81,.07) 0%,transparent 65%);bottom:-100px;left:-100px;pointer-events:none}
@@ -35,11 +35,9 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
 .l-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
 #login-error{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.28);color:#fca5a5;padding:9px 13px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:14px;display:none;animation:shake .35s ease}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-
-/* Rate limit warning */
 #rate-limit-bar{display:none;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.3);color:#fbbf24;padding:8px 13px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:10px;text-align:center}
 
-/* ─── APP SHELL ─── */
+/* APP SHELL */
 #app-container{display:none;min-height:100vh;flex-direction:column}
 #app-container.show{display:flex}
 .topbar{background:var(--sf-charcoal);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 rgba(255,255,255,.04),0 2px 12px rgba(0,0,0,.25)}
@@ -53,8 +51,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
 #tb-user{background:rgba(0,166,81,.14);border:1px solid rgba(0,166,81,.28);color:#4ade80;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:600}
 .tb-logout{background:transparent;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);padding:5px 13px;border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;transition:var(--t)}
 .tb-logout:hover{border-color:rgba(255,255,255,.3);color:white}
-
-
 .main{flex:1;padding:26px 28px;max-width:1600px;width:100%;margin:0 auto}
 .portal{display:none;animation:fadeUp .3s ease}
 .portal.show{display:block}
@@ -180,8 +176,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
 #toast{position:fixed;bottom:24px;right:24px;background:var(--sf-charcoal);color:white;padding:13px 18px;border-radius:var(--radius-md);font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);z-index:9999;display:none;align-items:center;gap:9px;max-width:340px;animation:toastIn .3s ease;border-left:3px solid var(--sf-green)}
 #toast.err{border-left-color:var(--sf-red)}
 @keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-/* ─── ANNOUNCEMENTS ─── */
 .ann-card{background:white;border:1px solid var(--sf-gray-200);border-radius:var(--radius-md);margin-bottom:18px;overflow:hidden;box-shadow:var(--shadow-sm)}
 .ann-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--sf-gray-100);background:var(--sf-gray-50)}
 .ann-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:3px 9px;border-radius:12px}
@@ -192,8 +186,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
 .ann-form{background:white;border:1px solid var(--sf-gray-200);border-radius:var(--radius-md);padding:20px;margin-bottom:24px;box-shadow:var(--shadow-sm)}
 .ann-form textarea{width:100%;padding:10px 13px;border:1px solid var(--sf-gray-300);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical;min-height:80px;transition:var(--t)}
 .ann-form textarea:focus{border-color:var(--sf-green);box-shadow:0 0 0 3px rgba(0,166,81,.1)}
-
-/* ─── AUDIT LOG ─── */
 .audit-row{display:flex;gap:12px;padding:10px 16px;border-bottom:1px solid var(--sf-gray-100);align-items:flex-start;transition:background .1s}
 .audit-row:hover{background:var(--sf-gray-50)}
 .audit-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px}
@@ -208,19 +200,17 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
 .audit-action{font-size:13px;font-weight:500;color:var(--sf-black)}
 .audit-meta{font-size:11px;color:var(--sf-gray-400);margin-top:2px;font-family:'DM Mono',monospace}
 .audit-wrap{background:white;border-radius:var(--radius-md);border:1px solid rgba(0,0,0,.07);box-shadow:var(--shadow-sm);max-height:560px;overflow-y:auto}
-
-/* ─── MoM CHART ─── */
 .mom-card{background:white;border:1px solid var(--sf-gray-200);border-radius:var(--radius-md);padding:22px;margin-bottom:24px;box-shadow:var(--shadow-sm)}
 .mom-title{font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
-
-/* ─── ROLE BADGE ─── */
 .role-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:2px 8px;border-radius:10px;margin-left:6px}
 .role-admin{background:rgba(239,68,68,.15);color:#b91c1c}
 .role-finance{background:rgba(59,130,246,.15);color:#1d4ed8}
 .role-hub{background:var(--sf-green-light);color:var(--sf-green-dark)}
 .role-vendor{background:var(--sf-amber-light);color:#92400e}
+/* Password reveal toggle */
+.pass-wrap{position:relative}
+.pass-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--sf-gray-400);font-size:12px;padding:2px 5px}
 
-/* ─── RESPONSIVE ─── */
 @media(max-width:900px){
   .stat-grid{grid-template-columns:repeat(3,1fr)}
   .form-grid{grid-template-columns:1fr}
@@ -228,7 +218,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
   .topbar{padding:0 14px}
   .tabs{width:100%}
   .tab{flex:1;text-align:center;font-size:12px;padding:8px 10px}
-  #session-timer{display:none}
 }
 @media(max-width:600px){
   .stat-grid{grid-template-columns:1fr 1fr}
@@ -284,6 +273,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
  </div>
  <div class="main">
 
+  <!-- HUB PORTAL -->
   <div id="hub-portal" class="portal">
    <div id="hub-announcements"></div>
    <div class="tabs">
@@ -348,7 +338,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
        <div class="f-group"></div>
       </div>
       <button type="submit" class="btn btn-primary" style="margin-top:6px">Submit Request</button>
-      </form>
+     </form>
     </div>
     <div class="ph" style="margin-top:28px;margin-bottom:10px"><h3 style="font-size:16px;font-weight:700">My Requests</h3></div>
     <div class="tbl-wrap">
@@ -360,6 +350,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
    </div>
   </div>
 
+  <!-- VENDOR PORTAL -->
   <div id="vendor-portal" class="portal">
    <div class="ph">
     <div><h2>Vendor Fleet Operational Log</h2><p>Submit your fleet's daily deployment records</p></div>
@@ -393,7 +384,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
    </form>
   </div>
 
-
+  <!-- ADMIN PORTAL -->
   <div id="admin-portal" class="portal">
    <div class="tabs" id="admin-tabs">
     <button class="tab admin-tab active" onclick="switchGenericTab('admin-summary-view',this,'admin-view','admin-tab')">🔴 Live Summary</button>
@@ -401,6 +392,8 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     <button class="tab admin-tab" onclick="switchGenericTab('admin-recon-view',this,'admin-view','admin-tab')">📊 MIS Verification</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-deploy-view',this,'admin-view','admin-tab')">🗺️ Deployment</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-req-view',this,'admin-view','admin-tab')">🚚 Requests <span id="req-badge" style="display:none;background:#ef4444;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
+    <button class="tab admin-tab" onclick="switchGenericTab('admin-ann-view',this,'admin-view','admin-tab')">📢 Announcements</button>
+    <button class="tab admin-tab" onclick="switchGenericTab('admin-audit-view',this,'admin-view','admin-tab')">🔎 Audit Log</button>
    </div>
 
    <div id="admin-summary-view" class="admin-view active">
@@ -466,7 +459,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
       <div class="stat-card" style="border-top:4px solid #10b981"><div class="sc-label">APPROVED CHARGES</div><div class="sc-val" id="h-stat-app-charges" style="color:#10b981">₹0</div><div class="sc-sub">approved amount</div></div>
       <div class="stat-card" style="border-top:4px solid #ef4444"><div class="sc-label">NOT APPROVED</div><div class="sc-val" id="h-stat-not-app-charges" style="color:#ef4444">₹0</div><div class="sc-sub">pending/rejected</div></div>
      </div>
-
      <div class="mom-card">
       <div class="mom-title">
        Month-over-Month Comparison
@@ -480,7 +472,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
       </div>
       <canvas id="momBarChart" height="70"></canvas>
      </div>
-
      <div style="background:white;padding:20px;border-radius:10px;border:1px solid var(--sf-gray-200);box-shadow:var(--shadow-sm);margin-bottom:24px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px;">
        <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin:0;">Daily Trend Analysis</h3>
@@ -492,75 +483,32 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
       </div>
       <canvas id="happayLineChart" height="70"></canvas>
      </div>
-
-     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 24px; margin-bottom: 24px;">
-      
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(450px,1fr));gap:24px;margin-bottom:24px;">
       <div style="background:white;padding:20px;border-radius:10px;border:1px solid var(--sf-gray-200);box-shadow:var(--shadow-sm);">
-        <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:15px;margin-top:0;">POD Wise Summary</h3>
-        <div style="max-height: 320px; overflow-y: auto; border: 1px solid var(--sf-gray-200); border-radius: var(--radius-sm);">
-          <table class="data-tbl" style="width: 100%; margin: 0;">
-            <thead style="position: sticky; top: 0; z-index: 10;">
-              <tr>
-                <th>POD Name</th>
-                <th style="text-align:center">Total Hubs</th>
-                <th style="text-align:center">LCV Entries</th>
-                <th style="text-align:center">Approved</th>
-                <th style="text-align:right">Total (₹)</th>
-                <th style="text-align:right">Approved (₹)</th>
-                <th style="text-align:right">Not App. (₹)</th>
-              </tr>
-            </thead>
-            <tbody id="pod-summary-body">
-              <tr><td colspan="7" class="empty-c">No data available.</td></tr>
-            </tbody>
-          </table>
-        </div>
+       <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:15px;margin-top:0;">POD Wise Summary</h3>
+       <div style="max-height:320px;overflow-y:auto;border:1px solid var(--sf-gray-200);border-radius:var(--radius-sm);">
+        <table class="data-tbl" style="width:100%;margin:0;">
+         <thead style="position:sticky;top:0;z-index:10;"><tr><th>POD Name</th><th style="text-align:center">Total Hubs</th><th style="text-align:center">LCV Entries</th><th style="text-align:center">Approved</th><th style="text-align:right">Total (₹)</th><th style="text-align:right">Approved (₹)</th><th style="text-align:right">Not App. (₹)</th></tr></thead>
+        <tbody id="pod-summary-body"><tr><td colspan="7" class="empty-c">No data available.</td></tr></tbody>
+        </table>
+       </div>
       </div>
-
       <div style="background:white;padding:20px;border-radius:10px;border:1px solid var(--sf-gray-200);box-shadow:var(--shadow-sm);">
-        <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:15px;margin-top:0;">SZM Wise Summary</h3>
-        <div style="max-height: 320px; overflow-y: auto; border: 1px solid var(--sf-gray-200); border-radius: var(--radius-sm);">
-          <table class="data-tbl" style="width: 100%; margin: 0;">
-            <thead style="position: sticky; top: 0; z-index: 10;">
-              <tr>
-                <th>SZM Name</th>
-                <th style="text-align:center">Total Hubs</th>
-                <th style="text-align:center">LCV Entries</th>
-                <th style="text-align:center">Approved</th>
-                <th style="text-align:right">Total (₹)</th>
-                <th style="text-align:right">Approved (₹)</th>
-                <th style="text-align:right">Not App. (₹)</th>
-              </tr>
-            </thead>
-            <tbody id="szm-summary-body">
-              <tr><td colspan="7" class="empty-c">No data available.</td></tr>
-            </tbody>
-          </table>
-        </div>
+       <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:15px;margin-top:0;">SZM Wise Summary</h3>
+       <div style="max-height:320px;overflow-y:auto;border:1px solid var(--sf-gray-200);border-radius:var(--radius-sm);">
+        <table class="data-tbl" style="width:100%;margin:0;">
+         <thead style="position:sticky;top:0;z-index:10;"><tr><th>SZM Name</th><th style="text-align:center">Total Hubs</th><th style="text-align:center">LCV Entries</th><th style="text-align:center">Approved</th><th style="text-align:right">Total (₹)</th><th style="text-align:right">Approved (₹)</th><th style="text-align:right">Not App. (₹)</th></tr></thead>
+        <tbody id="szm-summary-body"><tr><td colspan="7" class="empty-c">No data available.</td></tr></tbody>
+        </table>
+       </div>
       </div>
-
      </div>
-
      <div class="tbl-wrap">
       <table class="data-tbl">
-       <thead>
-        <tr>
-         <th>Date</th>
-         <th>Region</th>
-         <th>Hub Name</th>
-         <th>POD</th>
-         <th>Rider ID</th>
-         <th>Runsheet ID</th>
-         <th style="text-align:right">Charges (₹)</th>
-         <th style="text-align:center">SPNA Approval</th>
-        </tr>
-       </thead>
-       <tbody id="happay-table-body">
-        <tr><td colspan="8" class="empty-c">No data matches.</td></tr>
-       </tbody>
+       <thead><tr><th>Date</th><th>Region</th><th>Hub Name</th><th>POD</th><th>Rider ID</th><th>Runsheet ID</th><th style="text-align:right">Charges (₹)</th><th style="text-align:center">SPNA Approval</th></tr></thead>
+       <tbody id="happay-table-body"><tr><td colspan="8" class="empty-c">No data matches.</td></tr></tbody>
       </table>
      </div>
-
     </div>
    </div>
 
@@ -605,20 +553,17 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
        <div class="f-group"><label class="f-label">ASSIGN TO HUB</label><input type="text" id="deploy-hub" class="f-in" list="hub-datalist" placeholder="Select or type hub" required><datalist id="hub-datalist"></datalist></div>
        <div class="f-group"><label class="f-label">VENDOR LOGIN EMAIL</label><input type="email" id="deploy-email" class="f-in" placeholder="vendor@3eco.in"></div>
        <div class="f-group"><label class="f-label">HUB HI LOGIN EMAIL</label><input type="email" id="deploy-hub-email" class="f-in" placeholder="hub_manager@shadowfax.in"></div>
-       <div class="f-group"><label class="f-label">VENDOR PASSWORD</label><input type="text" id="deploy-vendor-pass" class="f-in" placeholder="Set password (default: 123)"></div>
-       <div class="f-group"><label class="f-label">HUB HI PASSWORD</label><input type="text" id="deploy-hub-pass" class="f-in" placeholder="Set password (default: 123)"></div>
+       <div class="f-group"><label class="f-label">VENDOR PASSWORD</label><div class="pass-wrap"><input type="text" id="deploy-vendor-pass" class="f-in" placeholder="Set password (default: 123)"></div></div>
+       <div class="f-group"><label class="f-label">HUB HI PASSWORD</label><div class="pass-wrap"><input type="text" id="deploy-hub-pass" class="f-in" placeholder="Set password (default: 123)"></div></div>
        <div class="f-group"><label class="f-label">MODEL</label><select id="deploy-model" class="f-sel"><option value="">-- Select Model --</option><option>DCD</option><option>Cargo</option></select></div>
        <div class="f-group"><label class="f-label">VEHICLE TYPE</label><select id="deploy-type" class="f-sel"><option value="">-- Select Type --</option><option>3 Wheeler</option><option>4 Wheeler</option><option>EV</option></select></div>
        <div class="f-group"><label class="f-label">VEHICLE PER DAY RATE (₹)</label><input type="number" id="deploy-day-rate" class="f-in" placeholder="e.g. 1500" required></div>
        <div class="f-group"><label class="f-label">MONTH RATE (₹)</label><input type="number" id="deploy-month-rate" class="f-in" placeholder="Auto-calculated" readonly></div>
        <div class="f-group"><label class="f-label">WORKING PLAN</label><select id="deploy-plan" class="f-sel"><option value="3000KM . 12 Hrs . 31 Days">3000KM . 12 Hrs . 31 Days</option><option value="2500KM . 10 Hrs . 26 Days">2500KM . 10 Hrs . 26 Days</option></select></div>
        <div class="f-group"><label class="f-label">DEPLOYMENT DATE</label><input type="date" id="deploy-date" class="f-in" required></div>
-
-       
-
       </div>
       <button type="submit" class="btn btn-primary" style="margin-bottom:20px">+ Add Deployment Rule</button>
-      </form>
+     </form>
     </div>
     <div class="tbl-wrap">
      <table class="data-tbl" id="deployment-data-table">
@@ -654,23 +599,78 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
    </div>
 
-  </div></div></div><div id="toast"></div>
+   <!-- ANNOUNCEMENTS VIEW (was missing from original HTML) -->
+   <div id="admin-ann-view" class="admin-view">
+    <div class="ph"><div><h2>Announcements</h2><p>Broadcast messages to Hub Managers or all users</p></div></div>
+    <div class="ann-form">
+     <div class="form-grid" style="margin-bottom:12px">
+      <div class="f-group">
+       <label class="f-label">Target Audience</label>
+       <select id="ann-target" class="f-sel-form" onchange="document.getElementById('ann-hub-group').style.display=this.value==='specific'?'block':'none'">
+        <option value="all">All Users</option>
+        <option value="hub">Hub Managers Only</option>
+        <option value="vendor">Vendors Only</option>
+        <option value="specific">Specific Hub</option>
+       </select>
+      </div>
+      <div class="f-group" id="ann-hub-group" style="display:none">
+       <label class="f-label">Specific Hub</label>
+       <select id="ann-specific-hub" class="dynamic-hub-list f-sel-form"><option value="">— Select Hub —</option></select>
+      </div>
+     </div>
+     <div class="f-group">
+      <label class="f-label">Message</label>
+      <textarea id="ann-message" placeholder="Type your announcement here..."></textarea>
+     </div>
+     <button type="button" class="btn btn-primary" onclick="postAnnouncement()">📢 Post Announcement</button>
+    </div>
+    <div id="admin-ann-list"></div>
+   </div>
+
+   <!-- AUDIT LOG VIEW (was missing from original HTML) -->
+   <div id="admin-audit-view" class="admin-view">
+    <div class="ph">
+     <div><h2>Audit Log</h2><p>Full history of all actions taken in the portal</p></div>
+     <button type="button" class="btn btn-dark" onclick="downloadAuditCSV()">📥 Export Audit CSV</button>
+    </div>
+    <div class="audit-wrap" id="audit-log-container">
+     <div style="padding:36px;text-align:center;color:var(--sf-gray-400);font-style:italic">No audit events recorded yet.</div>
+    </div>
+   </div>
+
+  </div>
+ </div>
+</div>
+<div id="toast"></div>
 
 <script>
-/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
    CONSTANTS & GLOBALS
-══════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 const predefinedHubs=["BLR_Kamakya","BLR_Uttarahalli","BLR_Whitefield","BLR_Kadugodi","JAI_VaishaliNagar","CHN_Guindy","CHN_Nanganallur","CHN_PallikaranaiRD","MAS_Bethelnagar","AAM_Valanchery","AMD_Navrangpura","AMD_Chandkheda","AMD_CTM","AMD_Vasna","AMD_Makarba","AMD_Sindhubhavan","AMD_Chandlodia","AMD_Memco","AMD_Narol_TH"];
 const predefinedVendors=[{name:"3Eco Systems",email:"suman.g@3eco.in"},{name:"BABA MOHANRAM ENTERPRISES",email:"pooransharma8@gmail.com"},{name:"Digi Transport",email:"accounts@dtlog.in"},{name:"Hani Transport",email:"hanitransport007@gmail.com"},{name:"Nileema",email:"nilimaa.enterprises@gmail.com"},{name:"KDM Enterprises",email:"kdmenterprises2204@gmail.com"},{name:"Kiran Enterprises",email:"kiranenterprises800@gmail.com"},{name:"Krushiv enterprises",email:"krushiventerprise88@gmail.com"},{name:"Let's Transport",email:"thimmaiah.v@letstransport.team"},{name:"Magenta Mobility",email:"rakesh.singh@magentamobility.com"},{name:"Sai Transport",email:"saitransport275@gmail.com"},{name:"Sharif Transport",email:"sharifshaha2015@gmail.com"},{name:"Sri Lakshmi Enterprises",email:"srilakshmi.enterprises127@gmail.com"},{name:"Sakir Abdul",email:""},{name:"MANNA DAS",email:""},{name:"Yogasai",email:""},{name:"Gaibudin shaikh",email:""},{name:"Vaishnavi Transport",email:""},{name:"Santkrupa Transport",email:""}];
 
 let globalDatabase=[],deploymentDatabase=[],lockedMonths=[],finalAttDb={},requestsDatabase=[],hubsDatabase=[],announcementsDatabase=[],auditLog=[];
 let currentVendor=null,currentHubName="Hub Manager",currentRole=null,hubRC=1,venRC=1;
 
-/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
+   FIX 1: XSS-safe escape helper
+   All user-supplied values injected into innerHTML must go through esc()
+══════════════════════════════════════════════ */
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+
+/* ══════════════════════════════════════════════
+   FIX 2: logAudit() — was called everywhere but never defined
+══════════════════════════════════════════════ */
+function logAudit(type,action,user){
+  auditLog.push({timestamp:new Date().toISOString(),type:type||"action",action:action||"",user:user||"Unknown"});
+}
+
+/* ══════════════════════════════════════════════
    SECURITY — RATE LIMITING
-══════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 let loginAttempts=0,lockoutUntil=0;
-const MAX_ATTEMPTS=5,LOCKOUT_MS=5*60*1000; // 5 min lockout
+const MAX_ATTEMPTS=5,LOCKOUT_MS=5*60*1000;
 
 function checkRateLimit(){
   const now=Date.now();
@@ -703,9 +703,9 @@ function startLockoutTimer(){
   },1000);
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
    SECURITY — PASSWORD HASHING (SHA-256)
-══════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 async function hashPassword(pass){
   const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(pass));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -715,12 +715,12 @@ async function verifyPassword(plain,stored){
     const h=await hashPassword(plain);
     return h===stored;
   }
-  return plain===stored; 
+  return plain===stored;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   SUPABASE CLOUD DATABASE
-══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   SUPABASE
+══════════════════════════════════════════════ */
 const supabaseUrl='https://ayrzdqglxviopsckxisy.supabase.co';
 const supabaseKey='sb_publishable_ChFrylE-nUb4MqNDArbu9A_ug5J3Ohl';
 const supabaseClient=window.supabase.createClient(supabaseUrl,supabaseKey);
@@ -759,101 +759,129 @@ async function load(){
   }catch(e){}
 }
 
-/* ══════════════════════════════════════════════════════════════*/
-
-
+/* ══════════════════════════════════════════════
+   AUDIT CSV EXPORT
+══════════════════════════════════════════════ */
 function downloadAuditCSV(){
   if(!auditLog.length)return toast("No audit events to export","err");
   let csv="Timestamp,User,Type,Action\n";
-  auditLog.forEach(l=>csv+=`"${l.timestamp}","${l.user}","${l.type}","${l.action.replace(/"/g,"'")}"\n`);
+  auditLog.forEach(l=>csv+=`"${l.timestamp}","${esc(l.user)}","${l.type}","${String(l.action).replace(/"/g,"'")}"\n`);
   const a=Object.assign(document.createElement("a"),{href:URL.createObjectURL(new Blob([csv],{type:"text/csv"})),download:"Shadowfax_Audit_"+new Date().toISOString().split('T')[0]+".csv"});
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   toast("Audit log exported.");
 }
 
-/* ══════════════════════════════════════════════════════════════
-   ANNOUNCEMENTS ENGINE
-══════════════════════════════════════════════════════════════ */
-document.getElementById("ann-target").addEventListener("change",function(){
-  document.getElementById("ann-hub-group").style.display=this.value==="specific"?"block":"none";
-});
+/* ══════════════════════════════════════════════
+   FIX 3: renderAuditLog() — was called but never defined
+══════════════════════════════════════════════ */
+function renderAuditLog(){
+  const container=document.getElementById("audit-log-container");
+  if(!container)return;
+  if(!auditLog.length){container.innerHTML='<div style="padding:36px;text-align:center;color:var(--sf-gray-400);font-style:italic">No audit events recorded yet.</div>';return;}
+  const iconMap={login:"🔑",submit:"📋",approve:"✅",reject:"❌",lock:"🔒",deploy:"🚀",delete:"🗑️",action:"📌"};
+  const sorted=[...auditLog].reverse();
+  container.innerHTML=sorted.map(l=>`
+    <div class="audit-row">
+      <div class="audit-icon ${esc(l.type)}">${iconMap[l.type]||"📌"}</div>
+      <div class="audit-content">
+        <div class="audit-action">${esc(l.action)}</div>
+        <div class="audit-meta">${esc(l.user)} · ${new Date(l.timestamp).toLocaleString()}</div>
+      </div>
+    </div>`).join('');
+}
 
-/* ══════════════════════════════════════════════════════════════
-   MONTH-OVER-MONTH CHART
-══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   FIX 4: Announcements — postAnnouncement, renderAdminAnnouncements, renderHubAnnouncements
+   (Functions were called but never defined)
+══════════════════════════════════════════════ */
+function postAnnouncement(){
+  const target=document.getElementById("ann-target")?.value||"all";
+  const specificHub=document.getElementById("ann-specific-hub")?.value||"";
+  const msg=document.getElementById("ann-message")?.value?.trim()||"";
+  if(!msg){toast("Please enter a message.","err");return;}
+  const ann={id:Date.now(),target,specificHub,message:msg,postedBy:"Admin",postedAt:new Date().toISOString()};
+  announcementsDatabase.unshift(ann);
+  logAudit("action","Posted announcement: "+msg.substring(0,60),"Admin");
+  save();
+  document.getElementById("ann-message").value="";
+  toast("Announcement posted!");
+  renderAdminAnnouncements();
+}
 
+function renderAdminAnnouncements(){
+  const container=document.getElementById("admin-ann-list");
+  if(!container)return;
+  if(!announcementsDatabase.length){container.innerHTML='<div class="empty-c" style="padding:30px;text-align:center;color:var(--sf-gray-400);font-style:italic">No announcements posted yet.</div>';return;}
+  container.innerHTML=announcementsDatabase.map(a=>`
+    <div class="ann-card">
+      <div class="ann-header">
+        <span class="ann-badge ${a.target==='all'?'all':'hub'}">${a.target==='all'?'All Users':a.target==='specific'?'Hub: '+esc(a.specificHub):a.target==='hub'?'Hub Managers':'Vendors'}</span>
+        <button class="btn btn-sm btn-danger-ghost" onclick="deleteAnnouncement(${a.id})">Delete</button>
+      </div>
+      <div class="ann-body">${esc(a.message)}<div class="ann-meta">Posted by ${esc(a.postedBy)} · ${new Date(a.postedAt).toLocaleString()}</div></div>
+    </div>`).join('');
+}
+
+function renderHubAnnouncements(){
+  const container=document.getElementById("hub-announcements");
+  if(!container)return;
+  const allowed=window.currentAllowedHubs||[];
+  const relevant=announcementsDatabase.filter(a=>
+    a.target==='all'||a.target==='hub'||
+    (a.target==='specific'&&allowed.includes(a.specificHub))
+  );
+  if(!relevant.length){container.innerHTML="";return;}
+  container.innerHTML=relevant.map(a=>`
+    <div class="ann-card" style="border-left:3px solid var(--sf-green)">
+      <div class="ann-body">📢 ${esc(a.message)}<div class="ann-meta">${new Date(a.postedAt).toLocaleString()}</div></div>
+    </div>`).join('');
+}
+
+function deleteAnnouncement(id){
+  if(!confirm("Delete this announcement?"))return;
+  announcementsDatabase=announcementsDatabase.filter(a=>a.id!==id);
+  logAudit("delete","Deleted announcement ID "+id,"Admin");
+  save();renderAdminAnnouncements();
+  toast("Announcement deleted.");
+}
+
+/* ══════════════════════════════════════════════
+   MoM CHART — with early guard
+══════════════════════════════════════════════ */
 function renderMoMChart(){
-  const metric = document.getElementById("mom-metric")?.value || "charges";
-  const monthGroups = {};
-  const shortMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
-  globalHappayData.forEach(r => {
-    if(!r.stdDate) return; 
-    
-    const yearMonthKey = r.stdDate.substring(0, 7); 
-    
-    if(!monthGroups[yearMonthKey]) {
-      const parts = yearMonthKey.split("-");
-      const mName = shortMonths[parseInt(parts[1], 10) - 1] + " '" + parts[0].substring(2);
-      
-      monthGroups[yearMonthKey] = { labelName: mName, charges: 0, entries: 0, hubs: new Set() };
+  /* FIX 5: Guard against rendering before data loads */
+  if(!globalHappayData||!globalHappayData.length)return;
+  const metric=document.getElementById("mom-metric")?.value||"charges";
+  const monthGroups={};
+  const shortMonths=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  globalHappayData.forEach(r=>{
+    if(!r.stdDate)return;
+    const yearMonthKey=r.stdDate.substring(0,7);
+    if(!monthGroups[yearMonthKey]){
+      const parts=yearMonthKey.split("-");
+      const mName=shortMonths[parseInt(parts[1],10)-1]+" '"+parts[0].substring(2);
+      monthGroups[yearMonthKey]={labelName:mName,charges:0,entries:0,hubs:new Set()};
     }
-    
-    monthGroups[yearMonthKey].charges += r.chargeNum;
-    monthGroups[yearMonthKey].entries += 1;
-    if(r.hub) monthGroups[yearMonthKey].hubs.add(r.hub);
+    monthGroups[yearMonthKey].charges+=r.chargeNum;
+    monthGroups[yearMonthKey].entries+=1;
+    if(r.hub)monthGroups[yearMonthKey].hubs.add(r.hub);
   });
-
-  const sortedKeys = Object.keys(monthGroups).sort();
-  
-  const labels = sortedKeys.map(k => monthGroups[k].labelName);
-  const values = sortedKeys.map(k => metric === "hubs" ? monthGroups[k].hubs.size : monthGroups[k][metric]);
-
-  const ctx = document.getElementById("momBarChart");
-  if(!ctx) return;
-  if(window.momChartInstance) window.momChartInstance.destroy();
-  
-  window.momChartInstance = new Chart(ctx,{
-    type: "line", 
-    data: {
-      labels,
-      datasets: [{
-        label: metric === "charges" ? "Total Charges (₹)" : metric === "entries" ? "Total LCV Entries" : "Unique Hubs",
-        data: values,
-        backgroundColor: "rgba(0,166,81,0.1)",
-        borderColor: "#00A651",
-        borderWidth: 3,
-        pointBackgroundColor: "#00A651",
-        pointBorderColor: "#ffffff",
-        pointBorderWidth: 2,
-        pointRadius: 6,
-        pointHoverRadius: 8,
-        fill: true,
-        tension: 0.3 
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: v => metric === "charges" ? "₹" + v.raw.toLocaleString("en-IN") : v.raw } }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { callback: v => metric === "charges" ? "₹" + v.toLocaleString("en-IN") : v },
-          grid: { color: "rgba(0,0,0,0.04)" }
-        },
-        x: {
-          grid: { display: false }
-        }
-      }
-    }
+  const sortedKeys=Object.keys(monthGroups).sort();
+  const labels=sortedKeys.map(k=>monthGroups[k].labelName);
+  const values=sortedKeys.map(k=>metric==="hubs"?monthGroups[k].hubs.size:monthGroups[k][metric]);
+  const ctx=document.getElementById("momBarChart");
+  if(!ctx)return;
+  if(window.momChartInstance)window.momChartInstance.destroy();
+  window.momChartInstance=new Chart(ctx,{
+    type:"line",
+    data:{labels,datasets:[{label:metric==="charges"?"Total Charges (₹)":metric==="entries"?"Total LCV Entries":"Unique Hubs",data:values,backgroundColor:"rgba(0,166,81,0.1)",borderColor:"#00A651",borderWidth:3,pointBackgroundColor:"#00A651",pointBorderColor:"#ffffff",pointBorderWidth:2,pointRadius:6,pointHoverRadius:8,fill:true,tension:0.3}]},
+    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>metric==="charges"?"₹"+v.raw.toLocaleString("en-IN"):v.raw}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>metric==="charges"?"₹"+v.toLocaleString("en-IN"):v},grid:{color:"rgba(0,0,0,0.04)"}},x:{grid:{display:false}}}}
   });
 }
-/* ══════════════════════════════════════════════════════════════
+
+/* ══════════════════════════════════════════════
    CORE UTILITIES
-══════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 function toast(msg,type="ok"){const t=document.getElementById("toast");t.textContent=(type==="ok"?"✓ ":"⚠ ")+msg;t.className=type==="err"?"err":"";t.style.display="flex";clearTimeout(t._t);t._t=setTimeout(()=>t.style.display="none",3500);}
 const today=()=>new Date().toISOString().split("T")[0];
 function nextDay(s){if(!s)return"";const d=new Date(s);d.setDate(d.getDate()+1);const n=d.toISOString().split("T")[0];return n>today()?today():n;}
@@ -872,12 +900,6 @@ function populateLists(){
   });
   const vs=document.getElementById("deploy-vendor-id");
   if(vs){
-    vs.addEventListener("change",function(){document.getElementById("deploy-email").value=this.options[this.selectedIndex]?.dataset?.email||"";});
-    const hs=document.getElementById("deploy-hub");
-    if(hs)hs.addEventListener("change",function(){
-      const m=hubsDatabase.find(h=>h.name===this.value);
-      document.getElementById("deploy-hub-email").value=(m&&m.email)||"";
-    });
     const dri=document.getElementById("deploy-day-rate"),mri=document.getElementById("deploy-month-rate"),ws=document.getElementById("deploy-plan");
     function calcRate(){const dr=parseFloat(dri.value)||0,w=ws?ws.value:"",days=w.includes("31")?31:w.includes("26")?26:0;if(dr>0&&days>0&&mri)mri.value=dr*days;}
     if(dri)dri.addEventListener("input",calcRate);
@@ -901,9 +923,11 @@ window.onload=async()=>{
   document.getElementById("req-date").value=today();
 };
 
-/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
    AUTHENTICATION
-══════════════════════════════════════════════════════════════ */
+   FIX 6: Admin passwords now verified via verifyPassword()
+   FIX 7: Logout captures user identity BEFORE clearing variables
+══════════════════════════════════════════════ */
 const ADMIN_CREDENTIALS=[
   {user:"admin@shadowfax.in",passHash:"123"},
   {user:"sooriya.mohan@shadowfax.in",passHash:"123"},
@@ -921,13 +945,20 @@ async function handleLogin(e){
   btn.textContent="⏳ Authenticating...";btn.disabled=true;
 
   await load();
-
   btn.textContent="Sign In →";btn.disabled=false;
 
-  const isAdmin=ADMIN_CREDENTIALS.some(a=>a.user===user&&a.passHash===pass);
+  /* FIX 6: Use verifyPassword() for admins (consistent with vendor/hub auth) */
+  let isAdmin=false;
+  for(const a of ADMIN_CREDENTIALS){
+    if(a.user===user){
+      isAdmin=await verifyPassword(pass,a.passHash);
+      if(isAdmin)break;
+    }
+  }
+
   if(isAdmin){
     loginAttempts=0;
-    logAudit("login","Admin logged in","Admin");
+    logAudit("login","Admin logged in: "+user,"Admin");
     await save();
     showPortal("admin-portal","Admin Control Center","Admin");
     currentRole="admin";
@@ -1012,30 +1043,29 @@ function showPortal(id,title,user){
   document.getElementById(id).classList.add("show");
 }
 
+/* FIX 7: Capture user identity BEFORE clearing variables */
 function logout(){
+  const logoutUser=currentHubName||currentVendor||"Unknown";
+  logAudit("login","User logged out: "+logoutUser,logoutUser);
+
   document.getElementById("app-container").classList.remove("show");
   document.getElementById("login-container").style.display="flex";
-  
   document.getElementById("username").value="";
   document.getElementById("password").value="";
   document.getElementById("login-error").style.display="none";
   document.getElementById("rate-limit-bar").style.display="none";
+
   currentVendor=null;
   currentHubName="Hub Manager";
   currentRole=null;
   window.currentAllowedHubs=[...predefinedHubs];
 
-  try {
-    logAudit("login","User logged out", currentHubName || currentVendor || "Unknown");
-    supabaseClient.from('sf_data').upsert([{id:'auditLog',data:auditLog.slice(-500)}]).catch(()=>{});
-  } catch(err) {
-    console.warn("Silent audit log sync failed during logout:", err);
-  }
+  supabaseClient.from('sf_data').upsert([{id:'auditLog',data:auditLog.slice(-500)}]).catch(()=>{});
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
    HUB GRID
-══════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 function checkLock(type,month){
   const locked=lockedMonths.includes(month);
   if(type==="Hub"){document.getElementById("hub-lock-banner").classList.toggle("show",locked);document.getElementById("hub-action-bar").style.display=locked?"none":"flex";}
@@ -1095,9 +1125,9 @@ function submitBulkHubData(e){
   }else toast("Fill required fields: Date, Status, Driver No.","err");
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
    VENDOR GRID
-══════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 function renderVendorGrid(){
   const tbody=document.getElementById("vendor-grid-body"),month=document.getElementById("vendor-month-filter").value,locked=checkLock("Vendor",month);
   const recs=globalDatabase.filter(e=>e.submittedBy===currentVendor&&e.month===month).sort((a,b)=>new Date(a.date)-new Date(b.date));
@@ -1150,9 +1180,9 @@ function submitBulkVendorData(e){
   }else toast("Fill required fields: Date, Status, Driver No.","err");
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
    ROW HELPERS
-══════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 function toggleHubFields(radio){if(!radio)return;const row=radio.closest("tr"),absent=radio.value==="Absent";["hub-rider-input","hub-runsheet-input"].forEach(c=>{const el=row.querySelector("."+c);el.disabled=absent;el.style.opacity=absent?"0.4":"1";if(absent)el.value="";});}
 function toggleVenFields(radio){if(!radio)return;const row=radio.closest("tr"),absent=radio.value==="Absent";["ven-start-km","ven-end-km"].forEach(c=>{const el=row.querySelector("."+c);el.disabled=absent;el.style.opacity=absent?"0.4":"1";if(absent)el.value="";});const rca=row.querySelector(".ven-rca");rca.disabled=!absent;rca.style.opacity=!absent?"0.4":"1";if(!absent)rca.value="";}
 function lockRow(row){row.querySelectorAll("input:not([type=hidden]),select").forEach(el=>el.disabled=true);const btn=row.querySelector(".row-edit");if(btn){btn.textContent="Edit";btn.classList.remove("save");}const rc=row.querySelector(".radio-cell"),ba=row.querySelector(".locked-att"),chk=row.querySelector("input[type=radio]:checked");if(chk&&rc&&ba){const p=chk.value==="Present";ba.innerHTML="<span class='badge "+(p?"badge-p":"badge-a")+"'>"+(p?"● Present":"● Absent")+"</span>";ba.style.display="block";rc.classList.add("hidden");}}
@@ -1160,11 +1190,29 @@ function toggleEditRow(btn){const row=btn.closest("tr");if(btn.textContent.trim(
 function deleteRow(btn){const row=btn.closest("tr"),tbody=row.parentElement;if(tbody.querySelectorAll("tr").length>1)row.remove();else toast("At least one row must remain.","err");}
 function addHubRow(){hubRC++;const tbody=document.getElementById("hub-grid-body"),last=tbody.querySelector("tr:last-child");const row=window._hubTpl.cloneNode(true);limitDates(row);let d=today();if(last){const ld=last.querySelector(".hub-date-input").value;if(ld)d=nextDay(ld);}row.querySelector(".hub-date-input").value=d;row.querySelectorAll("input[type=radio]").forEach(r=>r.name="hub-att-"+hubRC);tbody.appendChild(row);row.querySelector(".hub-driver-no-input").focus();}
 function addVendorRow(){venRC++;const tbody=document.getElementById("vendor-grid-body"),last=tbody.querySelector("tr:last-child");const row=window._venTpl.cloneNode(true);limitDates(row);const hs=row.querySelector(".vendor-dynamic-hub-list");hs.innerHTML="";deploymentDatabase.filter(r=>r.vendorId===currentVendor).forEach(r=>hs.appendChild(new Option(r.hubName,r.hubName)));let d=today();if(last){const ld=last.querySelector(".ven-date-input").value;if(ld)d=nextDay(ld);}row.querySelector(".ven-date-input").value=d;row.querySelectorAll("input[type=radio]").forEach(r=>r.name="ven-att-"+venRC);tbody.appendChild(row);row.querySelector(".ven-driver-no-input").focus();}
-function autoFill(el,src){const no=el.value.trim();if(!no)return;const row=el.closest("tr");const past=[...globalDatabase].filter(e=>e.driverNumber===no).sort((a,b)=>new Date(b.date)-new Date(a.date));if(!past.length)return;const lat=past[0];if(src==="Hub"){const n=row.querySelector(".hub-driver-name-input"),r=row.querySelector(".hub-rider-input"),rs=row.querySelector(".hub-runsheet-input");if(!n.value)n.value=lat.driverName||"";if(!r.value)r.value=lat.riderId||"";if(!rs.value)rs.value=lat.rawRunsheet||"";if(lat.driverName)toast("Auto-filled: "+lat.driverName);}else{const n=row.querySelector(".ven-driver-name-input");if(!n.value)n.value=lat.driverName||"";if(lat.driverName)toast("Auto-filled: "+lat.driverName);}}
 
-/* ══════════════════════════════════════════════════════════════
+/* FIX 8: autoFill — only toast if a value was actually written */
+function autoFill(el,src){
+  const no=el.value.trim();if(!no)return;
+  const row=el.closest("tr");
+  const past=[...globalDatabase].filter(e=>e.driverNumber===no).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(!past.length)return;
+  const lat=past[0];let changed=false;
+  if(src==="Hub"){
+    const n=row.querySelector(".hub-driver-name-input"),r=row.querySelector(".hub-rider-input"),rs=row.querySelector(".hub-runsheet-input");
+    if(!n.value&&lat.driverName){n.value=lat.driverName;changed=true;}
+    if(!r.value&&lat.riderId){r.value=lat.riderId;changed=true;}
+    if(!rs.value&&lat.rawRunsheet){rs.value=lat.rawRunsheet;changed=true;}
+  }else{
+    const n=row.querySelector(".ven-driver-name-input");
+    if(!n.value&&lat.driverName){n.value=lat.driverName;changed=true;}
+  }
+  if(changed)toast("Auto-filled: "+lat.driverName);
+}
+
+/* ══════════════════════════════════════════════
    REQUESTS
-══════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 function submitVehicleRequest(e){
   e.preventDefault();
   const req={id:Date.now(),date:document.getElementById("req-date").value,hubName:document.getElementById("req-hub").value,riderId:document.getElementById("req-rider").value.trim(),runsheet:document.getElementById("req-runsheet").value.trim(),type:document.getElementById("req-type").value,reason:document.getElementById("req-reason").value.trim(),cost:parseFloat(document.getElementById("req-cost").value)||0,status:"Pending",submittedBy:currentHubName,createdAt:new Date().toISOString()};
@@ -1184,7 +1232,7 @@ function renderHubRequests(){
   reqs.forEach(r=>{
     const sc=r.status==="Approved"?"badge-p":r.status==="Rejected"?"badge-a":"badge-pen";
     const row=document.createElement("tr");
-    row.innerHTML=`<td>${r.date}</td><td><strong>${r.hubName}</strong></td><td>${r.riderId}</td><td>${r.runsheet}</td><td><span class='vtag'>${r.type}</span></td><td style="font-size:12px;color:var(--sf-gray-500)">${r.reason||"—"}</td><td style="text-align:right;font-family:DM Mono,monospace;font-weight:600">${r.cost?"₹"+Number(r.cost).toLocaleString("en-IN"):"—"}</td><td style="text-align:center"><span class='badge ${sc}'>${r.status}</span></td>`;
+    row.innerHTML=`<td>${esc(r.date)}</td><td><strong>${esc(r.hubName)}</strong></td><td>${esc(r.riderId)}</td><td>${esc(r.runsheet)}</td><td><span class='vtag'>${esc(r.type)}</span></td><td style="font-size:12px;color:var(--sf-gray-500)">${esc(r.reason)||"—"}</td><td style="text-align:right;font-family:DM Mono,monospace;font-weight:600">${r.cost?"₹"+Number(r.cost).toLocaleString("en-IN"):"—"}</td><td style="text-align:center"><span class='badge ${sc}'>${esc(r.status)}</span></td>`;
     tbody.appendChild(row);
   });
 }
@@ -1214,7 +1262,7 @@ function renderAdminRequests(){
     const rid=r.id,costFmt=r.cost?"₹"+Number(r.cost).toLocaleString("en-IN"):"—";
     const drop=`<select class="f-sel" style="padding:4px 8px;font-size:12px;font-weight:600;background:white;cursor:pointer;" onchange="updateReqStatus(${rid},this.value)"><option value="Pending" ${r.status==='Pending'?'selected':''}>⏳ Pending</option><option value="Approved" ${r.status==='Approved'?'selected':''}>✅ Approved</option><option value="Rejected" ${r.status==='Rejected'?'selected':''}>❌ Rejected</option></select>`;
     const row=document.createElement("tr");
-    row.innerHTML=`<td>${r.date}</td><td><strong>${r.hubName}</strong></td><td>${r.riderId}</td><td>${r.runsheet}</td><td><span class='vtag'>${r.type}</span></td><td style="font-size:12px;color:var(--sf-gray-500);max-width:160px">${r.reason||"—"}</td><td style="text-align:right;font-family:DM Mono,monospace;font-weight:600">${costFmt}</td><td style="text-align:center"><span class='badge ${sc}'>${r.status}</span></td><td style="text-align:center">${drop}</td>`;
+    row.innerHTML=`<td>${esc(r.date)}</td><td><strong>${esc(r.hubName)}</strong></td><td>${esc(r.riderId)}</td><td>${esc(r.runsheet)}</td><td><span class='vtag'>${esc(r.type)}</span></td><td style="font-size:12px;color:var(--sf-gray-500);max-width:160px">${esc(r.reason)||"—"}</td><td style="text-align:right;font-family:DM Mono,monospace;font-weight:600">${costFmt}</td><td style="text-align:center"><span class='badge ${sc}'>${esc(r.status)}</span></td><td style="text-align:center">${drop}</td>`;
     tbody.appendChild(row);
   });
 }
@@ -1235,9 +1283,9 @@ function exportReqCSV(){
   document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
    ADMIN — MIS VERIFICATION
-══════════════════════════════════════════════════════════════ */
+══════════════════════════════════════════════ */
 function toggleMonthLock(){
   const m=document.getElementById("admin-month-filter").value;
   if(!m){toast("Select a month to lock/unlock.","err");return;}
@@ -1277,24 +1325,25 @@ function updateAdminDashboard(){
     let detailHtml="";
     hubDateEntries.forEach(dg=>{
       const totalD=dg.drivers.length;
-      detailHtml+="<div class=detail-date-block><div class=detail-date-header><span class=detail-date-pill>"+dg.date+"</span><span style='font-size:12px;color:var(--sf-gray-500);margin-left:10px'><strong style='color:var(--sf-green)'>Hub: "+dg.hubPresent+"</strong> &nbsp;|&nbsp; <strong style='color:var(--sf-green)'>Vendor: "+dg.vendorPresent+"</strong> &nbsp;|&nbsp; "+totalD+" driver"+(totalD!==1?"s":"")+"</span></div><div class=detail-grid>";
+      detailHtml+="<div class=detail-date-block><div class=detail-date-header><span class=detail-date-pill>"+esc(dg.date)+"</span><span style='font-size:12px;color:var(--sf-gray-500);margin-left:10px'><strong style='color:var(--sf-green)'>Hub: "+dg.hubPresent+"</strong> &nbsp;|&nbsp; <strong style='color:var(--sf-green)'>Vendor: "+dg.vendorPresent+"</strong> &nbsp;|&nbsp; "+totalD+" driver"+(totalD!==1?"s":"")+"</span></div><div class=detail-grid>";
       dg.drivers.forEach(d=>{
         const hCls=d.hubAtt==="Present"?"detail-att-present":(d.hubAtt==="Absent"?"detail-att-absent":"");
         const vCls=d.venAtt==="Present"?"detail-att-present":(d.venAtt==="Absent"?"detail-att-absent":"");
         const rsM=d.hubNotes.match(/Runsheet:([^|]*)/),riM=d.hubNotes.match(/RiderID:([^|]*)/),rkM=d.hubNotes.match(/Remark:([^|]*)/);
-        const rs=(rsM?rsM[1].trim():"")||"—",ri=(riM?riM[1].trim():"")||"—",rk=(rkM?rkM[1].trim():"")||"—";
+        const rs=esc((rsM?rsM[1].trim():"")||"—"),ri=esc((riM?riM[1].trim():"")||"—"),rk=esc((rkM?rkM[1].trim():"")||"—");
         const kmM=d.venNotes.match(/KM:\s*(.+)/),rcaM=d.venNotes.match(/RCA:\s*(.+)/);
-        const km=kmM?kmM[1].trim():"",rca=rcaM?rcaM[1].trim():"";
-        detailHtml+="<div class=detail-driver-card><div class=detail-driver-header><div><div class=detail-driver-id>👤 "+d.driverNumber+"</div>"+(d.driverName?"<div class=detail-driver-name>"+d.driverName+"</div>":"")+"</div><span style='font-size:11px;color:var(--sf-gray-400)'>"+(d.vendor||"")+"</span></div><div class=detail-section-label>Hub Record</div><div class=detail-row-item><span class=detail-row-label>Status</span><span class='detail-row-val "+hCls+"'>"+(d.hubAtt||"—")+"</span></div><div class=detail-row-item><span class=detail-row-label>Runsheet</span><span class=detail-row-val>"+rs+"</span></div><div class=detail-row-item><span class=detail-row-label>Rider ID</span><span class=detail-row-val>"+ri+"</span></div><div class=detail-row-item><span class=detail-row-label>Remark</span><span class=detail-row-val>"+rk+"</span></div><div class=detail-section-label>Vendor Record</div><div class=detail-row-item><span class=detail-row-label>Status</span><span class='detail-row-val "+vCls+"'>"+(d.venAtt||"—")+"</span></div>"+(km?"<div class=detail-row-item><span class=detail-row-label>KM</span><span class=detail-row-val>"+km+"</span></div>":"")+(rca?"<div class=detail-row-item><span class=detail-row-label>RCA</span><span class='detail-row-val' style='color:var(--sf-red)'>"+rca+"</span></div>":"")+"</div>";
+        const km=esc(kmM?kmM[1].trim():""),rca=esc(rcaM?rcaM[1].trim():"");
+        detailHtml+="<div class=detail-driver-card><div class=detail-driver-header><div><div class=detail-driver-id>👤 "+esc(d.driverNumber)+"</div>"+(d.driverName?"<div class=detail-driver-name>"+esc(d.driverName)+"</div>":"")+"</div><span style='font-size:11px;color:var(--sf-gray-400)'>"+esc(d.vendor||"")+"</span></div><div class=detail-section-label>Hub Record</div><div class=detail-row-item><span class=detail-row-label>Status</span><span class='detail-row-val "+hCls+"'>"+(esc(d.hubAtt)||"—")+"</span></div><div class=detail-row-item><span class=detail-row-label>Runsheet</span><span class=detail-row-val>"+rs+"</span></div><div class=detail-row-item><span class=detail-row-label>Rider ID</span><span class=detail-row-val>"+ri+"</span></div><div class=detail-row-item><span class=detail-row-label>Remark</span><span class=detail-row-val>"+rk+"</span></div><div class=detail-section-label>Vendor Record</div><div class=detail-row-item><span class=detail-row-label>Status</span><span class='detail-row-val "+vCls+"'>"+(esc(d.venAtt)||"—")+"</span></div>"+(km?"<div class=detail-row-item><span class=detail-row-label>KM</span><span class=detail-row-val>"+km+"</span></div>":"")+(rca?"<div class=detail-row-item><span class=detail-row-label>RCA</span><span class='detail-row-val' style='color:var(--sf-red)'>"+rca+"</span></div>":"")+"</div>";
       });
       detailHtml+="</div></div>";
     });
     const row=document.createElement("tr");row.className="data-row";row.dataset.month=grp.month;row.dataset.hub=grp.hubName;row.dataset.vendors=[...grp.vendors].join(",");
     const inS="width:68px;text-align:center;border-radius:5px;padding:5px 4px;font-family:DM Mono,monospace;outline:none;";
-    row.innerHTML="<td><strong>"+grp.hubName+"</strong></td><td style='font-size:12px;color:var(--sf-gray-500)'>"+(([...grp.vendors].join(", "))||"—")+"</td><td><span class=vtag>"+(depRule.vehicleType||"—")+"</span></td><td><span class='vtag "+(depRule.model==="DCD"?"vtag-blue":"")+"'>"+(depRule.model||"—")+"</span></td><td style='font-size:12px;color:var(--sf-gray-500)'>"+(depRule.working||"—")+"</td><td style='text-align:right;font-family:DM Mono,monospace;font-size:13px'>"+drFmt+"</td><td style='text-align:right;font-family:DM Mono,monospace;font-size:13px'>"+mrFmt+"</td><td style='font-size:12px'>"+(depRule.deployDate||"—")+"</td><td style='text-align:center'><strong style='font-family:DM Mono,monospace;color:var(--sf-green);font-size:16px'>"+grp.hubPresent+"</strong></td><td style='text-align:center'><strong style='font-family:DM Mono,monospace;color:var(--sf-green);font-size:16px'>"+grp.vendorPresent+"</strong></td>"+"<td style='text-align:center;background:#f0fdf4;padding:4px 6px'><input type=number min=0 value='"+fhVal+"' placeholder='—' data-key='"+rowKey+"' data-field=finalHI onchange='saveFinalAtt(this)' style='"+inS+"border:1.5px solid #86efac;font-size:13px;font-weight:600;color:#166534;background:#f0fdf4;'></td><td style='text-align:center;background:#f0fdf4;padding:4px 6px'><input type=number min=0 value='"+fvVal+"' placeholder='—' data-key='"+rowKey+"' data-field=finalVendor onchange='saveFinalAtt(this)' style='"+inS+"border:1.5px solid #86efac;font-size:13px;font-weight:600;color:#166534;background:#f0fdf4;'></td><td style='text-align:center;background:#eff6ff;padding:4px 6px'><input type=number min=0 value='"+faVal+"' placeholder='—' data-key='"+rowKey+"' data-field=finalAtt onchange='saveFinalAtt(this)' style='"+inS+"border:1.5px solid #93c5fd;font-size:14px;font-weight:700;color:#1e40af;background:#eff6ff;'></td><td style='text-align:center'><button class=btn-expand data-detail-id='"+detailId+"' onclick='toggleDetail(this,\""+detailId+"\")'>Show <span style='background:var(--sf-green);color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:3px'>"+hubDateEntries.length+"d / "+grp.totalDriverDays+"dr</span> <span class=arrow>▼</span></button></td>";
+    /* FIX 9: Model column was missing from renderDeployTable rows — included here too for consistency */
+    row.innerHTML="<td><strong>"+esc(grp.hubName)+"</strong></td><td style='font-size:12px;color:var(--sf-gray-500)'>"+esc(([...grp.vendors].join(", "))||"—")+"</td><td><span class=vtag>"+esc(depRule.vehicleType||"—")+"</span></td><td><span class='vtag "+(depRule.model==="DCD"?"vtag-blue":"")+"'>"+esc(depRule.model||"—")+"</span></td><td style='font-size:12px;color:var(--sf-gray-500)'>"+esc(depRule.working||"—")+"</td><td style='text-align:right;font-family:DM Mono,monospace;font-size:13px'>"+drFmt+"</td><td style='text-align:right;font-family:DM Mono,monospace;font-size:13px'>"+mrFmt+"</td><td style='font-size:12px'>"+esc(depRule.deployDate||"—")+"</td><td style='text-align:center'><strong style='font-family:DM Mono,monospace;color:var(--sf-green);font-size:16px'>"+grp.hubPresent+"</strong></td><td style='text-align:center'><strong style='font-family:DM Mono,monospace;color:var(--sf-green);font-size:16px'>"+grp.vendorPresent+"</strong></td>"+"<td style='text-align:center;background:#f0fdf4;padding:4px 6px'><input type=number min=0 value='"+fhVal+"' placeholder='—' data-key='"+esc(rowKey)+"' data-field=finalHI onchange='saveFinalAtt(this)' style='"+inS+"border:1.5px solid #86efac;font-size:13px;font-weight:600;color:#166534;background:#f0fdf4;'></td><td style='text-align:center;background:#f0fdf4;padding:4px 6px'><input type=number min=0 value='"+fvVal+"' placeholder='—' data-key='"+esc(rowKey)+"' data-field=finalVendor onchange='saveFinalAtt(this)' style='"+inS+"border:1.5px solid #86efac;font-size:13px;font-weight:600;color:#166534;background:#f0fdf4;'></td><td style='text-align:center;background:#eff6ff;padding:4px 6px'><input type=number min=0 value='"+faVal+"' placeholder='—' data-key='"+esc(rowKey)+"' data-field=finalAtt onchange='saveFinalAtt(this)' style='"+inS+"border:1.5px solid #93c5fd;font-size:14px;font-weight:700;color:#1e40af;background:#eff6ff;'></td><td style='text-align:center'><button class=btn-expand data-detail-id='"+detailId+"' onclick='toggleDetail(this,\""+detailId+"\")'>Show <span style='background:var(--sf-green);color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:3px'>"+hubDateEntries.length+"d / "+grp.totalDriverDays+"dr</span> <span class=arrow>▼</span></button></td>";
     tbody.appendChild(row);
     const detailRow=document.createElement("tr");detailRow.className="detail-row";detailRow.id=detailId;
-    const dtd=document.createElement("td");dtd.colSpan=14;dtd.className="detail-panel";dtd.innerHTML="<div class=detail-inner><div class=detail-title>"+grp.hubName+" — All Dates</div>"+detailHtml+"</div>";
+    const dtd=document.createElement("td");dtd.colSpan=14;dtd.className="detail-panel";dtd.innerHTML="<div class=detail-inner><div class=detail-title>"+esc(grp.hubName)+" — All Dates</div>"+detailHtml+"</div>";
     detailRow.appendChild(dtd);tbody.appendChild(detailRow);
   });
   document.getElementById("stat-total-hubs").textContent=uniqHubs.size;document.getElementById("stat-hub-present").textContent=hTotal;document.getElementById("stat-ven-present").textContent=vTotal;document.getElementById("stat-pending").textContent=pending;document.getElementById("stat-payout").textContent="₹"+totalPayout.toLocaleString("en-IN");
@@ -1309,9 +1358,10 @@ function recomputeStats(f){const filtered=globalDatabase.filter(e=>entryMatchesF
 function filterAdmin(){updateLockBtn();const f=getActiveFilters();const ah=f.v?deploymentDatabase.filter(r=>r.vendorId===f.v).map(r=>r.hubName):null;const hubsOnDate=f.d?new Set(globalDatabase.filter(e=>e.date===f.d).map(e=>e.hubName)):null;document.querySelectorAll("#admin-table-body .data-row").forEach(row=>{const hub=row.dataset.hub||"",vendors=row.dataset.vendors||"",month=row.dataset.month||"",txt=(row.textContent||"").toUpperCase();const ok=(!f.m||month===f.m)&&(!f.h||hub===f.h)&&(!f.v||vendors.includes(f.v)||(ah&&ah.includes(hub)))&&(!f.s||txt.includes(f.s))&&(!f.d||(hubsOnDate&&hubsOnDate.has(hub)));row.style.display=ok?"":"none";const btn=row.querySelector(".btn-expand");if(btn){const did=btn.getAttribute("onclick").match(/"(detail-\d+)"/);if(did){const dr=document.getElementById(did[1]);if(dr&&!ok)dr.classList.remove("open");}}});recomputeStats(f);}
 function clearAdminFilters(){["admin-search","admin-hub-filter","admin-vendor-filter","admin-month-filter","admin-date-filter"].forEach(id=>document.getElementById(id).value="");filterAdmin();}
 
-/* ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
    DEPLOYMENT
-══════════════════════════════════════════════════════════════ */
+   FIX 9: renderDeployTable now includes Model column to match header
+══════════════════════════════════════════════ */
 function addDeployment(e){
   e.preventDefault();
   const vendorId=document.getElementById("deploy-vendor-id").value.trim().toUpperCase();
@@ -1327,10 +1377,7 @@ function addDeployment(e){
   const plan=document.getElementById("deploy-plan").value;
   const deployDate=document.getElementById("deploy-date").value;
   if(deploymentDatabase.find(r=>r.vendorId===vendorId&&r.hubName===hubName)){toast("This deployment rule already exists.","err");return;}
-  
-  // Cleaned push (no finance vars)
   deploymentDatabase.push({id:Date.now(),vendorId,hubName,email,vendorPass,hubEmail,hubPass,model,vehicleType:type,dayRate,monthRate,working:plan,deployDate});
-  
   logAudit("deploy",`Added deployment: ${vendorId} → ${hubName}`,"Admin");
   save();renderDeployTable();populateLists();
   document.getElementById("deploy-form").reset();document.getElementById("deploy-date").value=today();
@@ -1342,10 +1389,12 @@ function renderDeployTable(){
   if(!deploymentDatabase.length){tbody.innerHTML="<tr><td colspan=10 class=empty-c>No deployments found.</td></tr>";return;}
   tbody.innerHTML="";
   deploymentDatabase.forEach(r=>{
-    const vLog=r.email?`<strong>${r.email}</strong><br><span style="color:var(--sf-gray-500);font-size:11px">Pass: ${r.vendorPass}</span>`:'—';
-    const hLog=r.hubEmail?`<strong>${r.hubEmail}</strong><br><span style="color:var(--sf-gray-500);font-size:11px">Pass: ${r.hubPass}</span>`:'—';
+    /* FIX 10: Passwords masked in UI — security improvement */
+    const vLog=r.email?`<strong>${esc(r.email)}</strong><br><span style="color:var(--sf-gray-500);font-size:11px">Pass: ••••••</span>`:'—';
+    const hLog=r.hubEmail?`<strong>${esc(r.hubEmail)}</strong><br><span style="color:var(--sf-gray-500);font-size:11px">Pass: ••••••</span>`:'—';
     const row=document.createElement("tr");
-    row.innerHTML=`<td><strong>${r.vendorId}</strong></td><td>${r.hubName}</td><td><span class='vtag'>${r.vehicleType||r.type||"—"}</span></td><td style='font-size:12px;color:var(--sf-gray-500)'>${r.working||r.plan||"—"}</td><td><strong>₹${(r.dayRate||0).toLocaleString('en-IN')}</strong></td><td>₹${(r.monthRate||0).toLocaleString('en-IN')}</td><td>${r.deployDate||r.date||"—"}</td><td>${vLog}</td><td>${hLog}</td><td style='text-align:center'><button class='btn btn-sm' style='background:#fef2f2;color:#ef4444;border:1px solid #fca5a5;padding:4px 10px' onclick='removeDeployment(${r.id})'>✕</button></td>`;
+    /* FIX 9: Model column now included — matches thead order */
+    row.innerHTML=`<td><strong>${esc(r.vendorId)}</strong></td><td>${esc(r.hubName)}</td><td><span class='vtag'>${esc(r.vehicleType||r.type||"—")}</span></td><td><span class='vtag ${r.model==="DCD"?"vtag-blue":""}'>${esc(r.model||"—")}</span></td><td style='font-size:12px;color:var(--sf-gray-500)'>${esc(r.working||r.plan||"—")}</td><td><strong>₹${(r.dayRate||0).toLocaleString('en-IN')}</strong></td><td>₹${(r.monthRate||0).toLocaleString('en-IN')}</td><td>${esc(r.deployDate||r.date||"—")}</td><td>${vLog}</td><td>${hLog}</td><td style='text-align:center'><button class='btn btn-sm' style='background:#fef2f2;color:#ef4444;border:1px solid #fca5a5;padding:4px 10px' onclick='removeDeployment(${r.id})'>✕</button></td>`;
     tbody.appendChild(row);
   });
 }
@@ -1363,7 +1412,8 @@ function importHubsCSV(e){
   const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=ev=>{
-    const lines=ev.target.result.split("\n").filter(l=>l.trim());
+    /* FIX 11: Strip \r from CSV lines (Windows line endings) */
+    const lines=ev.target.result.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split("\n").filter(l=>l.trim());
     let newHubs=[];
     lines.forEach((line,index)=>{
       if(index===0&&line.toLowerCase().includes("name"))return;
@@ -1387,9 +1437,9 @@ function downloadCSV(tblId,fname){
   document.body.appendChild(a);a.click();document.body.removeChild(a);toast("CSV exported.");
 }
 
-/* ══════════════════════════════════════════════════════════════
-   GOOGLE SHEETS LIVE FETCH (Dashboard 1)
-══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   GOOGLE SHEETS LIVE FETCH
+══════════════════════════════════════════════ */
 let globalGSheetData=[];
 async function loadGoogleSheetData(){
   const loadingDiv=document.getElementById("gsheet-loading"),contentDiv=document.getElementById("gsheet-content"),errorEl=document.getElementById("gsheet-error");
@@ -1408,7 +1458,23 @@ async function loadGoogleSheetData(){
     for(let i=1;i<rows.length;i++){
       const row=rows[i];if(!row[colHub])continue;
       const dateVal=row[colDate]||"";let monthVal="",stdDate="";
-      if(dateVal){const m=dateVal.trim().match(/^(\d{1,2})[\/\-\:\.](\d{1,2})[\/\-\:\.](\d{2,4})$/);if(m){let dd=m[1].padStart(2,'0'),mm=m[2].padStart(2,'0'),yy=m[3];if(yy.length===2)yy="20"+yy;const mIdx=parseInt(mm,10)-1;if(mIdx>=0&&mIdx<12)monthVal=monthNames[mIdx];stdDate=`${yy}-${mm}-${dd}`;}else{try{const d=new Date(dateVal);if(!isNaN(d)){monthVal=d.toLocaleString('default',{month:'long'});stdDate=d.toISOString().split('T')[0];}}catch(e){}}}
+      if(dateVal){
+        /* FIX 12: Robust date parsing — explicit DD/MM/YYYY first, avoid locale-ambiguous new Date(string) */
+        const m=dateVal.trim().match(/^(\d{1,2})[\/\-\:\.](\d{1,2})[\/\-\:\.](\d{2,4})$/);
+        if(m){
+          let dd=m[1].padStart(2,'0'),mm=m[2].padStart(2,'0'),yy=m[3];
+          if(yy.length===2)yy="20"+yy;
+          const mIdx=parseInt(mm,10)-1;
+          if(mIdx>=0&&mIdx<12){monthVal=monthNames[mIdx];stdDate=`${yy}-${mm}-${dd}`;}
+        } else {
+          const parts=dateVal.trim().split(/[\/\-\.]/);
+          if(parts.length===3){
+            const dd=parts[0].padStart(2,'0'),mm=parts[1].padStart(2,'0'),yy=parts[2].length===2?"20"+parts[2]:parts[2];
+            const mIdx=parseInt(mm,10)-1;
+            if(mIdx>=0&&mIdx<12){monthVal=monthNames[mIdx];stdDate=`${yy}-${mm}-${dd}`;}
+          }
+        }
+      }
       const obj={hub:(row[colHub]||"").trim(),pod:(row[colPod]||"").trim(),zone:(row[colZone]||"").trim(),status:(row[colStatus]||"").trim(),hiAtt:(row[colHI]||"").trim(),venAtt:(row[colVenAtt]||"").trim(),vNo:(row[colVehicleNo]||"").trim(),vendor:(row[colVendor]||"").trim(),date:dateVal.trim(),stdDate,month:monthVal};
       globalGSheetData.push(obj);if(obj.hub)uHubs.add(obj.hub);if(obj.pod)uPods.add(obj.pod);if(obj.zone)uZones.add(obj.zone);if(obj.status)uStatus.add(obj.status);
     }
@@ -1421,18 +1487,15 @@ function renderGSheetDashboard(){
   const fMonth=document.getElementById("g-filter-month").value,fHub=document.getElementById("g-filter-hub").value,fDate=document.getElementById("g-filter-date").value,fPod=document.getElementById("g-filter-pod").value,fZone=document.getElementById("g-filter-zone").value,fStatus=document.getElementById("g-filter-status").value,fHi=document.getElementById("g-filter-hi").value.toLowerCase();
   let filtered=globalGSheetData.filter(r=>{if(fMonth&&r.month!==fMonth)return false;if(fHub&&r.hub!==fHub)return false;if(fDate&&r.stdDate!==fDate)return false;if(fPod&&r.pod!==fPod)return false;if(fZone&&r.zone!==fZone)return false;if(fStatus&&r.status!==fStatus)return false;if(fHi&&!r.hiAtt.toLowerCase().includes(fHi))return false;return true;});
   let uniqueHubs=new Set(),uniqueVehicles=new Set(),hiPresent=0,venPresent=0,tableHtml="",rowCount=0;
-  filtered.forEach(r=>{uniqueHubs.add(r.hub);if(r.vNo&&r.vNo!=="—")uniqueVehicles.add(r.vNo);const hi=r.hiAtt.toLowerCase(),ven=r.venAtt.toLowerCase();if(hi.includes("p")||hi.includes("present")||hi==="1")hiPresent++;if(ven.includes("p")||ven.includes("present")||ven==="1")venPresent++;if(rowCount<50){const pHi=hi.includes("p")?`<span style="color:var(--sf-green);font-weight:700">P</span>`:r.hiAtt;const pVen=ven.includes("p")?`<span style="color:var(--sf-green);font-weight:700">P</span>`:r.venAtt;tableHtml+=`<tr><td>${r.date||"—"}</td><td><strong>${r.hub}</strong></td><td style="font-size:12px;color:var(--sf-gray-500)">${r.vendor||"—"}</td><td style="font-family:DM Mono,monospace">${r.vNo||"—"}</td><td style="text-align:center">${pHi||"—"}</td><td style="text-align:center">${pVen||"—"}</td></tr>`;rowCount++;}});
+  filtered.forEach(r=>{uniqueHubs.add(r.hub);if(r.vNo&&r.vNo!=="—")uniqueVehicles.add(r.vNo);const hi=r.hiAtt.toLowerCase(),ven=r.venAtt.toLowerCase();if(hi.includes("p")||hi.includes("present")||hi==="1")hiPresent++;if(ven.includes("p")||ven.includes("present")||ven==="1")venPresent++;if(rowCount<50){const pHi=hi.includes("p")?`<span style="color:var(--sf-green);font-weight:700">P</span>`:esc(r.hiAtt);const pVen=ven.includes("p")?`<span style="color:var(--sf-green);font-weight:700">P</span>`:esc(r.venAtt);tableHtml+=`<tr><td>${esc(r.date)||"—"}</td><td><strong>${esc(r.hub)}</strong></td><td style="font-size:12px;color:var(--sf-gray-500)">${esc(r.vendor)||"—"}</td><td style="font-family:DM Mono,monospace">${esc(r.vNo)||"—"}</td><td style="text-align:center">${pHi||"—"}</td><td style="text-align:center">${pVen||"—"}</td></tr>`;rowCount++;}});
   document.getElementById("g-stat-hubs").innerText=uniqueHubs.size;document.getElementById("g-stat-vehicles").innerText=uniqueVehicles.size;document.getElementById("g-stat-hi-att").innerText=hiPresent;document.getElementById("g-stat-ven-att").innerText=venPresent;
   document.getElementById("gsheet-table-body").innerHTML=tableHtml||`<tr><td colspan="6" class="empty-c">No data matches these filters.</td></tr>`;
 }
-function clearGSheetFilters(){
-  ["g-filter-month","g-filter-hub","g-filter-date","g-filter-pod","g-filter-zone","g-filter-status","g-filter-hi"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
-  renderGSheetDashboard();
-}
+function clearGSheetFilters(){["g-filter-month","g-filter-hub","g-filter-date","g-filter-pod","g-filter-zone","g-filter-status","g-filter-hi"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});renderGSheetDashboard();}
 
-/* ══════════════════════════════════════════════════════════════
-   HAPPAY LIVE FETCH (Dashboard 2)
-══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   HAPPAY LIVE FETCH
+══════════════════════════════════════════════ */
 let globalHappayData=[];
 async function loadHappaySheetData(){
   const loadingDiv=document.getElementById("happay-loading"),contentDiv=document.getElementById("happay-content"),errorEl=document.getElementById("happay-error");
@@ -1451,7 +1514,23 @@ async function loadHappaySheetData(){
     for(let i=headerRowIndex+1;i<rows.length;i++){
       const row=rows[i];if(!row[colHub]||row[colHub].trim()==="")continue;
       const dateVal=colDate>-1?(row[colDate]||"").trim():"";let monthVal="",stdDate="";
-      if(dateVal){const m=dateVal.match(/^(\d{1,2})[\/\-\:\.](\d{1,2})[\/\-\:\.](\d{2,4})$/);if(m){let mm=m[1].padStart(2,'0'),dd=m[2].padStart(2,'0'),yy=m[3];if(yy.length===2)yy="20"+yy;const mIdx=parseInt(mm,10)-1;if(mIdx>=0&&mIdx<12)monthVal=monthNames[mIdx];stdDate=`${yy}-${mm}-${dd}`;}else{try{const d=new Date(dateVal);if(!isNaN(d)){monthVal=d.toLocaleString('default',{month:'long'});stdDate=d.toISOString().split('T')[0];}}catch(e){}}}
+      if(dateVal){
+        /* FIX 12 (also here): Robust date parsing */
+        const m=dateVal.match(/^(\d{1,2})[\/\-\:\.](\d{1,2})[\/\-\:\.](\d{2,4})$/);
+        if(m){
+          let mm=m[1].padStart(2,'0'),dd=m[2].padStart(2,'0'),yy=m[3];
+          if(yy.length===2)yy="20"+yy;
+          const mIdx=parseInt(mm,10)-1;
+          if(mIdx>=0&&mIdx<12){monthVal=monthNames[mIdx];stdDate=`${yy}-${mm}-${dd}`;}
+        } else {
+          const parts=dateVal.split(/[\/\-\.]/);
+          if(parts.length===3){
+            const mm=parts[0].padStart(2,'0'),dd=parts[1].padStart(2,'0'),yy=parts[2].length===2?"20"+parts[2]:parts[2];
+            const mIdx=parseInt(mm,10)-1;
+            if(mIdx>=0&&mIdx<12){monthVal=monthNames[mIdx];stdDate=`${yy}-${mm}-${dd}`;}
+          }
+        }
+      }
       let chargesRaw=colCharges>-1?(row[colCharges]||"").trim():"0";let chargeNum=parseFloat(chargesRaw.replace(/[^\d.-]/g,''))||0;
       const obj={hub:(row[colHub]||"").trim(),date:dateVal,stdDate,month:monthVal,rider:colRider>-1?(row[colRider]||"").trim():"",runsheet:colRunsheet>-1?(row[colRunsheet]||"").trim():"",chargeStr:chargesRaw,chargeNum,spna:colSpna>-1?(row[colSpna]||"").trim():"",region:colRegion>-1?(row[colRegion]||"").trim():"",pod:colPod>-1?(row[colPod]||"").trim():"",szm:colSzm>-1?(row[colSzm]||"").trim():""};
       globalHappayData.push(obj);if(obj.hub)uHubs.add(obj.hub);if(obj.region)uRegions.add(obj.region);if(obj.pod)uPods.add(obj.pod);if(obj.spna)uSpna.add(obj.spna);if(obj.szm)uSzm.add(obj.szm);
@@ -1468,96 +1547,45 @@ async function loadHappaySheetData(){
 function renderHappayDashboard(){
   const fMonth=document.getElementById("h-filter-month")?.value||"",fRegion=document.getElementById("h-filter-region")?.value||"",fHub=(document.getElementById("h-filter-hub")?.value||"").toLowerCase(),fSzm=(document.getElementById("h-filter-szm")?.value||"").toLowerCase(),fDate=document.getElementById("h-filter-date")?.value||"",fPod=document.getElementById("h-filter-pod")?.value||"",fSpna=document.getElementById("h-filter-spna")?.value||"";
   const base=r=>{if(fMonth&&r.month!==fMonth)return false;if(fRegion&&r.region!==fRegion)return false;if(fPod&&r.pod!==fPod)return false;if(fSpna&&r.spna!==fSpna)return false;if(fHub&&!r.hub.toLowerCase().includes(fHub))return false;if(fSzm&&!r.szm.toLowerCase().includes(fSzm))return false;return true;};
-  
   let filtered=globalHappayData.filter(r=>base(r)&&(!fDate||r.stdDate===fDate));
   let chartFiltered=globalHappayData.filter(r=>base(r));
   let uniqueHubs=new Set(),totalCharges=0,approvedCount=0,appCharges=0,notAppCharges=0,tableHtml="",rowCount=0;
-  
-  const szmGroups = {};
-  const podGroups = {};
-
+  const szmGroups={};const podGroups={};
   filtered.forEach(r=>{
     if(r.hub)uniqueHubs.add(r.hub);
     totalCharges+=r.chargeNum;
     const isApp=r.spna.toLowerCase().includes("app")||r.spna.toLowerCase().includes("yes")||r.spna.toLowerCase()==="ok";
     if(isApp){approvedCount++;appCharges+=r.chargeNum;}else notAppCharges+=r.chargeNum;
-    
-    if(rowCount<50){const pSpna=isApp?`<span style="color:var(--sf-green);font-weight:700">${r.spna}</span>`:`<span style="color:var(--sf-amber);font-weight:700">${r.spna}</span>`;tableHtml+=`<tr><td>${r.date||"—"}</td><td>${r.region||"—"}</td><td><strong>${r.hub}</strong></td><td style="font-size:12px;color:var(--sf-gray-500)">${r.pod||"—"}</td><td style="font-family:DM Mono,monospace">${r.rider||"—"}</td><td style="font-family:DM Mono,monospace;font-size:11px">${r.runsheet||"—"}</td><td style="text-align:right;font-weight:600">₹${r.chargeNum.toLocaleString("en-IN")}</td><td style="text-align:center">${pSpna}</td></tr>`;rowCount++;}
-
-    const szmName = r.szm || "Unassigned";
-    if (!szmGroups[szmName]) szmGroups[szmName] = { hubs: new Set(), entries: 0, approved: 0, totalCharges: 0, approvedCharges: 0, notApprovedCharges: 0 };
-    if (r.hub) szmGroups[szmName].hubs.add(r.hub);
-    szmGroups[szmName].entries++;
-    szmGroups[szmName].totalCharges += r.chargeNum;
-    if (isApp) { szmGroups[szmName].approved++; szmGroups[szmName].approvedCharges += r.chargeNum; } 
-    else { szmGroups[szmName].notApprovedCharges += r.chargeNum; }
-
-    const podName = r.pod || "Unassigned";
-    if (!podGroups[podName]) podGroups[podName] = { hubs: new Set(), entries: 0, approved: 0, totalCharges: 0, approvedCharges: 0, notApprovedCharges: 0 };
-    if (r.hub) podGroups[podName].hubs.add(r.hub);
-    podGroups[podName].entries++;
-    podGroups[podName].totalCharges += r.chargeNum;
-    if (isApp) { podGroups[podName].approved++; podGroups[podName].approvedCharges += r.chargeNum; } 
-    else { podGroups[podName].notApprovedCharges += r.chargeNum; }
+    if(rowCount<50){const pSpna=isApp?`<span style="color:var(--sf-green);font-weight:700">${esc(r.spna)}</span>`:`<span style="color:var(--sf-amber);font-weight:700">${esc(r.spna)}</span>`;tableHtml+=`<tr><td>${esc(r.date)||"—"}</td><td>${esc(r.region)||"—"}</td><td><strong>${esc(r.hub)}</strong></td><td style="font-size:12px;color:var(--sf-gray-500)">${esc(r.pod)||"—"}</td><td style="font-family:DM Mono,monospace">${esc(r.rider)||"—"}</td><td style="font-family:DM Mono,monospace;font-size:11px">${esc(r.runsheet)||"—"}</td><td style="text-align:right;font-weight:600">₹${r.chargeNum.toLocaleString("en-IN")}</td><td style="text-align:center">${pSpna}</td></tr>`;rowCount++;}
+    const szmName=r.szm||"Unassigned";
+    if(!szmGroups[szmName])szmGroups[szmName]={hubs:new Set(),entries:0,approved:0,totalCharges:0,approvedCharges:0,notApprovedCharges:0};
+    if(r.hub)szmGroups[szmName].hubs.add(r.hub);
+    szmGroups[szmName].entries++;szmGroups[szmName].totalCharges+=r.chargeNum;
+    if(isApp){szmGroups[szmName].approved++;szmGroups[szmName].approvedCharges+=r.chargeNum;}else{szmGroups[szmName].notApprovedCharges+=r.chargeNum;}
+    const podName=r.pod||"Unassigned";
+    if(!podGroups[podName])podGroups[podName]={hubs:new Set(),entries:0,approved:0,totalCharges:0,approvedCharges:0,notApprovedCharges:0};
+    if(r.hub)podGroups[podName].hubs.add(r.hub);
+    podGroups[podName].entries++;podGroups[podName].totalCharges+=r.chargeNum;
+    if(isApp){podGroups[podName].approved++;podGroups[podName].approvedCharges+=r.chargeNum;}else{podGroups[podName].notApprovedCharges+=r.chargeNum;}
   });
-
   document.getElementById("h-stat-hubs").innerText=uniqueHubs.size;document.getElementById("h-stat-lcvs").innerText=filtered.length;document.getElementById("h-stat-charges").innerText="₹"+totalCharges.toLocaleString("en-IN");document.getElementById("h-stat-app").innerText=approvedCount;document.getElementById("h-stat-app-charges").innerText="₹"+appCharges.toLocaleString("en-IN");document.getElementById("h-stat-not-app-charges").innerText="₹"+notAppCharges.toLocaleString("en-IN");
   document.getElementById("happay-table-body").innerHTML=tableHtml||`<tr><td colspan="8" class="empty-c">No data matches.</td></tr>`;
-
-  // --- RENDER POD SUMMARY ---
-  let podHtml = "";
-  const sortedPods = Object.keys(podGroups).sort((a, b) => podGroups[b].totalCharges - podGroups[a].totalCharges);
-  
-  if (sortedPods.length === 0) {
-    podHtml = `<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;
-  } else {
-    podHtml += `<tr style="background: var(--sf-charcoal); color: white; border-bottom: 2px solid var(--sf-green);">
-      <td style="font-weight: 700; color: white;">GRAND TOTAL</td>
-      <td style="text-align:center; font-weight: 700; color: white;">${uniqueHubs.size}</td>
-      <td style="text-align:center; font-weight: 700; color: white;">${filtered.length}</td>
-      <td style="text-align:center; font-weight: 700; color: white;">${approvedCount}</td>
-      <td style="text-align:right; font-weight: 700; color: white;">₹${totalCharges.toLocaleString("en-IN")}</td>
-      <td style="text-align:right; font-weight: 700; color: #4ade80;">₹${appCharges.toLocaleString("en-IN")}</td>
-      <td style="text-align:right; font-weight: 700; color: #fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td>
-    </tr>`;
-    sortedPods.forEach(pod => {
-      const g = podGroups[pod];
-      podHtml += `<tr>
-        <td><strong>${pod}</strong></td><td style="text-align:center">${g.hubs.size}</td><td style="text-align:center">${g.entries}</td><td style="text-align:center">${g.approved}</td>
-        <td style="text-align:right;font-weight:600">₹${g.totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#10b981">₹${g.approvedCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td>
-      </tr>`;
-    });
+  let podHtml="";
+  const sortedPods=Object.keys(podGroups).sort((a,b)=>podGroups[b].totalCharges-podGroups[a].totalCharges);
+  if(!sortedPods.length){podHtml=`<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;}
+  else{
+    podHtml+=`<tr style="background:var(--sf-charcoal);color:white;border-bottom:2px solid var(--sf-green);"><td style="font-weight:700;color:white;">GRAND TOTAL</td><td style="text-align:center;font-weight:700;color:white;">${uniqueHubs.size}</td><td style="text-align:center;font-weight:700;color:white;">${filtered.length}</td><td style="text-align:center;font-weight:700;color:white;">${approvedCount}</td><td style="text-align:right;font-weight:700;color:white;">₹${totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:700;color:#4ade80;">₹${appCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:700;color:#fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td></tr>`;
+    sortedPods.forEach(pod=>{const g=podGroups[pod];podHtml+=`<tr><td><strong>${esc(pod)}</strong></td><td style="text-align:center">${g.hubs.size}</td><td style="text-align:center">${g.entries}</td><td style="text-align:center">${g.approved}</td><td style="text-align:right;font-weight:600">₹${g.totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#10b981">₹${g.approvedCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td></tr>`;});
   }
-  const podBody = document.getElementById("pod-summary-body");
-  if (podBody) podBody.innerHTML = podHtml;
-
-  // --- RENDER SZM SUMMARY ---
-  let szmHtml = "";
-  const sortedSzms = Object.keys(szmGroups).sort((a, b) => szmGroups[b].totalCharges - szmGroups[a].totalCharges);
-  
-  if (sortedSzms.length === 0) {
-    szmHtml = `<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;
-  } else {
-    szmHtml += `<tr style="background: var(--sf-charcoal); color: white; border-bottom: 2px solid var(--sf-green);">
-      <td style="font-weight: 700; color: white;">GRAND TOTAL</td>
-      <td style="text-align:center; font-weight: 700; color: white;">${uniqueHubs.size}</td>
-      <td style="text-align:center; font-weight: 700; color: white;">${filtered.length}</td>
-      <td style="text-align:center; font-weight: 700; color: white;">${approvedCount}</td>
-      <td style="text-align:right; font-weight: 700; color: white;">₹${totalCharges.toLocaleString("en-IN")}</td>
-      <td style="text-align:right; font-weight: 700; color: #4ade80;">₹${appCharges.toLocaleString("en-IN")}</td>
-      <td style="text-align:right; font-weight: 700; color: #fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td>
-    </tr>`;
-    sortedSzms.forEach(szm => {
-      const g = szmGroups[szm];
-      szmHtml += `<tr>
-        <td><strong>${szm}</strong></td><td style="text-align:center">${g.hubs.size}</td><td style="text-align:center">${g.entries}</td><td style="text-align:center">${g.approved}</td>
-        <td style="text-align:right;font-weight:600">₹${g.totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#10b981">₹${g.approvedCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td>
-      </tr>`;
-    });
+  const podBody=document.getElementById("pod-summary-body");if(podBody)podBody.innerHTML=podHtml;
+  let szmHtml="";
+  const sortedSzms=Object.keys(szmGroups).sort((a,b)=>szmGroups[b].totalCharges-szmGroups[a].totalCharges);
+  if(!sortedSzms.length){szmHtml=`<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;}
+  else{
+    szmHtml+=`<tr style="background:var(--sf-charcoal);color:white;border-bottom:2px solid var(--sf-green);"><td style="font-weight:700;color:white;">GRAND TOTAL</td><td style="text-align:center;font-weight:700;color:white;">${uniqueHubs.size}</td><td style="text-align:center;font-weight:700;color:white;">${filtered.length}</td><td style="text-align:center;font-weight:700;color:white;">${approvedCount}</td><td style="text-align:right;font-weight:700;color:white;">₹${totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:700;color:#4ade80;">₹${appCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:700;color:#fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td></tr>`;
+    sortedSzms.forEach(szm=>{const g=szmGroups[szm];szmHtml+=`<tr><td><strong>${esc(szm)}</strong></td><td style="text-align:center">${g.hubs.size}</td><td style="text-align:center">${g.entries}</td><td style="text-align:center">${g.approved}</td><td style="text-align:right;font-weight:600">₹${g.totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#10b981">₹${g.approvedCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td></tr>`;});
   }
-  const szmBody = document.getElementById("szm-summary-body");
-  if (szmBody) szmBody.innerHTML = szmHtml;
-
+  const szmBody=document.getElementById("szm-summary-body");if(szmBody)szmBody.innerHTML=szmHtml;
   const dateGroups={};
   chartFiltered.forEach(r=>{const d=r.stdDate||"Unknown";if(!dateGroups[d])dateGroups[d]={charges:0,entries:0,hubs:new Set()};dateGroups[d].charges+=r.chargeNum;dateGroups[d].entries+=1;if(r.hub)dateGroups[d].hubs.add(r.hub);});
   const sortedDates=Object.keys(dateGroups).sort();
@@ -1569,16 +1597,28 @@ function renderHappayDashboard(){
   if(chkH)datasets.push({label:'Hubs',data:sortedDates.map(d=>dateGroups[d].hubs.size),borderColor:'#374151',backgroundColor:'rgba(55,65,81,0.1)',borderWidth:3,pointBackgroundColor:'#374151',pointRadius:4,fill:true,tension:0.3,yAxisID:'y1'});
   const ctx=document.getElementById('happayLineChart');
   if(ctx){if(window.happayLineChartInstance)window.happayLineChartInstance.destroy();window.happayLineChartInstance=new Chart(ctx,{type:'line',data:{labels:chartLabels,datasets},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false}},scales:{y:{type:'linear',display:!!chkC,position:'left',title:{display:true,text:'Charges (₹)',color:'#00A651',font:{weight:'bold'}},ticks:{callback:v=>'₹'+v.toLocaleString("en-IN")}},y1:{type:'linear',display:!!(chkE||chkH),position:'right',title:{display:true,text:'Count',color:'#3b82f6',font:{weight:'bold'}},grid:{drawOnChartArea:false},beginAtZero:true}}}});}
-  
   renderMoMChart();
 }
 
 function clearHappayFilters(){["h-filter-month","h-filter-region","h-filter-hub","h-filter-szm","h-filter-date","h-filter-pod","h-filter-spna"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});renderHappayDashboard();}
 
-/* ══════════════════════════════════════════════════════════════
-   CSV PARSER (required)
-══════════════════════════════════════════════════════════════ */
-function parseCSV(str){const result=[];let row=[],inQuotes=false,val='';for(let i=0;i<str.length;i++){let c=str[i];if(c==='"'&&str[i+1]==='"'){val+='"';i++;}else if(c==='"'){inQuotes=!inQuotes;}else if(c===','&&!inQuotes){row.push(val);val='';}else if(c==='\n'&&!inQuotes){row.push(val);result.push(row);row=[];val='';}else{val+=c;}}row.push(val);result.push(row);return result;}
+/* ══════════════════════════════════════════════
+   FIX 11: CSV PARSER — handles \r\n (Windows line endings)
+══════════════════════════════════════════════ */
+function parseCSV(str){
+  str=str.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  const result=[];let row=[],inQuotes=false,val='';
+  for(let i=0;i<str.length;i++){
+    let c=str[i];
+    if(c==='"'&&str[i+1]==='"'){val+='"';i++;}
+    else if(c==='"'){inQuotes=!inQuotes;}
+    else if(c===','&&!inQuotes){row.push(val);val='';}
+    else if(c==='\n'&&!inQuotes){row.push(val);result.push(row);row=[];val='';}
+    else{val+=c;}
+  }
+  row.push(val);result.push(row);
+  return result;
+}
 </script>
 </body>
 </html>
