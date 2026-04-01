@@ -1560,7 +1560,7 @@ let globalGSheetData=[];
 async function loadGoogleSheetData(){
   const loadingDiv=document.getElementById("gsheet-loading"),contentDiv=document.getElementById("gsheet-content"),errorEl=document.getElementById("gsheet-error");
   loadingDiv.style.display="block";contentDiv.style.display="none";errorEl.innerText="";
-  const sheetUrl="https://docs.google.com/spreadsheets/d/1E8pHzAGItusZ6AOAup6Myx_FoIOaNT0gQvAOxTrdUps/edit?gid=0#gid=0";
+  const sheetUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vT-jUKjjkDW7r6H4jGwQYlieAQ8Ditf5Ty034yjGM_k-DM3FvkprynZBZZIN9r3YSYS4ks7XBEiSLKy/pub?output=csv";
   try{
     const response=await fetch(sheetUrl);
     if(!response.ok)throw new Error("Could not read sheet.");
