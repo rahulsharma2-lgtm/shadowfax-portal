@@ -392,8 +392,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     <button class="tab admin-tab" onclick="switchGenericTab('admin-recon-view',this,'admin-view','admin-tab')">📊 MIS Verification</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-deploy-view',this,'admin-view','admin-tab')">🗺️ Deployment</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-req-view',this,'admin-view','admin-tab')">🚚 Requests <span id="req-badge" style="display:none;background:#ef4444;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
-    <button class="tab admin-tab" onclick="switchGenericTab('admin-ann-view',this,'admin-view','admin-tab')">📢 Announcements</button>
-    <button class="tab admin-tab" onclick="switchGenericTab('admin-audit-view',this,'admin-view','admin-tab')">🔎 Audit Log</button>
    </div>
 
    <div id="admin-summary-view" class="admin-view active">
@@ -421,7 +419,30 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
       <div class="stat-card" style="border-top:4px solid var(--sf-blue)"><div class="sc-label">TOTAL VEHICLES</div><div class="sc-val" id="g-stat-vehicles">0</div><div class="sc-sub">deployed fleet</div></div>
       <div class="stat-card" style="border-top:4px solid var(--sf-green)"><div class="sc-label">HI ATTENDANCE</div><div class="sc-val" id="g-stat-hi-att" style="color:var(--sf-green)">0</div><div class="sc-sub">marked present</div></div>
       <div class="stat-card" style="border-top:4px solid var(--sf-amber)"><div class="sc-label">VENDOR ATTENDANCE</div><div class="sc-val" id="g-stat-ven-att" style="color:var(--sf-amber)">0</div><div class="sc-sub">marked present</div></div>
+      <div class="stat-card" style="border-top:4px solid #10b981"><div class="sc-label">TOTAL COST</div><div class="sc-val" id="g-stat-total-cost" style="color:#10b981;font-size:22px;margin-top:4px">₹0</div><div class="sc-sub">day rate × HI present</div></div>
      </div>
+
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(450px,1fr));gap:24px;margin-bottom:24px;">
+      <div style="background:white;padding:20px;border-radius:10px;border:1px solid var(--sf-gray-200);box-shadow:var(--shadow-sm);">
+       <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:15px;margin-top:0;">POD Wise Summary</h3>
+       <div style="max-height:320px;overflow-y:auto;border:1px solid var(--sf-gray-200);border-radius:var(--radius-sm);">
+        <table class="data-tbl" style="width:100%;margin:0;">
+         <thead style="position:sticky;top:0;z-index:10;"><tr><th>POD Name</th><th style="text-align:center">Hubs</th><th style="text-align:center">Vehicles</th><th style="text-align:center">HI Present</th><th style="text-align:right">Cost (₹)</th></tr></thead>
+         <tbody id="g-pod-summary-body"><tr><td colspan="5" class="empty-c">No data available.</td></tr></tbody>
+        </table>
+       </div>
+      </div>
+      <div style="background:white;padding:20px;border-radius:10px;border:1px solid var(--sf-gray-200);box-shadow:var(--shadow-sm);">
+       <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:15px;margin-top:0;">Day to Day Data</h3>
+       <div style="max-height:320px;overflow-y:auto;border:1px solid var(--sf-gray-200);border-radius:var(--radius-sm);">
+        <table class="data-tbl" style="width:100%;margin:0;">
+         <thead style="position:sticky;top:0;z-index:10;"><tr><th>Date</th><th style="text-align:center">Hubs</th><th style="text-align:center">Present</th><th style="text-align:center">Absent</th><th style="text-align:center">No Response</th><th style="text-align:center">Total Vehicles</th></tr></thead>
+         <tbody id="g-day-summary-body"><tr><td colspan="6" class="empty-c">No data available.</td></tr></tbody>
+        </table>
+       </div>
+      </div>
+     </div>
+
      <div class="ph" style="margin-bottom:10px"><h3 style="font-size:16px;font-weight:700">Recent Sheet Entries</h3></div>
      <div class="tbl-wrap">
       <table class="data-tbl"><thead><tr><th>Date</th><th>Hub Name</th><th>Vendor</th><th>Vehicle No.</th><th style="text-align:center">HI Att.</th><th style="text-align:center">Vendor Att.</th></tr></thead><tbody id="gsheet-table-body"></tbody></table>
@@ -596,45 +617,6 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
       <thead><tr><th>Date</th><th>Hub Name</th><th>Rider ID</th><th>Runsheet ID</th><th>Type</th><th>Notes</th><th style="text-align:right">Cost (₹)</th><th style="text-align:center">Status</th><th style="text-align:center;min-width:160px">Action</th></tr></thead>
       <tbody id="admin-req-body"><tr><td colspan="9" class="empty-c">No vehicle requests found.</td></tr></tbody>
      </table>
-    </div>
-   </div>
-
-   <!-- ANNOUNCEMENTS VIEW (was missing from original HTML) -->
-   <div id="admin-ann-view" class="admin-view">
-    <div class="ph"><div><h2>Announcements</h2><p>Broadcast messages to Hub Managers or all users</p></div></div>
-    <div class="ann-form">
-     <div class="form-grid" style="margin-bottom:12px">
-      <div class="f-group">
-       <label class="f-label">Target Audience</label>
-       <select id="ann-target" class="f-sel-form" onchange="document.getElementById('ann-hub-group').style.display=this.value==='specific'?'block':'none'">
-        <option value="all">All Users</option>
-        <option value="hub">Hub Managers Only</option>
-        <option value="vendor">Vendors Only</option>
-        <option value="specific">Specific Hub</option>
-       </select>
-      </div>
-      <div class="f-group" id="ann-hub-group" style="display:none">
-       <label class="f-label">Specific Hub</label>
-       <select id="ann-specific-hub" class="dynamic-hub-list f-sel-form"><option value="">— Select Hub —</option></select>
-      </div>
-     </div>
-     <div class="f-group">
-      <label class="f-label">Message</label>
-      <textarea id="ann-message" placeholder="Type your announcement here..."></textarea>
-     </div>
-     <button type="button" class="btn btn-primary" onclick="postAnnouncement()">📢 Post Announcement</button>
-    </div>
-    <div id="admin-ann-list"></div>
-   </div>
-
-   <!-- AUDIT LOG VIEW (was missing from original HTML) -->
-   <div id="admin-audit-view" class="admin-view">
-    <div class="ph">
-     <div><h2>Audit Log</h2><p>Full history of all actions taken in the portal</p></div>
-     <button type="button" class="btn btn-dark" onclick="downloadAuditCSV()">📥 Export Audit CSV</button>
-    </div>
-    <div class="audit-wrap" id="audit-log-container">
-     <div style="padding:36px;text-align:center;color:var(--sf-gray-400);font-style:italic">No audit events recorded yet.</div>
     </div>
    </div>
 
@@ -965,8 +947,6 @@ async function handleLogin(e){
     updateAdminDashboard();
     recomputeStats(getActiveFilters());
     renderAdminRequests();
-    renderAdminAnnouncements();
-    renderAuditLog();
     switchGenericTab("admin-summary-view",document.querySelector(".admin-tab"),"admin-view","admin-tab");
     loadGoogleSheetData();
     loadHappaySheetData();
@@ -1453,6 +1433,7 @@ async function loadGoogleSheetData(){
     const headers=rows[0].map(h=>h.trim().toLowerCase());
     const getCol=(name)=>headers.findIndex(h=>h===name.toLowerCase().trim());
     const colHub=getCol("hub name"),colPod=getCol("pod mapped"),colZone=getCol("zone"),colStatus=getCol("status"),colHI=getCol("hi attendance"),colVenAtt=getCol("vendor attendance"),colVehicleNo=getCol("vehicle no."),colVendor=getCol("vendor name"),colDate=headers.findIndex(h=>h==="date");
+    const colDayRate=headers.findIndex(h=>h.includes("day wise rate")||h.includes("day rate")||h.includes("daywise rate")||h.includes("daily rate"));
     globalGSheetData=[];let uHubs=new Set(),uPods=new Set(),uZones=new Set(),uStatus=new Set();
     const monthNames=["January","February","March","April","May","June","July","August","September","October","November","December"];
     for(let i=1;i<rows.length;i++){
@@ -1475,7 +1456,7 @@ async function loadGoogleSheetData(){
           }
         }
       }
-      const obj={hub:(row[colHub]||"").trim(),pod:(row[colPod]||"").trim(),zone:(row[colZone]||"").trim(),status:(row[colStatus]||"").trim(),hiAtt:(row[colHI]||"").trim(),venAtt:(row[colVenAtt]||"").trim(),vNo:(row[colVehicleNo]||"").trim(),vendor:(row[colVendor]||"").trim(),date:dateVal.trim(),stdDate,month:monthVal};
+      const obj={hub:(row[colHub]||"").trim(),pod:(row[colPod]||"").trim(),zone:(row[colZone]||"").trim(),status:(row[colStatus]||"").trim(),hiAtt:(row[colHI]||"").trim(),venAtt:(row[colVenAtt]||"").trim(),vNo:(row[colVehicleNo]||"").trim(),vendor:(row[colVendor]||"").trim(),date:dateVal.trim(),stdDate,month:monthVal,dayRate:colDayRate>-1?parseFloat((row[colDayRate]||"0").replace(/[^\d.-]/g,""))||0:0};
       globalGSheetData.push(obj);if(obj.hub)uHubs.add(obj.hub);if(obj.pod)uPods.add(obj.pod);if(obj.zone)uZones.add(obj.zone);if(obj.status)uStatus.add(obj.status);
     }
     const pop=(id,set,def)=>{const el=document.getElementById(id);if(el){el.innerHTML=`<option value="">${def}</option>`;[...set].sort().forEach(v=>el.appendChild(new Option(v,v)));} };
@@ -1486,10 +1467,123 @@ async function loadGoogleSheetData(){
 function renderGSheetDashboard(){
   const fMonth=document.getElementById("g-filter-month").value,fHub=document.getElementById("g-filter-hub").value,fDate=document.getElementById("g-filter-date").value,fPod=document.getElementById("g-filter-pod").value,fZone=document.getElementById("g-filter-zone").value,fStatus=document.getElementById("g-filter-status").value,fHi=document.getElementById("g-filter-hi").value.toLowerCase();
   let filtered=globalGSheetData.filter(r=>{if(fMonth&&r.month!==fMonth)return false;if(fHub&&r.hub!==fHub)return false;if(fDate&&r.stdDate!==fDate)return false;if(fPod&&r.pod!==fPod)return false;if(fZone&&r.zone!==fZone)return false;if(fStatus&&r.status!==fStatus)return false;if(fHi&&!r.hiAtt.toLowerCase().includes(fHi))return false;return true;});
-  let uniqueHubs=new Set(),uniqueVehicles=new Set(),hiPresent=0,venPresent=0,tableHtml="",rowCount=0;
-  filtered.forEach(r=>{uniqueHubs.add(r.hub);if(r.vNo&&r.vNo!=="—")uniqueVehicles.add(r.vNo);const hi=r.hiAtt.toLowerCase(),ven=r.venAtt.toLowerCase();if(hi.includes("p")||hi.includes("present")||hi==="1")hiPresent++;if(ven.includes("p")||ven.includes("present")||ven==="1")venPresent++;if(rowCount<50){const pHi=hi.includes("p")?`<span style="color:var(--sf-green);font-weight:700">P</span>`:esc(r.hiAtt);const pVen=ven.includes("p")?`<span style="color:var(--sf-green);font-weight:700">P</span>`:esc(r.venAtt);tableHtml+=`<tr><td>${esc(r.date)||"—"}</td><td><strong>${esc(r.hub)}</strong></td><td style="font-size:12px;color:var(--sf-gray-500)">${esc(r.vendor)||"—"}</td><td style="font-family:DM Mono,monospace">${esc(r.vNo)||"—"}</td><td style="text-align:center">${pHi||"—"}</td><td style="text-align:center">${pVen||"—"}</td></tr>`;rowCount++;}});
-  document.getElementById("g-stat-hubs").innerText=uniqueHubs.size;document.getElementById("g-stat-vehicles").innerText=uniqueVehicles.size;document.getElementById("g-stat-hi-att").innerText=hiPresent;document.getElementById("g-stat-ven-att").innerText=venPresent;
+
+  let uniqueHubs=new Set(),uniqueVehicles=new Set(),hiPresent=0,venPresent=0,totalCost=0,tableHtml="",rowCount=0;
+
+  /* ── POD groups ── */
+  const podGroups={};
+  /* ── Day groups ── */
+  const dayGroups={};
+
+  filtered.forEach(r=>{
+    uniqueHubs.add(r.hub);
+    if(r.vNo&&r.vNo!=="—")uniqueVehicles.add(r.vNo);
+    const hi=r.hiAtt.toLowerCase();
+    const ven=r.venAtt.toLowerCase();
+    const isPresent=hi.includes("p")||hi.includes("present")||hi==="1";
+    const isAbsent=hi.includes("a")||hi.includes("absent")||hi==="0";
+    if(isPresent){hiPresent++;totalCost+=r.dayRate||0;}
+    if(ven.includes("p")||ven.includes("present")||ven==="1")venPresent++;
+
+    /* POD grouping */
+    const podName=r.pod||"Unassigned";
+    if(!podGroups[podName])podGroups[podName]={hubs:new Set(),vehicles:new Set(),hiPresent:0,cost:0};
+    podGroups[podName].hubs.add(r.hub);
+    if(r.vNo&&r.vNo!=="—")podGroups[podName].vehicles.add(r.vNo);
+    if(isPresent){podGroups[podName].hiPresent++;podGroups[podName].cost+=r.dayRate||0;}
+
+    /* Day grouping */
+    const dayKey=r.stdDate||r.date||"Unknown";
+    if(!dayGroups[dayKey])dayGroups[dayKey]={hubs:new Set(),present:0,absent:0,noResponse:0};
+    dayGroups[dayKey].hubs.add(r.hub);
+    if(isPresent)dayGroups[dayKey].present++;
+    else if(isAbsent)dayGroups[dayKey].absent++;
+    else dayGroups[dayKey].noResponse++;
+
+    /* Recent entries table (capped at 50) */
+    if(rowCount<50){
+      const pHi=isPresent?`<span style="color:var(--sf-green);font-weight:700">P</span>`:esc(r.hiAtt);
+      const pVen=(ven.includes("p")||ven.includes("present")||ven==="1")?`<span style="color:var(--sf-green);font-weight:700">P</span>`:esc(r.venAtt);
+      tableHtml+=`<tr><td>${esc(r.date)||"—"}</td><td><strong>${esc(r.hub)}</strong></td><td style="font-size:12px;color:var(--sf-gray-500)">${esc(r.vendor)||"—"}</td><td style="font-family:DM Mono,monospace">${esc(r.vNo)||"—"}</td><td style="text-align:center">${pHi||"—"}</td><td style="text-align:center">${pVen||"—"}</td></tr>`;
+      rowCount++;
+    }
+  });
+
+  /* ── Stat cards ── */
+  document.getElementById("g-stat-hubs").innerText=uniqueHubs.size;
+  document.getElementById("g-stat-vehicles").innerText=uniqueVehicles.size;
+  document.getElementById("g-stat-hi-att").innerText=hiPresent;
+  document.getElementById("g-stat-ven-att").innerText=venPresent;
+  document.getElementById("g-stat-total-cost").innerText="₹"+totalCost.toLocaleString("en-IN");
+
+  /* ── Recent entries ── */
   document.getElementById("gsheet-table-body").innerHTML=tableHtml||`<tr><td colspan="6" class="empty-c">No data matches these filters.</td></tr>`;
+
+  /* ── POD Wise Summary ── */
+  const sortedPods=Object.keys(podGroups).sort((a,b)=>podGroups[b].cost-podGroups[a].cost);
+  let podHtml="";
+  if(!sortedPods.length){
+    podHtml=`<tr><td colspan="5" class="empty-c">No data available.</td></tr>`;
+  } else {
+    podHtml+=`<tr style="background:var(--sf-charcoal);color:white;border-bottom:2px solid var(--sf-green);">
+      <td style="font-weight:700;color:white;">GRAND TOTAL</td>
+      <td style="text-align:center;font-weight:700;color:white;">${uniqueHubs.size}</td>
+      <td style="text-align:center;font-weight:700;color:white;">${uniqueVehicles.size}</td>
+      <td style="text-align:center;font-weight:700;color:#4ade80;">${hiPresent}</td>
+      <td style="text-align:right;font-weight:700;color:#4ade80;">₹${totalCost.toLocaleString("en-IN")}</td>
+    </tr>`;
+    sortedPods.forEach(pod=>{
+      const g=podGroups[pod];
+      podHtml+=`<tr>
+        <td><strong>${esc(pod)}</strong></td>
+        <td style="text-align:center">${g.hubs.size}</td>
+        <td style="text-align:center">${g.vehicles.size}</td>
+        <td style="text-align:center;font-weight:600;color:var(--sf-green)">${g.hiPresent}</td>
+        <td style="text-align:right;font-weight:600;color:#10b981">₹${g.cost.toLocaleString("en-IN")}</td>
+      </tr>`;
+    });
+  }
+  const podBody=document.getElementById("g-pod-summary-body");
+  if(podBody)podBody.innerHTML=podHtml;
+
+  /* ── Day to Day Data ── */
+  const sortedDays=Object.keys(dayGroups).filter(d=>d!=="Unknown").sort().concat(dayGroups["Unknown"]?["Unknown"]:[]);
+  let dayHtml="";
+  if(!sortedDays.length){
+    dayHtml=`<tr><td colspan="6" class="empty-c">No data available.</td></tr>`;
+  } else {
+    /* Grand total row */
+    const gtPresent=Object.values(dayGroups).reduce((s,g)=>s+g.present,0);
+    const gtAbsent=Object.values(dayGroups).reduce((s,g)=>s+g.absent,0);
+    const gtNR=Object.values(dayGroups).reduce((s,g)=>s+g.noResponse,0);
+    const gtTotal=gtPresent+gtAbsent+gtNR;
+    const gtHubs=new Set(filtered.map(r=>r.hub)).size;
+    dayHtml+=`<tr style="background:var(--sf-charcoal);color:white;border-bottom:2px solid var(--sf-green);">
+      <td style="font-weight:700;color:white;">GRAND TOTAL</td>
+      <td style="text-align:center;font-weight:700;color:white;">${gtHubs}</td>
+      <td style="text-align:center;font-weight:700;color:#4ade80;">${gtPresent}</td>
+      <td style="text-align:center;font-weight:700;color:#fca5a5;">${gtAbsent}</td>
+      <td style="text-align:center;font-weight:700;color:#fbbf24;">${gtNR}</td>
+      <td style="text-align:center;font-weight:700;color:white;">${gtTotal}</td>
+    </tr>`;
+    sortedDays.forEach(day=>{
+      const g=dayGroups[day];
+      const total=g.present+g.absent+g.noResponse;
+      /* Format date for display: YYYY-MM-DD → DD/MM/YYYY */
+      let displayDate=day;
+      if(/^\d{4}-\d{2}-\d{2}$/.test(day)){const p=day.split("-");displayDate=`${p[2]}/${p[1]}/${p[0]}`;}
+      dayHtml+=`<tr>
+        <td style="font-family:DM Mono,monospace;font-size:12px;font-weight:600">${esc(displayDate)}</td>
+        <td style="text-align:center">${g.hubs.size}</td>
+        <td style="text-align:center;font-weight:600;color:var(--sf-green)">${g.present}</td>
+        <td style="text-align:center;font-weight:600;color:var(--sf-red)">${g.absent}</td>
+        <td style="text-align:center;font-weight:600;color:var(--sf-amber)">${g.noResponse}</td>
+        <td style="text-align:center;font-weight:600">${total}</td>
+      </tr>`;
+    });
+  }
+  const dayBody=document.getElementById("g-day-summary-body");
+  if(dayBody)dayBody.innerHTML=dayHtml;
 }
 function clearGSheetFilters(){["g-filter-month","g-filter-hub","g-filter-date","g-filter-pod","g-filter-zone","g-filter-status","g-filter-hi"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});renderGSheetDashboard();}
 
