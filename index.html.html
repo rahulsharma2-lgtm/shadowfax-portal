@@ -1780,20 +1780,26 @@ async function loadFmSheetData(){
    
    for(let i=headerRowIndex+1;i<rows.length;i++){
      const row=rows[i];if(!row[colHub]||row[colHub].trim()==="")continue;
-     const dateVal=colDate>-1?(row[colDate]||"").trim():"";let monthVal="",stdDate="";
+     
+     const dateVal=colDate>-1?(row[colDate]||"").trim():"";
+     let monthVal="",stdDate="";
+     
      if(dateVal){
-       const m=dateVal.match(/^(\d{1,2})[\/\-\:\.](\d{1,2})[\/\-\:\.](\d{2,4})$/);
-       if(m){
-         let dd=m[1].padStart(2,'0'),mm=m[2].padStart(2,'0'),yy=m[3];
-         if(yy.length===2)yy="20"+yy;
-         const mIdx=parseInt(mm,10)-1;
-         if(mIdx>=0&&mIdx<12){monthVal=monthNames[mIdx];stdDate=`${yy}-${mm}-${dd}`;}
-       } else {
-         const parts=dateVal.split(/[\/\-\.]/);
-         if(parts.length===3){
-           const mm=parts[0].padStart(2,'0'),dd=parts[1].padStart(2,'0'),yy=parts[2].length===2?"20"+parts[2]:parts[2];
-           const mIdx=parseInt(mm,10)-1;
-           if(mIdx>=0&&mIdx<12){monthVal=monthNames[mIdx];stdDate=`${yy}-${mm}-${dd}`;}
+       // 1. Remove any accidental timestamps Google Sheets might add
+       const cleanDate = dateVal.split(" ")[0]; 
+       // 2. Split the date by /, -, or .
+       const parts = cleanDate.split(/[\/\-\.]/);
+       
+       if(parts.length === 3){
+         // 3. Parse M/D/YYYY (Month first, then Day)
+         let mm = parts[0].padStart(2, '0'); 
+         let dd = parts[1].padStart(2, '0');
+         let yy = parts[2].length === 2 ? "20" + parts[2] : parts[2];
+         
+         const mIdx = parseInt(mm, 10) - 1;
+         if(mIdx >= 0 && mIdx < 12){
+           monthVal = monthNames[mIdx];
+           stdDate = `${yy}-${mm}-${dd}`; // Formats to YYYY-MM-DD so HTML filters work
          }
        }
      }
