@@ -406,6 +406,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
     <div id="gsheet-content" style="display:none;">
      <div class="toolbar" style="margin-bottom:24px;flex-wrap:wrap;">
+       <select id="g-filter-year" class="f-sel" onchange="renderGSheetDashboard()"><option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option></select>
       <select id="g-filter-month" class="f-sel" onchange="renderGSheetDashboard()"><option value="">All Months</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
       <select id="g-filter-hub" class="f-sel" onchange="renderGSheetDashboard()"><option value="">All Hubs</option></select>
       <input type="date" id="g-filter-date" class="f-sel" onchange="renderGSheetDashboard()">
@@ -462,6 +463,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
     <div id="happay-content" style="display:none;">
      <div class="toolbar" style="margin-bottom:24px;flex-wrap:wrap;">
+       <select id="h-filter-year" class="f-sel" onchange="renderHappayDashboard()"><option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option></select>
       <select id="h-filter-month" class="f-sel" onchange="renderHappayDashboard()"><option value="">All Months</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
       <select id="h-filter-region" class="f-sel" onchange="renderHappayDashboard()"><option value="">All Regions</option></select>
       <input type="text" list="h-szm-list" id="h-filter-szm" class="f-sel" placeholder="🔍 All SZMs..." oninput="renderHappayDashboard()">
@@ -943,9 +945,15 @@ window.onload=async()=>{
   window._venTpl=document.querySelector("#vendor-grid-body tr").cloneNode(true);
   renderDeployTable();
   setMonth();
-  document.getElementById("req-date").value=today();
+  
+  const d = today();
+  document.getElementById("req-date").value = d;
+  
+  /* --- NEW: Set default date to today for live dashboards --- */
+  const gDate = document.getElementById("g-filter-date"); if(gDate) gDate.value = d;
+  const hDate = document.getElementById("h-filter-date"); if(hDate) hDate.value = d;
+  const fmDate = document.getElementById("fm-filter-date"); if(fmDate) fmDate.value = d;
 
-  /* --- NEW: Check for saved session on reload --- */
   const sessionStr = localStorage.getItem('sf_session');
   if(sessionStr) {
      try {
@@ -1569,9 +1577,26 @@ async function loadGoogleSheetData(){
   }catch(err){errorEl.innerText="Error: "+err.message;}
 }
 function renderGSheetDashboard(){
-  const fMonth=document.getElementById("g-filter-month").value,fHub=document.getElementById("g-filter-hub").value,fDate=document.getElementById("g-filter-date").value,fPod=document.getElementById("g-filter-pod").value,fZone=document.getElementById("g-filter-zone").value,fStatus=document.getElementById("g-filter-status").value,fHi=document.getElementById("g-filter-hi").value.toLowerCase();
-  let filtered=globalGSheetData.filter(r=>{if(fMonth&&r.month!==fMonth)return false;if(fHub&&r.hub!==fHub)return false;if(fDate&&r.stdDate!==fDate)return false;if(fPod&&r.pod!==fPod)return false;if(fZone&&r.zone!==fZone)return false;if(fStatus&&r.status!==fStatus)return false;if(fHi&&!r.hiAtt.toLowerCase().includes(fHi))return false;return true;});
-
+ const fYear=document.getElementById("g-filter-year")?.value||"2026",
+       fMonth=document.getElementById("g-filter-month")?.value||"",
+       fHub=document.getElementById("g-filter-hub")?.value||"",
+       fDate=document.getElementById("g-filter-date")?.value||"",
+       fPod=document.getElementById("g-filter-pod")?.value||"",
+       fZone=document.getElementById("g-filter-zone")?.value||"",
+       fStatus=document.getElementById("g-filter-status")?.value||"",
+       fHi=document.getElementById("g-filter-hi")?.value?.toLowerCase()||"";
+       
+ let filtered=globalGSheetData.filter(r=>{
+    if(fYear&&!r.stdDate.startsWith(fYear))return false;
+    if(fMonth&&r.month!==fMonth)return false;
+    if(fHub&&r.hub!==fHub)return false;
+    if(fDate&&r.stdDate!==fDate)return false;
+    if(fPod&&r.pod!==fPod)return false;
+    if(fZone&&r.zone!==fZone)return false;
+    if(fStatus&&r.status!==fStatus)return false;
+    if(fHi&&!r.hiAtt.toLowerCase().includes(fHi))return false;
+    return true;
+ });
   let uniqueHubs=new Set(),uniqueVehicles=new Set(),hiPresent=0,venPresent=0,totalCost=0,tableHtml="",rowCount=0;
 
   /* ── POD groups ── */
