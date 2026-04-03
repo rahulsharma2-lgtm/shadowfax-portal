@@ -546,6 +546,11 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
     <div id="fm-content" style="display:none;">
      <div class="toolbar" style="margin-bottom:24px;flex-wrap:wrap;">
+       <select id="fm-filter-year" class="f-sel" onchange="renderFmDashboard()">
+    <option value="2025">2025</option>
+    <option value="2026" selected>2026</option>
+    <option value="2027">2027</option>
+      </select>
       <select id="fm-filter-month" class="f-sel" onchange="renderFmDashboard()"><option value="">All Months</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
       <input type="text" list="fm-hubs-list" id="fm-filter-hub" class="f-sel" placeholder="🔍 All Hubs..." oninput="renderFmDashboard()">
       <datalist id="fm-hubs-list"></datalist>
@@ -1827,10 +1832,13 @@ async function loadFmSheetData(){
  }catch(err){if(errorEl)errorEl.innerText="Error: "+err.message;}
 }
 
-function renderFmDashboard(){
- const fMonth=document.getElementById("fm-filter-month")?.value||"", fHub=(document.getElementById("fm-filter-hub")?.value||"").toLowerCase(), fDate=document.getElementById("fm-filter-date")?.value||"";
+const fMonth=document.getElementById("fm-filter-month")?.value||"", 
+       fYear=document.getElementById("fm-filter-year")?.value||"2026", 
+       fHub=(document.getElementById("fm-filter-hub")?.value||"").toLowerCase(), 
+       fDate=document.getElementById("fm-filter-date")?.value||"";
  
  const base=r=>{
+     if(fYear&&!r.stdDate.startsWith(fYear))return false;
      if(fMonth&&r.month!==fMonth)return false;
      if(fHub&&!r.hub.toLowerCase().includes(fHub))return false;
      if(fDate&&r.stdDate!==fDate)return false;
@@ -1864,6 +1872,7 @@ function renderFmDashboard(){
 
 function clearFmFilters(){
     ["fm-filter-month","fm-filter-hub","fm-filter-date"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+    const yEl=document.getElementById("fm-filter-year"); if(yEl)yEl.value="2026";
     renderFmDashboard();
 }
 
