@@ -944,7 +944,64 @@ window.onload=async()=>{
   renderDeployTable();
   setMonth();
   document.getElementById("req-date").value=today();
+
+  /* --- NEW: Check for saved session on reload --- */
+  const sessionStr = localStorage.getItem('sf_session');
+  if(sessionStr) {
+     try {
+       const session = JSON.parse(sessionStr);
+       restoreSession(session);
+     } catch(e) {}
+  }
 };
+
+/* --- NEW: Function to skip login if session exists --- */
+function restoreSession(session) {
+  const user = session.user;
+  if (session.role === 'admin') {
+    currentRole="admin";
+    showPortal("admin-portal","Admin Control Center","Admin");
+    updateAdminDashboard();
+    recomputeStats(getActiveFilters());
+    renderAdminRequests();
+    switchGenericTab("admin-summary-view",document.querySelector(".admin-tab"),"admin-view","admin-tab");
+    loadGoogleSheetData();
+    loadHappaySheetData();
+    if(typeof loadFmSheetData === 'function') loadFmSheetData();
+  } 
+  else if (session.role === 'hub') {
+    currentRole="hub";
+    if (user === "hub@shadowfax.in") {
+      window.currentAllowedHubs=[...predefinedHubs];
+      currentHubName="Hub Manager";
+    } else {
+      const allHubMappings=deploymentDatabase.filter(r=>r.hubEmail&&r.hubEmail.toLowerCase()===user);
+      window.currentAllowedHubs=[...new Set(allHubMappings.map(r=>r.hubName))];
+      currentHubName=window.currentAllowedHubs.length===1?window.currentAllowedHubs[0]:"Hub Manager";
+    }
+    const hubOptions=window.currentAllowedHubs.length!==1?"<option value=''>— Select —</option>":"";
+    document.querySelectorAll(".dynamic-hub-list,#req-hub").forEach(sel=>{
+      sel.innerHTML=hubOptions;
+      window.currentAllowedHubs.forEach(h=>sel.appendChild(new Option(h,h)));
+    });
+    const tplSel=window._hubTpl?.querySelector(".dynamic-hub-list");
+    if(tplSel){tplSel.innerHTML=hubOptions;window.currentAllowedHubs.forEach(h=>tplSel.appendChild(new Option(h,h)));}
+    showPortal("hub-portal","Hub Operations",currentHubName);
+    renderHubGrid();renderHubRequests();renderHubAnnouncements();
+    switchGenericTab("hub-req-view",document.querySelector(".hub-tab"),"hub-view","hub-tab");
+  } 
+  else if (session.role === 'vendor') {
+    currentRole="vendor";
+    currentVendor=user;
+    const hubs=deploymentDatabase.filter(r=>r.vendorId===currentVendor).map(r=>r.hubName);
+    document.querySelectorAll(".vendor-dynamic-hub-list").forEach(sel=>{sel.innerHTML="";hubs.forEach(h=>sel.appendChild(new Option(h,h)));});
+    const wb=document.getElementById("vendor-warning"),sb=document.getElementById("vendor-submit-btn");
+    if(!hubs.length){wb.classList.add("show");sb.disabled=true;sb.style.opacity="0.5";}
+    else{wb.classList.remove("show");sb.disabled=false;sb.style.opacity="";}
+    showPortal("vendor-portal","Fleet Operational Log",currentVendor);
+    renderVendorGrid();
+  }
+}
 
 /* ══════════════════════════════════════════════
    AUTHENTICATION
@@ -970,7 +1027,6 @@ async function handleLogin(e){
   await load();
   btn.textContent="Sign In →";btn.disabled=false;
 
-  /* FIX 6: Use verifyPassword() for admins (consistent with vendor/hub auth) */
   let isAdmin=false;
   for(const a of ADMIN_CREDENTIALS){
     if(a.user===user){
@@ -981,6 +1037,7 @@ async function handleLogin(e){
 
   if(isAdmin){
     loginAttempts=0;
+    localStorage.setItem('sf_session', JSON.stringify({role: 'admin', user: user})); // NEW
     logAudit("login","Admin logged in: "+user,"Admin");
     await save();
     showPortal("admin-portal","Admin Control Center","Admin");
@@ -991,7 +1048,7 @@ async function handleLogin(e){
     switchGenericTab("admin-summary-view",document.querySelector(".admin-tab"),"admin-view","admin-tab");
     loadGoogleSheetData();
     loadHappaySheetData();
-    loadFmSheetData();
+    if(typeof loadFmSheetData === 'function') loadFmSheetData();
     return;
   }
 
@@ -1000,6 +1057,7 @@ async function handleLogin(e){
     const ok=await verifyPassword(pass,hubMatch.hubPass||"123");
     if(ok){
       loginAttempts=0;
+      localStorage.setItem('sf_session', JSON.stringify({role: 'hub', user: user})); // NEW
       const allHubMappings=deploymentDatabase.filter(r=>r.hubEmail&&r.hubEmail.toLowerCase()===user);
       window.currentAllowedHubs=[...new Set(allHubMappings.map(r=>r.hubName))];
       currentHubName=window.currentAllowedHubs.length===1?window.currentAllowedHubs[0]:"Hub Manager";
@@ -1022,6 +1080,7 @@ async function handleLogin(e){
 
   if(user==="hub@shadowfax.in"&&pass==="123"){
     loginAttempts=0;
+    localStorage.setItem('sf_session', JSON.stringify({role: 'hub', user: user})); // NEW
     window.currentAllowedHubs=[...predefinedHubs];currentHubName="Hub Manager";currentRole="hub";
     document.querySelectorAll(".dynamic-hub-list,#req-hub").forEach(sel=>{sel.innerHTML="<option value=''>— Select —</option>";predefinedHubs.forEach(h=>sel.appendChild(new Option(h,h)));});
     showPortal("hub-portal","Hub Operations","Hub Manager");
@@ -1038,6 +1097,7 @@ async function handleLogin(e){
     const ok=await verifyPassword(pass,vendorMatch.vendorPass||"123");
     if(ok){
       loginAttempts=0;
+      localStorage.setItem('sf_session', JSON.stringify({role: 'vendor', user: vendorMatch.vendorId})); // NEW
       currentVendor=vendorMatch.vendorId;currentRole="vendor";
       const hubs=deploymentDatabase.filter(r=>r.vendorId===currentVendor).map(r=>r.hubName);
       document.querySelectorAll(".vendor-dynamic-hub-list").forEach(sel=>{sel.innerHTML="";hubs.forEach(h=>sel.appendChild(new Option(h,h)));});
@@ -1067,6 +1127,8 @@ function showPortal(id,title,user){
 
 /* FIX 7: Capture user identity BEFORE clearing variables */
 function logout(){
+  localStorage.removeItem('sf_session'); /* --- NEW: Clear saved session --- */
+  
   const logoutUser=currentHubName||currentVendor||"Unknown";
   logAudit("login","User logged out: "+logoutUser,logoutUser);
 
