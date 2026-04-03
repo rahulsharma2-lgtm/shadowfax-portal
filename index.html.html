@@ -1714,8 +1714,11 @@ function renderGSheetDashboard(){
   const dayBody=document.getElementById("g-day-summary-body");
   if(dayBody)dayBody.innerHTML=dayHtml;
 }
-function clearGSheetFilters(){["g-filter-month","g-filter-hub","g-filter-date","g-filter-pod","g-filter-zone","g-filter-status","g-filter-hi"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});renderGSheetDashboard();}
-
+function clearGSheetFilters(){
+  ["g-filter-month","g-filter-hub","g-filter-date","g-filter-pod","g-filter-zone","g-filter-status","g-filter-hi"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  const yEl=document.getElementById("g-filter-year"); if(yEl)yEl.value="2026";
+  renderGSheetDashboard();
+}
 /* ══════════════════════════════════════════════
    HAPPAY LIVE FETCH
 ══════════════════════════════════════════════ */
@@ -1768,8 +1771,25 @@ async function loadHappaySheetData(){
 }
 
 function renderHappayDashboard(){
-  const fMonth=document.getElementById("h-filter-month")?.value||"",fRegion=document.getElementById("h-filter-region")?.value||"",fHub=(document.getElementById("h-filter-hub")?.value||"").toLowerCase(),fSzm=(document.getElementById("h-filter-szm")?.value||"").toLowerCase(),fDate=document.getElementById("h-filter-date")?.value||"",fPod=document.getElementById("h-filter-pod")?.value||"",fSpna=document.getElementById("h-filter-spna")?.value||"";
-  const base=r=>{if(fMonth&&r.month!==fMonth)return false;if(fRegion&&r.region!==fRegion)return false;if(fPod&&r.pod!==fPod)return false;if(fSpna&&r.spna!==fSpna)return false;if(fHub&&!r.hub.toLowerCase().includes(fHub))return false;if(fSzm&&!r.szm.toLowerCase().includes(fSzm))return false;return true;};
+ const fYear=document.getElementById("h-filter-year")?.value||"2026",
+       fMonth=document.getElementById("h-filter-month")?.value||"",
+       fRegion=document.getElementById("h-filter-region")?.value||"",
+       fHub=(document.getElementById("h-filter-hub")?.value||"").toLowerCase(),
+       fSzm=(document.getElementById("h-filter-szm")?.value||"").toLowerCase(),
+       fDate=document.getElementById("h-filter-date")?.value||"",
+       fPod=document.getElementById("h-filter-pod")?.value||"",
+       fSpna=document.getElementById("h-filter-spna")?.value||"";
+       
+ const base=r=>{
+    if(fYear&&!r.stdDate.startsWith(fYear))return false;
+    if(fMonth&&r.month!==fMonth)return false;
+    if(fRegion&&r.region!==fRegion)return false;
+    if(fPod&&r.pod!==fPod)return false;
+    if(fSpna&&r.spna!==fSpna)return false;
+    if(fHub&&!r.hub.toLowerCase().includes(fHub))return false;
+    if(fSzm&&!r.szm.toLowerCase().includes(fSzm))return false;
+    return true;
+ };
   let filtered=globalHappayData.filter(r=>base(r)&&(!fDate||r.stdDate===fDate));
   let chartFiltered=globalHappayData.filter(r=>base(r));
   let uniqueHubs=new Set(),totalCharges=0,approvedCount=0,appCharges=0,notAppCharges=0,tableHtml="",rowCount=0;
@@ -1823,8 +1843,11 @@ function renderHappayDashboard(){
   renderMoMChart();
 }
 
-function clearHappayFilters(){["h-filter-month","h-filter-region","h-filter-hub","h-filter-szm","h-filter-date","h-filter-pod","h-filter-spna"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});renderHappayDashboard();}
-
+function clearHappayFilters(){
+  ["h-filter-month","h-filter-region","h-filter-hub","h-filter-szm","h-filter-date","h-filter-pod","h-filter-spna"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  const yEl=document.getElementById("h-filter-year"); if(yEl)yEl.value="2026";
+  renderHappayDashboard();
+}
 /* ══════════════════════════════════════════════
    FIX 11: CSV PARSER — handles \r\n (Windows line endings)
 ══════════════════════════════════════════════ */
