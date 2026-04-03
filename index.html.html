@@ -1868,7 +1868,7 @@ const fMonth=document.getElementById("fm-filter-month")?.value||"",
  document.getElementById("fm-stat-rts-load").innerText=sumRtsLoad;
  
  document.getElementById("fm-table-body").innerHTML=tableHtml||`<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;
-}
+
 
 function clearFmFilters(){
     ["fm-filter-month","fm-filter-hub","fm-filter-date"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
