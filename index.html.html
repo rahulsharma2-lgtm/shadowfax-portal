@@ -389,6 +389,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
    <div class="tabs" id="admin-tabs">
     <button class="tab admin-tab active" onclick="switchGenericTab('admin-summary-view',this,'admin-view','admin-tab')">🔴 Live Summary</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-happay-view',this,'admin-view','admin-tab')">🔴 Live Happay</button>
+     <button class="tab admin-tab" onclick="switchGenericTab('admin-fm-adhoc-view',this,'admin-view','admin-tab')">🔴 Live FM adhoc data</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-recon-view',this,'admin-view','admin-tab')">📊 MIS Verification</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-deploy-view',this,'admin-view','admin-tab')">🗺️ Deployment</button>
     <button class="tab admin-tab" onclick="switchGenericTab('admin-req-view',this,'admin-view','admin-tab')">🚚 Requests <span id="req-badge" style="display:none;background:#ef4444;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
@@ -533,6 +534,41 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
     </div>
    </div>
 
+    
+  <div id="admin-fm-adhoc-view" class="admin-view">
+    <div class="ph">
+     <div><h2>Live FM Adhoc Data</h2><p>Real-time FM metrics synced directly from your Sheet</p></div>
+     <button class="btn btn-primary" onclick="loadFmSheetData()">🔄 Refresh FM Data</button>
+    </div>
+    <div id="fm-loading" style="background:white;padding:40px;text-align:center;border-radius:12px;border:1px dashed var(--sf-gray-300);color:var(--sf-gray-500);margin-top:20px;">
+     <h3 style="color:var(--sf-black);margin-bottom:8px;">⏳ Connecting to FM Sheet...</h3><p>Fetching the latest adhoc requests...</p>
+     <p style="font-size:11px;margin-top:10px;color:#ef4444;" id="fm-error"></p>
+    </div>
+    <div id="fm-content" style="display:none;">
+     <div class="toolbar" style="margin-bottom:24px;flex-wrap:wrap;">
+      <select id="fm-filter-month" class="f-sel" onchange="renderFmDashboard()"><option value="">All Months</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
+      <input type="text" list="fm-hubs-list" id="fm-filter-hub" class="f-sel" placeholder="🔍 All Hubs..." oninput="renderFmDashboard()">
+      <datalist id="fm-hubs-list"></datalist>
+      <input type="date" id="fm-filter-date" class="f-sel" onchange="renderFmDashboard()">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="clearFmFilters()">✕ Clear</button>
+     </div>
+     <div class="stat-grid" style="grid-template-columns:repeat(5,minmax(150px,1fr));margin-bottom:24px;">
+      <div class="stat-card" style="border-top:4px solid var(--sf-gray-500)"><div class="sc-label">TOTAL FM HUBS</div><div class="sc-val" id="fm-stat-hubs">0</div><div class="sc-sub">unique hubs mapped</div></div>
+      <div class="stat-card" style="border-top:4px solid var(--sf-blue)"><div class="sc-label">TOTAL ADHOC REQUEST</div><div class="sc-val" id="fm-stat-requests">0</div><div class="sc-sub">total hub count</div></div>
+      <div class="stat-card" style="border-top:4px solid var(--sf-amber)"><div class="sc-label">REQ. ADHOC VEHICLE</div><div class="sc-val" id="fm-stat-req-vehicles">0</div><div class="sc-sub">vehicles required</div></div>
+      <div class="stat-card" style="border-top:4px solid var(--sf-green)"><div class="sc-label">PROJ. FM LOAD</div><div class="sc-val" id="fm-stat-fm-load" style="color:var(--sf-green)">0</div><div class="sc-sub">sum of FM load</div></div>
+      <div class="stat-card" style="border-top:4px solid #10b981"><div class="sc-label">PROJ. RTS LOAD</div><div class="sc-val" id="fm-stat-rts-load" style="color:#10b981">0</div><div class="sc-sub">sum of RTS load</div></div>
+     </div>
+     <div class="tbl-wrap">
+      <table class="data-tbl">
+       <thead><tr><th>Date</th><th>Hub Name (Zoho)</th><th style="text-align:center">Fixed Vehicles</th><th style="text-align:center">Req. Adhoc Vehicles</th><th style="text-align:right">FM Load</th><th style="text-align:right">RTS Load</th><th style="text-align:center">Ops Approval</th></tr></thead>
+       <tbody id="fm-table-body"><tr><td colspan="7" class="empty-c">No data matches.</td></tr></tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+
+    
    <div id="admin-recon-view" class="admin-view">
     <div class="ph">
      <div><h2>MIS Verification Dashboard</h2><p>Compare Hub HI vs Vendor attendance across all deployments</p></div>
@@ -893,8 +929,8 @@ function populateLists(){
   const avs=document.getElementById("admin-vendor-filter");if(avs){avs.innerHTML="<option value=''>All Vendors</option>";predefinedVendors.forEach(v=>avs.appendChild(new Option(v.name,v.name.toUpperCase())));}
 }
 
-function setMonth(){const m=new Date().toLocaleString("default",{month:"long"});["hub-month-filter","vendor-month-filter","admin-month-filter","h-filter-month","g-filter-month"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=m;});}
-
+function setMonth(){const m=new Date().toLocaleString("default",{month:"long"});["hub-month-filter","vendor-month-filter","admin-month-filter","h-filter-month","g-filter-month","fm-filter-month"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=m;});}
+  
 window.onload=async()=>{
   await load();
   populateLists();
@@ -950,6 +986,7 @@ async function handleLogin(e){
     switchGenericTab("admin-summary-view",document.querySelector(".admin-tab"),"admin-view","admin-tab");
     loadGoogleSheetData();
     loadHappaySheetData();
+    loadFmSheetData();
     return;
   }
 
@@ -1713,6 +1750,118 @@ function parseCSV(str){
   row.push(val);result.push(row);
   return result;
 }
+/* ══════════════════════════════════════════════
+   LIVE FM ADHOC DATA FETCH
+══════════════════════════════════════════════ */
+let globalFmData=[];
+async function loadFmSheetData(){
+ const loadingDiv=document.getElementById("fm-loading"),contentDiv=document.getElementById("fm-content"),errorEl=document.getElementById("fm-error");
+ if(!loadingDiv)return;
+ loadingDiv.style.display="block";contentDiv&&(contentDiv.style.display="none");if(errorEl)errorEl.innerText="";
+ const sheetUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vRmxmWPGwcq0dAeMnPHIVe1g3Q2iWCh_e0ioGyEsk8LhwV1XD3_sX2iK-MXZ-CGs8uDlCTb0SEigXuM/pub?gid=0&single=true&output=csv";
+ try{
+   const response=await fetch(sheetUrl);if(!response.ok)throw new Error("Could not read sheet.");
+   const csvText=await response.text();const rows=parseCSV(csvText);if(rows.length<2)throw new Error("Sheet appears to be empty.");
+   
+   let headerRowIndex=-1,headers=[];
+   for(let i=0;i<Math.min(10,rows.length);i++){let t=rows[i].map(h=>(h||"").trim().toLowerCase());if(t.some(h=>h.includes("hub name as per zoho"))){headerRowIndex=i;headers=t;break;}}
+   if(headerRowIndex===-1)throw new Error("Could not find 'Hub Name as per Zoho' column.");
+   
+   const colDate=headers.findIndex(h=>h.includes("adhoc request date"));
+   const colHub=headers.findIndex(h=>h.includes("hub name as per zoho"));
+   const colFmLoad=headers.findIndex(h=>h.includes("projected fm load"));
+   const colRtsLoad=headers.findIndex(h=>h.includes("projected rts load"));
+   const colFixedVeh=headers.findIndex(h=>h.includes("fixed vehicle count"));
+   const colReqAdhoc=headers.findIndex(h=>h.includes("required adhoc vehicle"));
+   const colOpsApp=headers.findIndex(h=>h.includes("ops approval"));
+
+   globalFmData=[];let uHubs=new Set();
+   const monthNames=["January","February","March","April","May","June","July","August","September","October","November","December"];
+   
+   for(let i=headerRowIndex+1;i<rows.length;i++){
+     const row=rows[i];if(!row[colHub]||row[colHub].trim()==="")continue;
+     const dateVal=colDate>-1?(row[colDate]||"").trim():"";let monthVal="",stdDate="";
+     if(dateVal){
+       const m=dateVal.match(/^(\d{1,2})[\/\-\:\.](\d{1,2})[\/\-\:\.](\d{2,4})$/);
+       if(m){
+         let dd=m[1].padStart(2,'0'),mm=m[2].padStart(2,'0'),yy=m[3];
+         if(yy.length===2)yy="20"+yy;
+         const mIdx=parseInt(mm,10)-1;
+         if(mIdx>=0&&mIdx<12){monthVal=monthNames[mIdx];stdDate=`${yy}-${mm}-${dd}`;}
+       } else {
+         const parts=dateVal.split(/[\/\-\.]/);
+         if(parts.length===3){
+           const mm=parts[0].padStart(2,'0'),dd=parts[1].padStart(2,'0'),yy=parts[2].length===2?"20"+parts[2]:parts[2];
+           const mIdx=parseInt(mm,10)-1;
+           if(mIdx>=0&&mIdx<12){monthVal=monthNames[mIdx];stdDate=`${yy}-${mm}-${dd}`;}
+         }
+       }
+     }
+     
+     const parseNum = val => parseFloat((val||"").replace(/[^\d.-]/g,''))||0;
+
+     const obj={
+       hub:(row[colHub]||"").trim(),
+       date:dateVal, stdDate, month:monthVal,
+       fmLoad: parseNum(row[colFmLoad]),
+       rtsLoad: parseNum(row[colRtsLoad]),
+       fixedVehicles: parseNum(row[colFixedVeh]),
+       reqAdhoc: parseNum(row[colReqAdhoc]),
+       opsApp: colOpsApp>-1?(row[colOpsApp]||"").trim():""
+     };
+     globalFmData.push(obj);
+     if(obj.hub)uHubs.add(obj.hub);
+   }
+   
+   const popDatalist=(id,set)=>{const el=document.getElementById(id);if(el){el.innerHTML="";[...set].sort().forEach(v=>el.appendChild(new Option(v,v)));} };
+   popDatalist("fm-hubs-list",uHubs);
+   
+   loadingDiv.style.display="none";if(contentDiv)contentDiv.style.display="block";
+   renderFmDashboard();
+ }catch(err){if(errorEl)errorEl.innerText="Error: "+err.message;}
+}
+
+function renderFmDashboard(){
+ const fMonth=document.getElementById("fm-filter-month")?.value||"", fHub=(document.getElementById("fm-filter-hub")?.value||"").toLowerCase(), fDate=document.getElementById("fm-filter-date")?.value||"";
+ 
+ const base=r=>{
+     if(fMonth&&r.month!==fMonth)return false;
+     if(fHub&&!r.hub.toLowerCase().includes(fHub))return false;
+     if(fDate&&r.stdDate!==fDate)return false;
+     return true;
+ };
+ let filtered=globalFmData.filter(r=>base(r));
+ 
+ let uniqueHubs=new Set(), sumFmLoad=0, sumRtsLoad=0, sumReqAdhoc=0, tableHtml="", rowCount=0;
+ 
+ filtered.forEach(r=>{
+   if(r.hub)uniqueHubs.add(r.hub);
+   sumFmLoad += r.fmLoad;
+   sumRtsLoad += r.rtsLoad;
+   sumReqAdhoc += r.reqAdhoc;
+   
+   if(rowCount<100){
+     const sc = r.opsApp.toLowerCase().includes("app")||r.opsApp.toLowerCase()==="yes"||r.opsApp.toLowerCase()==="ok" ? "color:var(--sf-green);font-weight:700" : (r.opsApp.toLowerCase().includes("rej")||r.opsApp.toLowerCase()==="no" ? "color:var(--sf-red);font-weight:700" : "color:var(--sf-amber);font-weight:700");
+     tableHtml+=`<tr><td>${esc(r.date)||"—"}</td><td><strong>${esc(r.hub)}</strong></td><td style="text-align:center">${r.fixedVehicles}</td><td style="text-align:center;font-weight:600">${r.reqAdhoc}</td><td style="text-align:right">${r.fmLoad}</td><td style="text-align:right">${r.rtsLoad}</td><td style="text-align:center;${sc}">${esc(r.opsApp)||"—"}</td></tr>`;
+     rowCount++;
+   }
+ });
+ 
+ document.getElementById("fm-stat-hubs").innerText=uniqueHubs.size;
+ document.getElementById("fm-stat-requests").innerText=filtered.length;
+ document.getElementById("fm-stat-req-vehicles").innerText=sumReqAdhoc;
+ document.getElementById("fm-stat-fm-load").innerText=sumFmLoad;
+ document.getElementById("fm-stat-rts-load").innerText=sumRtsLoad;
+ 
+ document.getElementById("fm-table-body").innerHTML=tableHtml||`<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;
+}
+
+function clearFmFilters(){
+    ["fm-filter-month","fm-filter-hub","fm-filter-date"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+    renderFmDashboard();
+}
+
+  
 </script>
 </body>
 </html>
