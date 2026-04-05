@@ -566,6 +566,32 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
       <div class="stat-card" style="border-top:4px solid var(--sf-green)"><div class="sc-label">PROJ. FM LOAD</div><div class="sc-val" id="fm-stat-fm-load" style="color:var(--sf-green)">0</div><div class="sc-sub">sum of FM load</div></div>
       <div class="stat-card" style="border-top:4px solid #10b981"><div class="sc-label">PROJ. RTS LOAD</div><div class="sc-val" id="fm-stat-rts-load" style="color:#10b981">0</div><div class="sc-sub">sum of RTS load</div></div>
      </div>
+      <div class="mom-card" style="margin-bottom:24px;">
+      <div class="mom-title">Daily Required Adhoc Vehicles</div>
+      <canvas id="fmLineChart" height="70"></canvas>
+     </div>
+
+     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(450px,1fr));gap:24px;margin-bottom:24px;">
+      <div style="background:white;padding:20px;border-radius:10px;border:1px solid var(--sf-gray-200);box-shadow:var(--shadow-sm);">
+       <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:15px;margin-top:0;">City Wise Summary</h3>
+       <div style="max-height:320px;overflow-y:auto;border:1px solid var(--sf-gray-200);border-radius:var(--radius-sm);">
+        <table class="data-tbl" style="width:100%;margin:0;">
+         <thead style="position:sticky;top:0;z-index:10;"><tr><th>City</th><th style="text-align:center">Hubs</th><th style="text-align:center">Req. Adhoc</th><th style="text-align:right">FM Load</th></tr></thead>
+         <tbody id="fm-city-summary-body"><tr><td colspan="4" class="empty-c">No data available.</td></tr></tbody>
+        </table>
+       </div>
+      </div>
+      <div style="background:white;padding:20px;border-radius:10px;border:1px solid var(--sf-gray-200);box-shadow:var(--shadow-sm);">
+       <h3 style="font-size:13px;font-weight:700;color:var(--sf-gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:15px;margin-top:0;">Zone Wise Summary</h3>
+       <div style="max-height:320px;overflow-y:auto;border:1px solid var(--sf-gray-200);border-radius:var(--radius-sm);">
+        <table class="data-tbl" style="width:100%;margin:0;">
+         <thead style="position:sticky;top:0;z-index:10;"><tr><th>Zone</th><th style="text-align:center">Hubs</th><th style="text-align:center">Req. Adhoc</th><th style="text-align:right">FM Load</th></tr></thead>
+         <tbody id="fm-zone-summary-body"><tr><td colspan="4" class="empty-c">No data available.</td></tr></tbody>
+        </table>
+       </div>
+      </div>
+     </div>
+      
      <div class="tbl-wrap">
       <table class="data-tbl">
        <thead><tr><th>Date</th><th>Hub Name (Zoho)</th><th style="text-align:center">Fixed Vehicles</th><th style="text-align:center">Req. Adhoc Vehicles</th><th style="text-align:right">FM Load</th><th style="text-align:right">RTS Load</th><th style="text-align:center">Ops Approval</th></tr></thead>
@@ -1901,6 +1927,8 @@ async function loadFmSheetData(){
    const colFixedVeh=headers.findIndex(h=>h.includes("fixed vehicle count"));
    const colReqAdhoc=headers.findIndex(h=>h.includes("required adhoc vehicle"));
    const colOpsApp=headers.findIndex(h=>h.includes("ops approval"));
+   const colCity = headers.findIndex(h => h.includes("city"));
+   const colZone = headers.findIndex(h => h.includes("zone"));
 
    globalFmData=[];let uHubs=new Set();
    const monthNames=["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -1933,8 +1961,10 @@ async function loadFmSheetData(){
      
      const parseNum = val => parseFloat((val||"").replace(/[^\d.-]/g,''))||0;
 
-     const obj={
+      const obj={
        hub:(row[colHub]||"").trim(),
+       city: colCity>-1?(row[colCity]||"").trim():"Unassigned",
+       zone: colZone>-1?(row[colZone]||"").trim():"Unassigned",
        date:dateVal, stdDate, month:monthVal,
        fmLoad: parseNum(row[colFmLoad]),
        rtsLoad: parseNum(row[colRtsLoad]),
@@ -1960,16 +1990,23 @@ function renderFmDashboard(){
        fHub=(document.getElementById("fm-filter-hub")?.value||"").toLowerCase(), 
        fDate=document.getElementById("fm-filter-date")?.value||"";
  
- const base=r=>{
+ // The filter logic: ignores Date if ignoreDate = true
+ const baseFilter=(r, ignoreDate = false)=>{
      if(fYear&&!r.stdDate.startsWith(fYear))return false;
      if(fMonth&&r.month!==fMonth)return false;
      if(fHub&&!r.hub.toLowerCase().includes(fHub))return false;
-     if(fDate&&r.stdDate!==fDate)return false;
+     if(!ignoreDate && fDate&&r.stdDate!==fDate)return false;
      return true;
  };
- let filtered=globalFmData.filter(r=>base(r));
+ 
+ // Filtered for standard tables (respects Date filter)
+ let filtered=globalFmData.filter(r=>baseFilter(r, false));
+ // Filtered for Chart (ignores Date filter)
+ let chartFiltered=globalFmData.filter(r=>baseFilter(r, true));
  
  let uniqueHubs=new Set(), sumFmLoad=0, sumRtsLoad=0, sumReqAdhoc=0, tableHtml="", rowCount=0;
+ const cityGroups = {};
+ const zoneGroups = {};
  
  filtered.forEach(r=>{
    if(r.hub)uniqueHubs.add(r.hub);
@@ -1977,6 +2014,21 @@ function renderFmDashboard(){
    sumRtsLoad += r.rtsLoad;
    sumReqAdhoc += r.reqAdhoc;
    
+   // Group by City
+   const c = r.city || "Unassigned";
+   if(!cityGroups[c]) cityGroups[c] = { hubs: new Set(), reqAdhoc: 0, fmLoad: 0 };
+   if(r.hub) cityGroups[c].hubs.add(r.hub);
+   cityGroups[c].reqAdhoc += r.reqAdhoc;
+   cityGroups[c].fmLoad += r.fmLoad;
+
+   // Group by Zone
+   const z = r.zone || "Unassigned";
+   if(!zoneGroups[z]) zoneGroups[z] = { hubs: new Set(), reqAdhoc: 0, fmLoad: 0 };
+   if(r.hub) zoneGroups[z].hubs.add(r.hub);
+   zoneGroups[z].reqAdhoc += r.reqAdhoc;
+   zoneGroups[z].fmLoad += r.fmLoad;
+
+   // Main Table Rows
    if(rowCount<100){
      const sc = r.opsApp.toLowerCase().includes("app")||r.opsApp.toLowerCase()==="yes"||r.opsApp.toLowerCase()==="ok" ? "color:var(--sf-green);font-weight:700" : (r.opsApp.toLowerCase().includes("rej")||r.opsApp.toLowerCase()==="no" ? "color:var(--sf-red);font-weight:700" : "color:var(--sf-amber);font-weight:700");
      tableHtml+=`<tr><td>${esc(r.date)||"—"}</td><td><strong>${esc(r.hub)}</strong></td><td style="text-align:center">${r.fixedVehicles}</td><td style="text-align:center;font-weight:600">${r.reqAdhoc}</td><td style="text-align:right">${r.fmLoad}</td><td style="text-align:right">${r.rtsLoad}</td><td style="text-align:center;${sc}">${esc(r.opsApp)||"—"}</td></tr>`;
@@ -1984,13 +2036,73 @@ function renderFmDashboard(){
    }
  });
  
+ // Render Stat Cards
  document.getElementById("fm-stat-hubs").innerText=uniqueHubs.size;
  document.getElementById("fm-stat-requests").innerText=filtered.length;
  document.getElementById("fm-stat-req-vehicles").innerText=sumReqAdhoc;
  document.getElementById("fm-stat-fm-load").innerText=sumFmLoad;
  document.getElementById("fm-stat-rts-load").innerText=sumRtsLoad;
- 
  document.getElementById("fm-table-body").innerHTML=tableHtml||`<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;
+
+ // Render City Summary
+ const sortedCities = Object.keys(cityGroups).sort((a,b) => cityGroups[b].reqAdhoc - cityGroups[a].reqAdhoc);
+ let cityHtml = "";
+ if(!sortedCities.length) cityHtml = `<tr><td colspan="4" class="empty-c">No data available.</td></tr>`;
+ else {
+     sortedCities.forEach(c => {
+         const g = cityGroups[c];
+         cityHtml += `<tr><td><strong>${esc(c)}</strong></td><td style="text-align:center">${g.hubs.size}</td><td style="text-align:center;font-weight:600;color:var(--sf-blue)">${g.reqAdhoc}</td><td style="text-align:right;font-weight:600">${g.fmLoad}</td></tr>`;
+     });
+ }
+ const cb = document.getElementById("fm-city-summary-body"); if(cb) cb.innerHTML = cityHtml;
+
+ // Render Zone Summary
+ const sortedZones = Object.keys(zoneGroups).sort((a,b) => zoneGroups[b].reqAdhoc - zoneGroups[a].reqAdhoc);
+ let zoneHtml = "";
+ if(!sortedZones.length) zoneHtml = `<tr><td colspan="4" class="empty-c">No data available.</td></tr>`;
+ else {
+     sortedZones.forEach(z => {
+         const g = zoneGroups[z];
+         zoneHtml += `<tr><td><strong>${esc(z)}</strong></td><td style="text-align:center">${g.hubs.size}</td><td style="text-align:center;font-weight:600;color:var(--sf-blue)">${g.reqAdhoc}</td><td style="text-align:right;font-weight:600">${g.fmLoad}</td></tr>`;
+     });
+ }
+ const zb = document.getElementById("fm-zone-summary-body"); if(zb) zb.innerHTML = zoneHtml;
+
+ // Render Line Chart (Ignoring Date Filter)
+ const dateGroups = {};
+ chartFiltered.forEach(r => {
+     const d = r.stdDate || "Unknown";
+     if(!dateGroups[d]) dateGroups[d] = { reqAdhoc: 0 };
+     dateGroups[d].reqAdhoc += r.reqAdhoc;
+ });
+ const sortedDates = Object.keys(dateGroups).filter(d=>d!=="Unknown").sort();
+ const chartLabels = sortedDates.map(d => {
+     const p = d.split("-"); return p.length === 3 ? `${p[2]}/${p[1]}` : d;
+ });
+ const chartData = sortedDates.map(d => dateGroups[d].reqAdhoc);
+
+ const ctx = document.getElementById('fmLineChart');
+ if(ctx){
+     if(window.fmLineChartInstance) window.fmLineChartInstance.destroy();
+     window.fmLineChartInstance = new Chart(ctx, {
+         type: 'line',
+         data: {
+             labels: chartLabels,
+             datasets: [{
+                 label: 'Required Adhoc Vehicles',
+                 data: chartData,
+                 borderColor: '#3b82f6',
+                 backgroundColor: 'rgba(59,130,246,0.1)',
+                 borderWidth: 3,
+                 pointBackgroundColor: '#3b82f6',
+                 pointRadius: 4,
+                 fill: true,
+                 tension: 0.3
+             }]
+         },
+         options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+     });
+ }
 }
 function clearFmFilters(){
     ["fm-filter-month","fm-filter-hub","fm-filter-date"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
