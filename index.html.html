@@ -1353,7 +1353,7 @@ function autoFill(el,src){
 ══════════════════════════════════════════════ */
 function submitVehicleRequest(e){
   e.preventDefault();
-  const req={id:Date.now(),date:document.getElementById("req-date").value,hubName:document.getElementById("req-hub").value,riderId:document.getElementById("req-rider").value.trim(),runsheet:document.getElementById("req-runsheet").value.trim(),type:document.getElementById("req-type").value,reason:document.getElementById("req-reason").value.trim(),cost:parseFloat(document.getElementById("req-cost").value)||0,status:"Pending",submittedBy:currentHubName,createdAt:new Date().toISOString()};
+  const req={id:Date.now(),date:document.getElementById("req-date").value,hubName:document.getElementById("req-hub").value,riderId:document.getElementById("req-rider").value.trim(),runsheet:document.getElementById("req-runsheet").value.trim(),type:document.getElementById("req-type").value,reason:document.getElementById("req-reason").value.trim(),cost:Math.round(parseFloat(document.getElementById("req-cost").value)||0),status:"Pending",submittedBy:currentHubName,createdAt:new Date().toISOString()};
   requestsDatabase.push(req);
   logAudit("submit",`New ${req.type} request from ${req.hubName} for ₹${req.cost}`,currentHubName);
   save();toast("Vehicle request submitted!");
@@ -1614,7 +1614,7 @@ async function loadGoogleSheetData(){
           }
         }
       }
-      const obj={hub:(row[colHub]||"").trim(),pod:(row[colPod]||"").trim(),zone:(row[colZone]||"").trim(),status:(row[colStatus]||"").trim(),hiAtt:(row[colHI]||"").trim(),venAtt:(row[colVenAtt]||"").trim(),vNo:(row[colVehicleNo]||"").trim(),vendor:(row[colVendor]||"").trim(),date:dateVal.trim(),stdDate,month:monthVal,dayRate:colDayRate>-1?parseFloat((row[colDayRate]||"0").replace(/[^\d.-]/g,""))||0:0};
+      const obj={hub:(row[colHub]||"").trim(),pod:(row[colPod]||"").trim(),zone:(row[colZone]||"").trim(),status:(row[colStatus]||"").trim(),hiAtt:(row[colHI]||"").trim(),venAtt:(row[colVenAtt]||"").trim(),vNo:(row[colVehicleNo]||"").trim(),vendor:(row[colVendor]||"").trim(),date:dateVal.trim(),stdDate,month:monthVal,dayRate:colDayRate>-1?Math.round(parseFloat((row[colDayRate]||"0").replace(/[^\d.-]/g,""))||0):0};
       globalGSheetData.push(obj);if(obj.hub)uHubs.add(obj.hub);if(obj.pod)uPods.add(obj.pod);if(obj.zone)uZones.add(obj.zone);if(obj.status)uStatus.add(obj.status);
     }
     const pop=(id,set,def)=>{const el=document.getElementById(id);if(el){el.innerHTML=`<option value="">${def}</option>`;[...set].sort().forEach(v=>el.appendChild(new Option(v,v)));} };
@@ -1817,7 +1817,7 @@ async function loadHappaySheetData(){
           }
         }
       }
-      let chargesRaw=colCharges>-1?(row[colCharges]||"").trim():"0";let chargeNum=parseFloat(chargesRaw.replace(/[^\d.-]/g,''))||0;
+     let chargesRaw=colCharges>-1?(row[colCharges]||"").trim():"0";let chargeNum=Math.round(parseFloat(chargesRaw.replace(/[^\d.-]/g,''))||0);
       const obj={hub:(row[colHub]||"").trim(),city: colCity > -1 ? (row[colCity]||"").trim() : "Unassigned",stateHead: colStateHead > -1 ? (row[colStateHead]||"").trim() : "Unassigned",date:dateVal,stdDate,month:monthVal,rider:colRider>-1?(row[colRider]||"").trim():"",runsheet:colRunsheet>-1?(row[colRunsheet]||"").trim():"",chargeStr:chargesRaw,chargeNum,spna:colSpna>-1?(row[colSpna]||"").trim():"",region:colRegion>-1?(row[colRegion]||"").trim():"",pod:colPod>-1?(row[colPod]||"").trim():"",szm:colSzm>-1?(row[colSzm]||"").trim():""};
       globalHappayData.push(obj);if(obj.hub)uHubs.add(obj.hub);if(obj.region)uRegions.add(obj.region);if(obj.pod)uPods.add(obj.pod);if(obj.spna)uSpna.add(obj.spna);if(obj.szm)uSzm.add(obj.szm);
     }
@@ -2013,7 +2013,7 @@ async function loadFmSheetData(){
        }
      }
      
-     const parseNum = val => parseFloat((val||"").replace(/[^\d.-]/g,''))||0;
+     const parseNum = val => Math.round(parseFloat((val||"").replace(/[^\d.-]/g,''))||0);
 
       const obj={
        hub:(row[colHub]||"").trim(),
