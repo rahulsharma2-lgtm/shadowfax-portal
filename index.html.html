@@ -1841,8 +1841,8 @@ function renderHappayDashboard(){
        fDate=document.getElementById("h-filter-date")?.value||"",
        fPod=document.getElementById("h-filter-pod")?.value||"",
        fSpna=document.getElementById("h-filter-spna")?.value||"";
-       
- const base=r=>{
+
+ const base = (r, ignoreDate = false) => {
     if(fYear&&!r.stdDate.startsWith(fYear))return false;
     if(fMonth&&r.month!==fMonth)return false;
     if(fRegion&&r.region!==fRegion)return false;
@@ -1850,67 +1850,103 @@ function renderHappayDashboard(){
     if(fSpna&&r.spna!==fSpna)return false;
     if(fHub&&!r.hub.toLowerCase().includes(fHub))return false;
     if(fSzm&&!r.szm.toLowerCase().includes(fSzm))return false;
+    if(!ignoreDate && fDate&&r.stdDate!==fDate)return false;
     return true;
  };
-  let filtered=globalHappayData.filter(r=>base(r)&&(!fDate||r.stdDate===fDate));
-  let chartFiltered=globalHappayData.filter(r=>base(r));
-  let uniqueHubs=new Set(),totalCharges=0,approvedCount=0,appCharges=0,notAppCharges=0,tableHtml="",rowCount=0;
-  const szmGroups={}; const podGroups={}; const cityGroups={}; const shGroups={};
-  filtered.forEach(r=>{
-    if(r.hub)uniqueHubs.add(r.hub);if(r.stdDate) uniqueDates.add(r.stdDate);
-    totalCharges+=r.chargeNum;
-    const isApp=r.spna.toLowerCase().includes("app")||r.spna.toLowerCase().includes("yes")||r.spna.toLowerCase()==="ok";
-    if(isApp){approvedCount++;appCharges+=r.chargeNum;}else notAppCharges+=r.chargeNum;
-    if(rowCount<50){const pSpna=isApp?`<span style="color:var(--sf-green);font-weight:700">${esc(r.spna)}</span>`:`<span style="color:var(--sf-amber);font-weight:700">${esc(r.spna)}</span>`;tableHtml+=`<tr><td>${esc(r.date)||"—"}</td><td>${esc(r.region)||"—"}</td><td><strong>${esc(r.hub)}</strong></td><td style="font-size:12px;color:var(--sf-gray-500)">${esc(r.pod)||"—"}</td><td style="font-family:DM Mono,monospace">${esc(r.rider)||"—"}</td><td style="font-family:DM Mono,monospace;font-size:11px">${esc(r.runsheet)||"—"}</td><td style="text-align:right;font-weight:600">₹${r.chargeNum.toLocaleString("en-IN")}</td><td style="text-align:center">${pSpna}</td></tr>`;rowCount++;}
-    const szmName=r.szm||"Unassigned";
-    if(!szmGroups[szmName])szmGroups[szmName]={hubs:new Set(),entries:0,approved:0,totalCharges:0,approvedCharges:0,notApprovedCharges:0};
-    if(r.hub)szmGroups[szmName].hubs.add(r.hub);
-    szmGroups[szmName].entries++;szmGroups[szmName].totalCharges+=r.chargeNum;
-    if(isApp){szmGroups[szmName].approved++;szmGroups[szmName].approvedCharges+=r.chargeNum;}else{szmGroups[szmName].notApprovedCharges+=r.chargeNum;}
-    const podName=r.pod||"Unassigned";
-    if(!podGroups[podName])podGroups[podName]={hubs:new Set(),entries:0,approved:0,totalCharges:0,approvedCharges:0,notApprovedCharges:0};
-    if(r.hub)podGroups[podName].hubs.add(r.hub);
-    podGroups[podName].entries++;podGroups[podName].totalCharges+=r.chargeNum;
-    if(isApp){podGroups[podName].approved++;podGroups[podName].approvedCharges+=r.chargeNum;}else{podGroups[podName].notApprovedCharges+=r.chargeNum;}
-    // Process City Groups
+
+ let filtered=globalHappayData.filter(r=>base(r, false));
+ let chartFiltered=globalHappayData.filter(r=>base(r, true)); 
+
+ // CRITICAL FIX: All variables initialized right here!
+ let uniqueHubs=new Set(), uniqueDates=new Set(), totalCharges=0, approvedCount=0, appCharges=0, notAppCharges=0, tableHtml="", rowCount=0;
+ 
+ const szmGroups={}; 
+ const podGroups={}; 
+ const cityGroups={}; 
+ const shGroups={};
+
+ filtered.forEach(r=>{
+   if(r.hub) uniqueHubs.add(r.hub);
+   if(r.stdDate) uniqueDates.add(r.stdDate); // Now correctly defined!
+   totalCharges += r.chargeNum;
+   
+   const isApp = r.spna.toLowerCase().includes("app")||r.spna.toLowerCase().includes("yes")||r.spna.toLowerCase()==="ok";
+   if(isApp){ approvedCount++; appCharges+=r.chargeNum; } 
+   else { notAppCharges+=r.chargeNum; }
+   
+   if(rowCount<50){
+     const pSpna = isApp ? `<span style="color:var(--sf-green);font-weight:700">${esc(r.spna)}</span>` : `<span style="color:var(--sf-amber);font-weight:700">${esc(r.spna)}</span>`;
+     tableHtml+=`<tr><td>${esc(r.date)||"—"}</td><td>${esc(r.region)||"—"}</td><td><strong>${esc(r.hub)}</strong></td><td style="font-size:12px;color:var(--sf-gray-500)">${esc(r.pod)||"—"}</td><td style="font-family:DM Mono,monospace">${esc(r.rider)||"—"}</td><td style="font-family:DM Mono,monospace;font-size:11px">${esc(r.runsheet)||"—"}</td><td style="text-align:right;font-weight:600">₹${r.chargeNum.toLocaleString("en-IN")}</td><td style="text-align:center">${pSpna}</td></tr>`;
+     rowCount++;
+   }
+
+   // SZM Grouping
+   const szmName = r.szm || "Unassigned";
+   if(!szmGroups[szmName]) szmGroups[szmName]={hubs:new Set(),entries:0,approved:0,totalCharges:0,approvedCharges:0,notApprovedCharges:0};
+   if(r.hub) szmGroups[szmName].hubs.add(r.hub);
+   szmGroups[szmName].entries++; szmGroups[szmName].totalCharges+=r.chargeNum;
+   if(isApp){szmGroups[szmName].approved++; szmGroups[szmName].approvedCharges+=r.chargeNum;} else {szmGroups[szmName].notApprovedCharges+=r.chargeNum;}
+
+   // POD Grouping
+   const podName = r.pod || "Unassigned";
+   if(!podGroups[podName]) podGroups[podName]={hubs:new Set(),entries:0,approved:0,totalCharges:0,approvedCharges:0,notApprovedCharges:0};
+   if(r.hub) podGroups[podName].hubs.add(r.hub);
+   podGroups[podName].entries++; podGroups[podName].totalCharges+=r.chargeNum;
+   if(isApp){podGroups[podName].approved++; podGroups[podName].approvedCharges+=r.chargeNum;} else {podGroups[podName].notApprovedCharges+=r.chargeNum;}
+
+   // City Grouping
    const cName = r.city || "Unassigned";
    if(!cityGroups[cName]) cityGroups[cName]={hubs:new Set(),entries:0,approved:0,totalCharges:0,approvedCharges:0,notApprovedCharges:0};
    if(r.hub) cityGroups[cName].hubs.add(r.hub);
    cityGroups[cName].entries++; cityGroups[cName].totalCharges+=r.chargeNum;
    if(isApp){cityGroups[cName].approved++; cityGroups[cName].approvedCharges+=r.chargeNum;} else {cityGroups[cName].notApprovedCharges+=r.chargeNum;}
 
-   // Process State Head Groups
+   // State Head Grouping
    const shName = r.stateHead || "Unassigned";
    if(!shGroups[shName]) shGroups[shName]={hubs:new Set(),entries:0,approved:0,totalCharges:0,approvedCharges:0,notApprovedCharges:0};
    if(r.hub) shGroups[shName].hubs.add(r.hub);
    shGroups[shName].entries++; shGroups[shName].totalCharges+=r.chargeNum;
    if(isApp){shGroups[shName].approved++; shGroups[shName].approvedCharges+=r.chargeNum;} else {shGroups[shName].notApprovedCharges+=r.chargeNum;}
-  });
-  // Calculate Projection Cost
+ });
+
+ // Calculate Projection Cost
  const mNames=["January","February","March","April","May","June","July","August","September","October","November","December"];
  let mIdx=mNames.indexOf(fMonth); if(mIdx===-1) mIdx=new Date().getMonth();
  let daysInMonth=new Date(parseInt(fYear)||new Date().getFullYear(), mIdx+1, 0).getDate();
  let projCost=uniqueDates.size>0 ? Math.round((totalCharges/uniqueDates.size)*daysInMonth) : 0;
-  document.getElementById("h-stat-proj-cost").innerText="₹"+projCost.toLocaleString("en-IN");
-  document.getElementById("h-stat-hubs").innerText=uniqueHubs.size;document.getElementById("h-stat-lcvs").innerText=filtered.length;document.getElementById("h-stat-charges").innerText="₹"+totalCharges.toLocaleString("en-IN");document.getElementById("h-stat-app").innerText=approvedCount;document.getElementById("h-stat-app-charges").innerText="₹"+appCharges.toLocaleString("en-IN");document.getElementById("h-stat-not-app-charges").innerText="₹"+notAppCharges.toLocaleString("en-IN");
-  document.getElementById("happay-table-body").innerHTML=tableHtml||`<tr><td colspan="8" class="empty-c">No data matches.</td></tr>`;
-  let podHtml="";
-  const sortedPods=Object.keys(podGroups).sort((a,b)=>podGroups[b].totalCharges-podGroups[a].totalCharges);
-  if(!sortedPods.length){podHtml=`<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;}
-  else{
-    podHtml+=`<tr style="background:var(--sf-charcoal);color:white;border-bottom:2px solid var(--sf-green);"><td style="font-weight:700;color:white;">GRAND TOTAL</td><td style="text-align:center;font-weight:700;color:white;">${uniqueHubs.size}</td><td style="text-align:center;font-weight:700;color:white;">${filtered.length}</td><td style="text-align:center;font-weight:700;color:white;">${approvedCount}</td><td style="text-align:right;font-weight:700;color:white;">₹${totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:700;color:#4ade80;">₹${appCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:700;color:#fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td></tr>`;
-    sortedPods.forEach(pod=>{const g=podGroups[pod];podHtml+=`<tr><td><strong>${esc(pod)}</strong></td><td style="text-align:center">${g.hubs.size}</td><td style="text-align:center">${g.entries}</td><td style="text-align:center">${g.approved}</td><td style="text-align:right;font-weight:600">₹${g.totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#10b981">₹${g.approvedCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td></tr>`;});
-  }
-  const podBody=document.getElementById("pod-summary-body");if(podBody)podBody.innerHTML=podHtml;
-  let szmHtml="";
-  const sortedSzms=Object.keys(szmGroups).sort((a,b)=>szmGroups[b].totalCharges-szmGroups[a].totalCharges);
-  if(!sortedSzms.length){szmHtml=`<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;}
-  else{
-    szmHtml+=`<tr style="background:var(--sf-charcoal);color:white;border-bottom:2px solid var(--sf-green);"><td style="font-weight:700;color:white;">GRAND TOTAL</td><td style="text-align:center;font-weight:700;color:white;">${uniqueHubs.size}</td><td style="text-align:center;font-weight:700;color:white;">${filtered.length}</td><td style="text-align:center;font-weight:700;color:white;">${approvedCount}</td><td style="text-align:right;font-weight:700;color:white;">₹${totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:700;color:#4ade80;">₹${appCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:700;color:#fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td></tr>`;
-    sortedSzms.forEach(szm=>{const g=szmGroups[szm];szmHtml+=`<tr><td><strong>${esc(szm)}</strong></td><td style="text-align:center">${g.hubs.size}</td><td style="text-align:center">${g.entries}</td><td style="text-align:center">${g.approved}</td><td style="text-align:right;font-weight:600">₹${g.totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#10b981">₹${g.approvedCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td></tr>`;});
-  }
-  const szmBody=document.getElementById("szm-summary-body");if(szmBody)szmBody.innerHTML=szmHtml;
-  // Render City Summary
+
+ document.getElementById("h-stat-hubs").innerText=uniqueHubs.size;
+ document.getElementById("h-stat-lcvs").innerText=filtered.length;
+ document.getElementById("h-stat-charges").innerText="₹"+totalCharges.toLocaleString("en-IN");
+ document.getElementById("h-stat-app").innerText=approvedCount;
+ document.getElementById("h-stat-app-charges").innerText="₹"+appCharges.toLocaleString("en-IN");
+ document.getElementById("h-stat-not-app-charges").innerText="₹"+notAppCharges.toLocaleString("en-IN");
+ const projCard = document.getElementById("h-stat-proj-cost");
+ if(projCard) projCard.innerText="₹"+projCost.toLocaleString("en-IN");
+
+ document.getElementById("happay-table-body").innerHTML=tableHtml||`<tr><td colspan="8" class="empty-c">No data matches.</td></tr>`;
+
+ // Render POD Summary
+ let podHtml="";
+ const sortedPods=Object.keys(podGroups).sort((a,b)=>podGroups[b].totalCharges-podGroups[a].totalCharges);
+ if(!sortedPods.length){podHtml=`<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;}
+ else{
+   podHtml+=`<tr style="background:var(--sf-charcoal);color:white;border-bottom:2px solid var(--sf-green);"><td style="font-weight:700;color:white;">GRAND TOTAL</td><td style="text-align:center;font-weight:700;color:white;">${uniqueHubs.size}</td><td style="text-align:center;font-weight:700;color:white;">${filtered.length}</td><td style="text-align:center;font-weight:700;color:white;">${approvedCount}</td><td style="text-align:right;font-weight:700;color:white;">₹${totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:700;color:#4ade80;">₹${appCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:700;color:#fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td></tr>`;
+   sortedPods.forEach(pod=>{const g=podGroups[pod];podHtml+=`<tr><td><strong>${esc(pod)}</strong></td><td style="text-align:center">${g.hubs.size}</td><td style="text-align:center">${g.entries}</td><td style="text-align:center">${g.approved}</td><td style="text-align:right;font-weight:600">₹${g.totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#10b981">₹${g.approvedCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td></tr>`;});
+ }
+ const podBody=document.getElementById("pod-summary-body");if(podBody)podBody.innerHTML=podHtml;
+
+ // Render SZM Summary
+ let szmHtml="";
+ const sortedSzms=Object.keys(szmGroups).sort((a,b)=>szmGroups[b].totalCharges-szmGroups[a].totalCharges);
+ if(!sortedSzms.length){szmHtml=`<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;}
+ else{
+   szmHtml+=`<tr style="background:var(--sf-charcoal);color:white;border-bottom:2px solid var(--sf-green);"><td style="font-weight:700;color:white;">GRAND TOTAL</td><td style="text-align:center;font-weight:700;color:white;">${uniqueHubs.size}</td><td style="text-align:center;font-weight:700;color:white;">${filtered.length}</td><td style="text-align:center;font-weight:700;color:white;">${approvedCount}</td><td style="text-align:right;font-weight:700;color:white;">₹${totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:700;color:#4ade80;">₹${appCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:700;color:#fca5a5;">₹${notAppCharges.toLocaleString("en-IN")}</td></tr>`;
+   sortedSzms.forEach(szm=>{const g=szmGroups[szm];szmHtml+=`<tr><td><strong>${esc(szm)}</strong></td><td style="text-align:center">${g.hubs.size}</td><td style="text-align:center">${g.entries}</td><td style="text-align:center">${g.approved}</td><td style="text-align:right;font-weight:600">₹${g.totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#10b981">₹${g.approvedCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td></tr>`;});
+ }
+ const szmBody=document.getElementById("szm-summary-body");if(szmBody)szmBody.innerHTML=szmHtml;
+
+ // Render City Summary
  let cityHtml="";
  const sortedCities=Object.keys(cityGroups).sort((a,b)=>cityGroups[b].totalCharges-cityGroups[a].totalCharges);
  if(!sortedCities.length){cityHtml=`<tr><td colspan="7" class="empty-c">No data matches.</td></tr>`;}
@@ -1929,20 +1965,47 @@ function renderHappayDashboard(){
    sortedSHs.forEach(sh=>{const g=shGroups[sh];shHtml+=`<tr><td><strong>${esc(sh)}</strong></td><td style="text-align:center">${g.hubs.size}</td><td style="text-align:center">${g.entries}</td><td style="text-align:center">${g.approved}</td><td style="text-align:right;font-weight:600">₹${g.totalCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#10b981">₹${g.approvedCharges.toLocaleString("en-IN")}</td><td style="text-align:right;font-weight:600;color:#ef4444">₹${g.notApprovedCharges.toLocaleString("en-IN")}</td></tr>`;});
  }
  const shBody=document.getElementById("h-sh-summary-body");if(shBody)shBody.innerHTML=shHtml;
-  const dateGroups={};
-  chartFiltered.forEach(r=>{const d=r.stdDate||"Unknown";if(!dateGroups[d])dateGroups[d]={charges:0,entries:0,hubs:new Set()};dateGroups[d].charges+=r.chargeNum;dateGroups[d].entries+=1;if(r.hub)dateGroups[d].hubs.add(r.hub);});
-  const sortedDates=Object.keys(dateGroups).sort();
-  const chartLabels=sortedDates.map(d=>{if(d==="Unknown")return d;const p=d.split("-");return p.length===3?`${p[2]}/${p[1]}`:d;});
-  const chkC=document.getElementById('toggle-charges')?.checked,chkE=document.getElementById('toggle-entries')?.checked,chkH=document.getElementById('toggle-hubs')?.checked;
-  const datasets=[];
-  if(chkC)datasets.push({label:'Total Charges (₹)',data:sortedDates.map(d=>dateGroups[d].charges),borderColor:'#00A651',backgroundColor:'rgba(0,166,81,0.1)',borderWidth:3,pointBackgroundColor:'#00A651',pointRadius:4,fill:true,tension:0.3,yAxisID:'y'});
-  if(chkE)datasets.push({label:'LCV Entries',data:sortedDates.map(d=>dateGroups[d].entries),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.1)',borderWidth:3,pointBackgroundColor:'#3b82f6',pointRadius:4,fill:true,tension:0.3,yAxisID:'y1'});
-  if(chkH)datasets.push({label:'Hubs',data:sortedDates.map(d=>dateGroups[d].hubs.size),borderColor:'#374151',backgroundColor:'rgba(55,65,81,0.1)',borderWidth:3,pointBackgroundColor:'#374151',pointRadius:4,fill:true,tension:0.3,yAxisID:'y1'});
-  const ctx=document.getElementById('happayLineChart');
-  if(ctx){if(window.happayLineChartInstance)window.happayLineChartInstance.destroy();window.happayLineChartInstance=new Chart(ctx,{type:'line',data:{labels:chartLabels,datasets},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false}},scales:{y:{type:'linear',display:!!chkC,position:'left',title:{display:true,text:'Charges (₹)',color:'#00A651',font:{weight:'bold'}},ticks:{callback:v=>'₹'+v.toLocaleString("en-IN")}},y1:{type:'linear',display:!!(chkE||chkH),position:'right',title:{display:true,text:'Count',color:'#3b82f6',font:{weight:'bold'}},grid:{drawOnChartArea:false},beginAtZero:true}}}});}
-  renderMoMChart();
-}
 
+ // Line Chart Data
+ const dateGroups={};
+ chartFiltered.forEach(r=>{
+   const d=r.stdDate||"Unknown";
+   if(!dateGroups[d])dateGroups[d]={charges:0,entries:0,hubs:new Set()};
+   dateGroups[d].charges+=r.chargeNum;
+   dateGroups[d].entries+=1;
+   if(r.hub)dateGroups[d].hubs.add(r.hub);
+ });
+ const sortedDates=Object.keys(dateGroups).sort();
+ const chartLabels=sortedDates.map(d=>{if(d==="Unknown")return d;const p=d.split("-");return p.length===3?`${p[2]}/${p[1]}`:d;});
+ 
+ const chkC=document.getElementById('toggle-charges')?.checked;
+ const chkE=document.getElementById('toggle-entries')?.checked;
+ const chkH=document.getElementById('toggle-hubs')?.checked;
+ 
+ const datasets=[];
+ if(chkC)datasets.push({label:'Total Charges (₹)',data:sortedDates.map(d=>dateGroups[d].charges),borderColor:'#00A651',backgroundColor:'rgba(0,166,81,0.1)',borderWidth:3,pointBackgroundColor:'#00A651',pointRadius:4,fill:true,tension:0.3,yAxisID:'y'});
+ if(chkE)datasets.push({label:'LCV Entries',data:sortedDates.map(d=>dateGroups[d].entries),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.1)',borderWidth:3,pointBackgroundColor:'#3b82f6',pointRadius:4,fill:true,tension:0.3,yAxisID:'y1'});
+ if(chkH)datasets.push({label:'Hubs',data:sortedDates.map(d=>dateGroups[d].hubs.size),borderColor:'#374151',backgroundColor:'rgba(55,65,81,0.1)',borderWidth:3,pointBackgroundColor:'#374151',pointRadius:4,fill:true,tension:0.3,yAxisID:'y1'});
+ 
+ const ctx=document.getElementById('happayLineChart');
+ if(ctx){
+   if(window.happayLineChartInstance)window.happayLineChartInstance.destroy();
+   window.happayLineChartInstance=new Chart(ctx,{
+     type:'line',
+     data:{labels:chartLabels,datasets},
+     options:{
+       responsive:true,
+       interaction:{mode:'index',intersect:false},
+       plugins:{legend:{display:false}},
+       scales:{
+         y:{type:'linear',display:!!chkC,position:'left',title:{display:true,text:'Charges (₹)',color:'#00A651',font:{weight:'bold'}},ticks:{callback:v=>'₹'+v.toLocaleString("en-IN")}},
+         y1:{type:'linear',display:!!(chkE||chkH),position:'right',title:{display:true,text:'Count',color:'#3b82f6',font:{weight:'bold'}},grid:{drawOnChartArea:false},beginAtZero:true}
+       }
+     }
+   });
+ }
+ renderMoMChart();
+}
 function clearHappayFilters(){
   ["h-filter-month","h-filter-region","h-filter-hub","h-filter-szm","h-filter-date","h-filter-pod","h-filter-spna"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
   const yEl=document.getElementById("h-filter-year"); if(yEl)yEl.value="2026";
