@@ -422,6 +422,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
       <div class="stat-card" style="border-top:4px solid var(--sf-green)"><div class="sc-label">HI ATTENDANCE</div><div class="sc-val" id="g-stat-hi-att" style="color:var(--sf-green)">0</div><div class="sc-sub">marked present</div></div>
       <div class="stat-card" style="border-top:4px solid var(--sf-amber)"><div class="sc-label">VENDOR ATTENDANCE</div><div class="sc-val" id="g-stat-ven-att" style="color:var(--sf-amber)">0</div><div class="sc-sub">marked present</div></div>
       <div class="stat-card" style="border-top:4px solid #10b981"><div class="sc-label">TOTAL COST</div><div class="sc-val" id="g-stat-total-cost" style="color:#10b981;font-size:22px;margin-top:4px">₹0</div><div class="sc-sub">day rate × HI present</div></div>
+       <div class="stat-card" style="border-top:4px solid #8b5cf6"><div class="sc-label">PROJECTION COST</div><div class="sc-val" id="g-stat-proj-cost" style="color:#8b5cf6;font-size:22px;margin-top:4px">₹0</div><div class="sc-sub">est. till month end</div></div>
      </div>
 
      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(450px,1fr));gap:24px;margin-bottom:24px;">
@@ -482,6 +483,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2ee;color:var(--sf-black);m
       <div class="stat-card" style="border-top:4px solid var(--sf-amber)"><div class="sc-label">TOTAL APPROVED</div><div class="sc-val" id="h-stat-app" style="color:var(--sf-amber)">0</div><div class="sc-sub">SPNA approved count</div></div>
       <div class="stat-card" style="border-top:4px solid #10b981"><div class="sc-label">APPROVED CHARGES</div><div class="sc-val" id="h-stat-app-charges" style="color:#10b981">₹0</div><div class="sc-sub">approved amount</div></div>
       <div class="stat-card" style="border-top:4px solid #ef4444"><div class="sc-label">NOT APPROVED</div><div class="sc-val" id="h-stat-not-app-charges" style="color:#ef4444">₹0</div><div class="sc-sub">pending/rejected</div></div>
+     <div class="stat-card" style="border-top:4px solid #8b5cf6"><div class="sc-label">PROJECTION COST</div><div class="sc-val" id="h-stat-proj-cost" style="color:#8b5cf6;font-size:22px;margin-top:4px">₹0</div><div class="sc-sub">est. till month end</div></div>
      </div>
      <div class="mom-card">
       <div class="mom-title">
@@ -1653,13 +1655,14 @@ function renderGSheetDashboard(){
  // 2. Filter SPECIFICALLY for the Day-to-Day table (ignores Date filter, stops at today)
  let dayFiltered=globalGSheetData.filter(r=>baseFilter(r, true) && r.stdDate <= todayStr);
 
- let uniqueHubs=new Set(),uniqueVehicles=new Set(),hiPresent=0,venPresent=0,totalCost=0,tableHtml="",rowCount=0;
+ let uniqueHubs=new Set(),uniqueDates=new Set(),totalCharges=0,approvedCount=0,appCharges=0,notAppCharges=0,tableHtml="",rowCount=0;
  const podGroups={};
  const dayGroups={};
 
  // Process main filtered data (Cards, POD Summary, Recent Entries)
  filtered.forEach(r=>{
    uniqueHubs.add(r.hub);
+   if(r.stdDate) uniqueDates.add(r.stdDate);
    if(r.vNo&&r.vNo!=="—")uniqueVehicles.add(r.vNo);
    const hi=r.hiAtt.toLowerCase();
    const ven=r.venAtt.toLowerCase();
@@ -1696,12 +1699,19 @@ function renderGSheetDashboard(){
    else dayGroups[dayKey].noResponse++;
  });
 
+  // Calculate Projection Cost
+ const mNames=["January","February","March","April","May","June","July","August","September","October","November","December"];
+ let mIdx=mNames.indexOf(fMonth); if(mIdx===-1) mIdx=new Date().getMonth();
+ let daysInMonth=new Date(parseInt(fYear)||new Date().getFullYear(), mIdx+1, 0).getDate();
+ let projCost=uniqueDates.size>0 ? Math.round((totalCost/uniqueDates.size)*daysInMonth) : 0;
+  
  /* ── Stat cards ── */
  document.getElementById("g-stat-hubs").innerText=uniqueHubs.size;
  document.getElementById("g-stat-vehicles").innerText=uniqueVehicles.size;
  document.getElementById("g-stat-hi-att").innerText=hiPresent;
  document.getElementById("g-stat-ven-att").innerText=venPresent;
  document.getElementById("g-stat-total-cost").innerText="₹"+totalCost.toLocaleString("en-IN");
+  document.getElementById("g-stat-proj-cost").innerText="₹"+projCost.toLocaleString("en-IN");
 
  /* ── Recent entries ── */
  document.getElementById("gsheet-table-body").innerHTML=tableHtml||`<tr><td colspan="6" class="empty-c">No data matches these filters.</td></tr>`;
@@ -1855,7 +1865,7 @@ function renderHappayDashboard(){
   let uniqueHubs=new Set(),totalCharges=0,approvedCount=0,appCharges=0,notAppCharges=0,tableHtml="",rowCount=0;
   const szmGroups={}; const podGroups={}; const cityGroups={}; const shGroups={};
   filtered.forEach(r=>{
-    if(r.hub)uniqueHubs.add(r.hub);
+    if(r.hub)uniqueHubs.add(r.hub);if(r.stdDate) uniqueDates.add(r.stdDate);
     totalCharges+=r.chargeNum;
     const isApp=r.spna.toLowerCase().includes("app")||r.spna.toLowerCase().includes("yes")||r.spna.toLowerCase()==="ok";
     if(isApp){approvedCount++;appCharges+=r.chargeNum;}else notAppCharges+=r.chargeNum;
@@ -1884,6 +1894,12 @@ function renderHappayDashboard(){
    shGroups[shName].entries++; shGroups[shName].totalCharges+=r.chargeNum;
    if(isApp){shGroups[shName].approved++; shGroups[shName].approvedCharges+=r.chargeNum;} else {shGroups[shName].notApprovedCharges+=r.chargeNum;}
   });
+  // Calculate Projection Cost
+ const mNames=["January","February","March","April","May","June","July","August","September","October","November","December"];
+ let mIdx=mNames.indexOf(fMonth); if(mIdx===-1) mIdx=new Date().getMonth();
+ let daysInMonth=new Date(parseInt(fYear)||new Date().getFullYear(), mIdx+1, 0).getDate();
+ let projCost=uniqueDates.size>0 ? Math.round((totalCharges/uniqueDates.size)*daysInMonth) : 0;
+  document.getElementById("h-stat-proj-cost").innerText="₹"+projCost.toLocaleString("en-IN");
   document.getElementById("h-stat-hubs").innerText=uniqueHubs.size;document.getElementById("h-stat-lcvs").innerText=filtered.length;document.getElementById("h-stat-charges").innerText="₹"+totalCharges.toLocaleString("en-IN");document.getElementById("h-stat-app").innerText=approvedCount;document.getElementById("h-stat-app-charges").innerText="₹"+appCharges.toLocaleString("en-IN");document.getElementById("h-stat-not-app-charges").innerText="₹"+notAppCharges.toLocaleString("en-IN");
   document.getElementById("happay-table-body").innerHTML=tableHtml||`<tr><td colspan="8" class="empty-c">No data matches.</td></tr>`;
   let podHtml="";
