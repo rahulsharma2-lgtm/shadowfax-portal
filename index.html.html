@@ -1651,8 +1651,8 @@ function renderGSheetDashboard(){
  let filtered=globalGSheetData.filter(r=>baseFilter(r, false));
  let dayFiltered=globalGSheetData.filter(r=>baseFilter(r, true) && r.stdDate <= todayStr);
 
- // Fixed variable initialization:
- let uniqueHubs=new Set(),uniqueVehicles=new Set(),uniqueDates=new Set(),hiPresent=0,venPresent=0,totalCost=0,tableHtml="",rowCount=0;
+ // CRITICAL FIX: All sets and variables must be declared right here!
+ let uniqueHubs=new Set(), uniqueVehicles=new Set(), uniqueDates=new Set(), hiPresent=0, venPresent=0, totalCost=0, tableHtml="", rowCount=0;
  
  const podGroups={};
  const dayGroups={};
@@ -1660,7 +1660,7 @@ function renderGSheetDashboard(){
  filtered.forEach(r=>{
    uniqueHubs.add(r.hub);
    if(r.stdDate) uniqueDates.add(r.stdDate);
-   if(r.vNo&&r.vNo!=="—")uniqueVehicles.add(r.vNo);
+   if(r.vNo&&r.vNo!=="—") uniqueVehicles.add(r.vNo); // This is the line that was crashing
    
    const hi=r.hiAtt.toLowerCase();
    const ven=r.venAtt.toLowerCase();
@@ -1702,7 +1702,6 @@ function renderGSheetDashboard(){
  let daysInMonth=new Date(parseInt(fYear)||new Date().getFullYear(), mIdx+1, 0).getDate();
  let projCost=uniqueDates.size>0 ? Math.round((totalCost/uniqueDates.size)*daysInMonth) : 0;
 
- /* ── Stat cards ── */
  document.getElementById("g-stat-hubs").innerText=uniqueHubs.size;
  document.getElementById("g-stat-vehicles").innerText=uniqueVehicles.size;
  document.getElementById("g-stat-hi-att").innerText=hiPresent;
@@ -1711,10 +1710,8 @@ function renderGSheetDashboard(){
  const projCard = document.getElementById("g-stat-proj-cost");
  if(projCard) projCard.innerText="₹"+projCost.toLocaleString("en-IN");
 
- /* ── Recent entries ── */
  document.getElementById("gsheet-table-body").innerHTML=tableHtml||`<tr><td colspan="6" class="empty-c">No data matches these filters.</td></tr>`;
 
- /* ── POD Wise Summary ── */
  const sortedPods=Object.keys(podGroups).sort((a,b)=>podGroups[b].cost-podGroups[a].cost);
  let podHtml="";
  if(!sortedPods.length){
@@ -1741,7 +1738,6 @@ function renderGSheetDashboard(){
  const podBody=document.getElementById("g-pod-summary-body");
  if(podBody)podBody.innerHTML=podHtml;
 
- /* ── Day to Day Data ── */
  const sortedDays=Object.keys(dayGroups).filter(d=>d!=="Unknown").sort().concat(dayGroups["Unknown"]?["Unknown"]:[]);
  let dayHtml="";
  if(!sortedDays.length){
@@ -1778,46 +1774,7 @@ function renderGSheetDashboard(){
  const dayBody=document.getElementById("g-day-summary-body");
  if(dayBody)dayBody.innerHTML=dayHtml;
 }
- /* ── Day to Day Data ── */
- const sortedDays=Object.keys(dayGroups).filter(d=>d!=="Unknown").sort().concat(dayGroups["Unknown"]?["Unknown"]:[]);
- let dayHtml="";
- if(!sortedDays.length){
-   dayHtml=`<tr><td colspan="6" class="empty-c">No data available.</td></tr>`;
- } else {
-   /* Grand total row (based on dayFiltered) */
-   const gtPresent=Object.values(dayGroups).reduce((s,g)=>s+g.present,0);
-   const gtAbsent=Object.values(dayGroups).reduce((s,g)=>s+g.absent,0);
-   const gtNR=Object.values(dayGroups).reduce((s,g)=>s+g.noResponse,0);
-   const gtTotal=gtPresent+gtAbsent+gtNR;
-   const gtHubs=new Set(dayFiltered.map(r=>r.hub)).size;
-   dayHtml+=`<tr style="background:var(--sf-charcoal);color:white;border-bottom:2px solid var(--sf-green);">
-     <td style="font-weight:700;color:white;">GRAND TOTAL</td>
-     <td style="text-align:center;font-weight:700;color:white;">${gtHubs}</td>
-     <td style="text-align:center;font-weight:700;color:#4ade80;">${gtPresent}</td>
-     <td style="text-align:center;font-weight:700;color:#fca5a5;">${gtAbsent}</td>
-     <td style="text-align:center;font-weight:700;color:#fbbf24;">${gtNR}</td>
-     <td style="text-align:center;font-weight:700;color:white;">${gtTotal}</td>
-   </tr>`;
-   sortedDays.forEach(day=>{
-     const g=dayGroups[day];
-     const total=g.present+g.absent+g.noResponse;
-     /* Format date for display: YYYY-MM-DD → DD/MM/YYYY */
-     let displayDate=day;
-     if(/^\d{4}-\d{2}-\d{2}$/.test(day)){const p=day.split("-");displayDate=`${p[2]}/${p[1]}/${p[0]}`;}
-     dayHtml+=`<tr>
-       <td style="font-family:DM Mono,monospace;font-size:12px;font-weight:600">${esc(displayDate)}</td>
-       <td style="text-align:center">${g.hubs.size}</td>
-       <td style="text-align:center;font-weight:600;color:var(--sf-green)">${g.present}</td>
-       <td style="text-align:center;font-weight:600;color:var(--sf-red)">${g.absent}</td>
-       <td style="text-align:center;font-weight:600;color:var(--sf-amber)">${g.noResponse}</td>
-       <td style="text-align:center;font-weight:600">${total}</td>
-     </tr>`;
-   });
- }
- const dayBody=document.getElementById("g-day-summary-body");
- if(dayBody)dayBody.innerHTML=dayHtml;
-}
-function clearGSheetFilters(){
+  function clearGSheetFilters(){
   ["g-filter-month","g-filter-hub","g-filter-date","g-filter-pod","g-filter-zone","g-filter-status","g-filter-hi"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
   const yEl=document.getElementById("g-filter-year"); if(yEl)yEl.value="2026";
   renderGSheetDashboard();
